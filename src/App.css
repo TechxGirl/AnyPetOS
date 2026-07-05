@@ -1,0 +1,828 @@
+body {
+  margin: 0;
+  font-family: system-ui, Arial;
+  background: radial-gradient(circle at top, #0f172a, #05060a);
+  color: white;
+}
+
+/* APP LAYOUT */
+.appShell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* SIDEBAR INPUTS */
+.sidebar input,
+.sidebar textarea,
+.sidebar select {
+  width: 100%;
+  margin: 6px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+/* MAIN CONTENT WRAPPER */
+.mainContent {
+  flex: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* important: prevents page scroll stealing */
+}
+
+/* FEED (THIS IS THE KEY FIX) */
+.feed {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;   /* enables internal scrolling */
+  min-height: 0;      /* critical flexbox fix */
+}
+
+/* CARDS */
+.card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(12px);
+}
+
+.card.overdue {
+  border: 1px solid #ff4d4d;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);
+}
+
+/* BUTTONS */
+button {
+  margin: 4px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: #2dd4bf;
+  color: black;
+  font-weight: bold;
+}
+
+button:hover {
+  opacity: 0.85;
+}
+
+/* MODAL */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: rgba(20, 20, 30, 0.9);
+  padding: 20px;
+  border-radius: 16px;
+  width: 400px;
+}
+
+/* BUTTON ROW */
+.buttonRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* PETS PAGE */
+.petsPage {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* GRID */
+.petGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  padding-bottom: 40px;
+}
+
+.petCard {
+  transition: transform 0.2s ease;
+}
+
+.petCard:hover {
+  transform: translateY(-3px);
+}
+.petProfileModal {
+  width: min(760px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.profileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.profileStat {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.profileStat p {
+  margin: 0 0 6px;
+  opacity: 0.75;
+  font-size: 13px;
+}
+
+.profileStat strong {
+  font-size: 15px;
+}
+
+.innerCard {
+  margin-top: 12px;
+}
+
+.timelineItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.timelineItem:last-child {
+  border-bottom: none;
+}
+
+.timelineItem small {
+  opacity: 0.75;
+}
+.pageHeader {
+  margin-bottom: 18px;
+}
+
+.pageHeader h2 {
+  margin-bottom: 4px;
+}
+
+.pageHeader p {
+  margin: 0;
+  opacity: 0.75;
+}
+
+.timelineList {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-left: 10px;
+}
+
+.timelineEvent {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.timelineDot {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(45, 212, 191, 0.16);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  box-shadow: 0 0 18px rgba(45, 212, 191, 0.14);
+}
+
+.timelineContent {
+  margin-bottom: 0;
+}
+
+.timelineTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.timelineTop h3 {
+  margin: 0;
+}
+
+.timelineTop p {
+  margin: 4px 0 0;
+  opacity: 0.7;
+}
+
+.timelineTop small {
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.timelineType {
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.timelineNote {
+  opacity: 0.85;
+  margin-top: 4px;
+}
+.modal label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.modal select,
+.modal input,
+.modal textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+}
+/* ===========================
+   ADD PET PAGE V2
+=========================== */
+
+.addPetPage{
+    max-width:900px;
+    margin:0 auto;
+    padding:35px;
+}
+
+.addPetCard{
+    background:rgba(255,255,255,.06);
+    backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:22px;
+    padding:32px;
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+
+.addPetTitle{
+    font-size:2rem;
+    font-weight:700;
+    margin-bottom:6px;
+}
+
+.addPetSubtitle{
+    color:#9ca3af;
+    margin-bottom:30px;
+}
+
+.formGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:22px;
+}
+
+.formGroup{
+    display:flex;
+    flex-direction:column;
+}
+
+.formGroup.full{
+    grid-column:1/-1;
+}
+
+.formGroup label{
+    margin-bottom:8px;
+    color:#cbd5e1;
+    font-size:.92rem;
+    font-weight:600;
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select{
+
+    width:100%;
+    box-sizing:border-box;
+
+    background:#111827;
+
+    color:white;
+
+    border:1px solid #334155;
+
+    border-radius:14px;
+
+    padding:14px;
+
+    font-size:15px;
+
+    transition:.2s;
+}
+
+.formGroup textarea{
+    resize:vertical;
+    min-height:120px;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus,
+.formGroup select:focus{
+
+    outline:none;
+
+    border-color:#14b8a6;
+
+    box-shadow:0 0 0 3px rgba(20,184,166,.18);
+}
+
+.suggestions{
+
+    margin-top:8px;
+
+    background:#111827;
+
+    border:1px solid #334155;
+
+    border-radius:14px;
+
+    overflow:hidden;
+
+    max-height:220px;
+
+    overflow-y:auto;
+}
+
+.suggestion{
+
+    padding:14px 18px;
+
+    cursor:pointer;
+
+    transition:.18s;
+}
+
+.suggestion:hover{
+
+    background:#14b8a6;
+
+    color:black;
+
+    font-weight:600;
+}
+
+.previewCard{
+
+    background:#0f172a;
+
+    border:1px solid #334155;
+
+    border-radius:18px;
+
+    padding:18px;
+
+    margin-top:18px;
+}
+
+.previewTitle{
+
+    font-size:1rem;
+
+    font-weight:700;
+
+    margin-bottom:12px;
+}
+
+.previewTags{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+}
+
+.previewTag{
+
+    background:#1e293b;
+
+    padding:8px 14px;
+
+    border-radius:999px;
+
+    font-size:.88rem;
+
+    border:1px solid #334155;
+}
+
+.savePetButton{
+
+    margin-top:34px;
+
+    width:100%;
+
+    background:#14b8a6;
+
+    color:#041414;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    border:none;
+
+    padding:18px;
+
+    border-radius:16px;
+
+    transition:.2s;
+}
+
+.savePetButton:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 14px 30px rgba(20,184,166,.35);
+}
+
+@media(max-width:850px){
+
+.formGrid{
+
+grid-template-columns:1fr;
+
+}
+
+}
+/* ===========================
+   CLEAN MODERN FORM FIX
+=========================== */
+
+.mainContent {
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 28px;
+  box-sizing: border-box;
+}
+
+/* Make page content not hug edges */
+.mainContent > .card,
+.mainContent > .feed,
+.mainContent > .petsPage {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Modern glass cards */
+.card {
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px);
+}
+
+/* Form labels */
+label {
+  display: block;
+  margin-top: 18px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+/* Inputs, selects, textarea */
+input,
+select,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(2, 6, 23, 0.72);
+  color: white;
+  font-size: 15px;
+  outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #2dd4bf;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.18);
+}
+
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* Dropdown suggestions */
+.suggestions {
+  margin-top: 8px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: #020617;
+}
+
+.suggestion,
+.suggestions div {
+  padding: 13px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.suggestion:hover,
+.suggestions div:hover {
+  background: #2dd4bf;
+  color: #021414;
+  font-weight: 800;
+}
+
+/* Buttons */
+button {
+  border: none;
+  border-radius: 14px;
+  padding: 11px 16px;
+  background: #2dd4bf;
+  color: #021414;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* Pet grid clean-up */
+.petGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.petCard {
+  margin-bottom: 0;
+}
+
+/* Modal polish */
+.modal {
+  width: min(760px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+/* Mobile */
+@media (max-width: 800px) {
+  .appShell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+  }
+
+  .mainContent {
+    height: auto;
+    padding: 18px;
+  }
+}
+/* FORCE NORMAL TEXT INPUT FONT */
+input,
+textarea,
+select,
+button {
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 15px;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  font-variant: normal !important;
+}
+
+textarea {
+  font-family: Arial, Helvetica, sans-serif !important;
+  color: #ffffff !important;
+}
+.dangerButton {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.dangerButton:hover {
+  box-shadow: 0 10px 24px rgba(239, 68, 68, 0.28);
+}
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin: 6px 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.status-healthy {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86efac;
+}
+
+.status-monitoring {
+  background: rgba(234, 179, 8, 0.18);
+  color: #fde68a;
+}
+
+.status-quarantine {
+  background: rgba(59, 130, 246, 0.18);
+  color: #93c5fd;
+}
+
+.status-sick {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+}
+
+.status-memorial {
+  background: rgba(148, 163, 184, 0.18);
+  color: #cbd5e1;
+}
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
+.calendarDayName {
+  text-align: center;
+  font-weight: 800;
+  opacity: 0.75;
+  padding: 8px;
+}
+
+.calendarCell {
+  min-height: 110px;
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.emptyCell {
+  opacity: 0.25;
+}
+
+.feedDot {
+  margin-top: 8px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(45, 212, 191, 0.16);
+  color: #99f6e4;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.clickableCalendarCell {
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.clickableCalendarCell:hover {
+  transform: translateY(-2px);
+  border-color: rgba(45, 212, 191, 0.45);
+}
+
+.selectedCalendarCell {
+  border-color: rgba(45, 212, 191, 0.8);
+  box-shadow: 0 0 18px rgba(45, 212, 191, 0.18);
+}
+
+.calendarCount {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #99f6e4;
+}
+
+.calendarMore {
+  display: block;
+  margin-top: 6px;
+  opacity: 0.75;
+}
+
+.calendarDetails {
+  margin-top: 18px;
+}
+.searchInput {
+  width: 100%;
+  margin: 12px 0 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  font-size: 1rem;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: rgba(45, 212, 191, 0.65);
+  box-shadow: 0 0 18px rgba(45, 212, 191, 0.16);
+}
+
+.searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+.favoriteButton {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+.favoriteButton:hover {
+  border-color: rgba(250, 204, 21, 0.65) !important;
+}
+/* 🟢 Food Tags */
+.tagGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 14px;
+}
+
+.tagButton {
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+.selectedTag {
+  background: rgba(45, 212, 191, 0.22) !important;
+  border-color: rgba(45, 212, 191, 0.75) !important;
+  color: #99f6e4 !important;
+}
+
+.helperText {
+  margin-top: -4px;
+  margin-bottom: 14px;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
