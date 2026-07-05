@@ -6,19 +6,6 @@ import ReminderCard from "../components/ReminderCard";
 //
 // Main command center for PetPassport.
 //
-// Current Responsibilities:
-// • Collection overview cards
-// • Feeding reminders
-// • Medication reminders
-// • Live feed preview
-//
-// Future Responsibilities:
-// • Today's checklist
-// • Expo prep summary
-// • Weight reminders
-// • Shed reminders
-// • AI insights
-//
 // =====================================================
 
 export default function Dashboard({
@@ -30,6 +17,7 @@ export default function Dashboard({
   openQuickMeds,
   openShedModal,
   toggleFavorite,
+  setPage,
 }) {
   // =====================================================
   // 🟢 Dashboard Data
@@ -78,6 +66,30 @@ export default function Dashboard({
     .slice(0, 3);
 
   // =====================================================
+  // 🟢 Empty Dashboard
+  // =====================================================
+
+  if (pets.length === 0) {
+    return (
+      <div className="feed">
+        <div className="card onboardingCard">
+          <h1>🛂 Create Your First Passport</h1>
+
+          <p>
+            Every animal has a story. Start by creating your first digital
+            Passport so you can track care, feeding, medications, weights,
+            sheds, and history in one place.
+          </p>
+
+          <button onClick={() => setPage("Add Pet")}>
+            Create First Passport →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // =====================================================
   // 🟢 Render
   // =====================================================
 
@@ -91,12 +103,9 @@ export default function Dashboard({
 
       {/* 🟢 Overview Cards */}
       <div className="petGrid">
-        <ReminderCard title="Total Pets" value={pets.length} />
+        <ReminderCard title="Total Passports" value={pets.length} />
 
-        <ReminderCard
-          title="Favorites"
-          value={favoritePets.length}
-        />
+        <ReminderCard title="Favorites" value={favoritePets.length} />
 
         <ReminderCard
           title="Overdue Feedings"

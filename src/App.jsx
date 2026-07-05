@@ -388,7 +388,11 @@ useEffect(() => {
 
   return (
     <div className="appShell">
-      <Sidebar page={page} setPage={setPage} />
+      <Sidebar
+  page={page}
+  setPage={setPage}
+  user={user}
+/>
 
       <main className="mainContent">
         {page === "Dashboard" && (
@@ -401,6 +405,7 @@ useEffect(() => {
             openQuickMeds={setQuickMedsPetId}
             openShedModal={setShedPetId}
             toggleFavorite={toggleFavorite}
+            setPage={setPage}
           />
         )}
 

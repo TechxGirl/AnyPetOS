@@ -3,14 +3,24 @@
 //
 // Main navigation for PetPassport.
 //
-// Includes:
-// • Navigation buttons
-// • Current page highlighting
-// • App branding
+// Current Responsibilities:
+// • Application branding
+// • User greeting
+// • Current role display
+// • Navigation
+//
+// Future Responsibilities:
+// • Workspace Switcher
+// • Notifications
+// • Profile Menu
+// • Quick Actions
 //
 // =====================================================
 
+// =====================================================
 // 🟢 Navigation Items
+// =====================================================
+
 const NAVIGATION = [
   { name: "Dashboard", icon: "🏠" },
   { name: "Pets", icon: "🐾" },
@@ -24,16 +34,53 @@ const NAVIGATION = [
   { name: "Settings", icon: "⚙️" },
 ];
 
-export default function Sidebar({ page, setPage }) {
+export default function Sidebar({
+  page,
+  setPage,
+  user,
+}) {
+  // =====================================================
+  // 🟢 Derived Data
+  // =====================================================
+
+  const displayName =
+    user?.displayName ||
+    user?.username ||
+    "Guest";
+
+  const roleName =
+    user?.primaryRole || "Owner";
+
+  // =====================================================
+  // 🟢 Render
+  // =====================================================
+
   return (
     <aside className="sidebar">
-      {/* 🟢 Logo */}
+
+      {/* =====================================================
+          🟢 Branding
+      ===================================================== */}
+
       <div className="logo">
         <h2>🐍 PetPassport</h2>
-        <p>Animal care command center</p>
+
+        <p>
+          Welcome back,
+          <br />
+          <strong>{displayName}</strong>
+        </p>
+
+        <small>
+          {roleName.charAt(0).toUpperCase() +
+            roleName.slice(1)} Mode
+        </small>
       </div>
 
-      {/* 🟢 Navigation */}
+      {/* =====================================================
+          🟢 Navigation
+      ===================================================== */}
+
       <nav>
         {NAVIGATION.map((item) => (
           <button
