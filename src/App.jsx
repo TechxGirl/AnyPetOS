@@ -17,6 +17,7 @@ import SharePassportModal from "./components/SharePassportModal";
 import ShedModal from "./components/ShedModal";
 import EditPetModal from "./components/EditPetModal";
 import Onboarding from "./components/Onboarding";
+import Auth from "./components/Auth";
 
 import Dashboard from "./pages/Dashboard";
 import Pets from "./pages/Pets";
@@ -27,6 +28,8 @@ import CareGuide from "./pages/CareGuide";
 import Settings from "./pages/Settings";
 
 import { ANIMALS } from "./data/animals";
+import { supabase } from "./services/supabaseClient";
+import { useProfile } from "./hooks/useProfile";
 
 
 export default function App() {
@@ -35,7 +38,10 @@ export default function App() {
   const savedUser = localStorage.getItem("user");
   return savedUser ? JSON.parse(savedUser) : null;
 });
+
+const [session, setSession] = useState(null);
   const [page, setPage] = useState("Dashboard");
+  const { profile, loading: profileLoading } = useProfile(session);
 
   // 🟢 Pet Storage
   const [pets, setPets] = useState(() => {
@@ -374,11 +380,43 @@ useEffect(() => {
     );
   };
 
+// =====================================================
+// 🟢 Supabase Auth Session
+// =====================================================
+
+useEffect(() => {
+  supabase.auth.getSession().then(({ data }) => {
+    setSession(data.session);
+  });
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    setSession(session);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
+
   // =========================
   // 🟢 LOGIN SCREEN
   // =========================
 
-  if (!user) {
+  if (!session) {
+  return <Auth />;
+}
+
+if (profileLoading) {
+  return (
+    <div className="loginScreen">
+      <div className="card onboardingCard">
+        <h2>🐍 Loading PetPassport...</h2>
+      </div>
+    </div>
+  );
+}
+
+if (!profile) {
   return <Onboarding setUser={setUser} />;
 }
 
