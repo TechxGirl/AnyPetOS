@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-import { generateAnimalId } from "./utils/generateAnimalId";
 import { normalizePet } from "./utils/normalizePet";
 import { calculateNextFeed } from "./utils/calculateNextFeed";
 
-import { ANIMALS } from "./data/animals";
 import { supabase } from "./services/supabaseClient";
+
 import { useProfile } from "./hooks/useProfile";
+import {
+  PetProvider,
+  usePetContext,
+} from "./context/PetContext";
 
 import Sidebar from "./components/Sidebar";
-import AddPet from "./components/AddPet";
-import MedicationPanel from "./components/MedicationPanel";
 import PetProfile from "./components/PetProfile";
-import Timeline from "./components/Timeline";
 import FeedModal from "./components/FeedModal";
 import QuickMedsModal from "./components/QuickMedsModal";
 import WeightModal from "./components/WeightModal";
@@ -22,14 +22,13 @@ import ShedModal from "./components/ShedModal";
 import EditPetModal from "./components/EditPetModal";
 import CreateProfile from "./components/CreateProfile";
 import Auth from "./components/Auth";
+import PageRenderer from "./components/PageRenderer";
 
-import Dashboard from "./pages/Dashboard";
-import Pets from "./pages/Pets";
-import Favorites from "./pages/Favorites";
-import AI from "./pages/AI";
-import Calendar from "./pages/Calendar";
-import CareGuide from "./pages/CareGuide";
-import Settings from "./pages/Settings";
+import AppLayout from "./layouts/AppLayout";
+
+// =====================================================
+// 🟢 App
+// =====================================================
 
 export default function App() {
   // =====================================================
@@ -40,23 +39,82 @@ export default function App() {
   const { profile, loading: profileLoading } = useProfile(session);
 
   // =====================================================
+  // 🟢 Supabase Auth Session
+  // =====================================================
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // =====================================================
+  // 🟢 Auth Screens
+  // =====================================================
+
+  if (!session) {
+    return <Auth />;
+  }
+
+  if (profileLoading) {
+    return (
+      <div className="loginScreen">
+        <div className="card onboardingCard">
+          <h2>🐍 Loading PetPassport...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return <CreateProfile session={session} />;
+  }
+
+  // =====================================================
+  // 🟢 Authenticated App
+  // =====================================================
+
+  return (
+    <PetProvider session={session}>
+      <AuthenticatedApp
+        profile={profile}
+        setSession={setSession}
+      />
+    </PetProvider>
+  );
+}
+
+// =====================================================
+// 🟢 AuthenticatedApp
+// =====================================================
+
+function AuthenticatedApp({ profile, setSession }) {
+  // =====================================================
+  // 🟢 Cloud Pet Storage
+  // =====================================================
+
+  const {
+    pets,
+    setPets,
+    loading: petsLoading,
+    addPet,
+    deletePetFromCloud,
+    toggleFavorite,
+  } = usePetContext();
+
+  // =====================================================
   // 🟢 Navigation State
   // =====================================================
 
   const [page, setPage] = useState("Dashboard");
-
-  // =====================================================
-  // 🟢 Pet Storage
-  // =====================================================
-
-  const [pets, setPets] = useState(() => {
-    const saved = localStorage.getItem("pets");
-    const parsed = saved ? JSON.parse(saved) : [];
-
-    return Array.isArray(parsed)
-      ? parsed.map(normalizePet)
-      : [];
-  });
 
   // =====================================================
   // 🟢 Modal State
@@ -99,42 +157,28 @@ export default function App() {
   });
 
   // =====================================================
-  // 🟢 Supabase Auth Session
+  // 🟢 Loading Screen
   // =====================================================
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // =====================================================
-  // 🟢 Save Pets to Browser Storage
-  // =====================================================
-
-  useEffect(() => {
-    localStorage.setItem("pets", JSON.stringify(pets));
-  }, [pets]);
+  if (petsLoading) {
+    return (
+      <div className="loginScreen">
+        <div className="card onboardingCard">
+          <h2>🐾 Loading Passports...</h2>
+        </div>
+      </div>
+    );
+  }
 
   // =====================================================
   // 🟢 Derived Profile Data
   // =====================================================
 
-  const currentUser = profile
-    ? {
-        displayName: profile.display_name,
-        username: profile.username,
-        primaryRole: profile.role,
-      }
-    : null;
+  const currentUser = {
+    displayName: profile.display_name,
+    username: profile.username,
+    primaryRole: profile.role,
+  };
 
   // =====================================================
   // 🟢 Selected Pet Helpers
@@ -161,44 +205,15 @@ export default function App() {
   // 🟢 Pet Actions
   // =====================================================
 
-  const addPet = (newPet) => {
-    setPets((prev) => [
-      ...prev,
-      normalizePet({
-        ...newPet,
-        id: crypto.randomUUID(),
-        passportId: generateAnimalId(
-          newPet.species || newPet.category || "Pet"
-        ),
-        logs: [],
-        weightLogs: [],
-        meds: [],
-        lastFed: null,
-        nextFeed: null,
-      }),
-    ]);
-
-    setPage("Pets");
-  };
-
-  const toggleFavorite = (petId) => {
-    setPets((prev) =>
-      prev.map((pet) =>
-        pet.id === petId
-          ? { ...pet, favorite: !pet.favorite }
-          : pet
-      )
-    );
-  };
-
-  const deletePet = (petId) => {
+  const deletePet = async (petId) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this pet profile? This cannot be undone."
     );
 
     if (!confirmed) return;
 
-    setPets((prev) => prev.filter((pet) => pet.id !== petId));
+    await deletePetFromCloud(petId);
+
     setSelectedPetId(null);
     setEditingPetId(null);
     setFeedingPetId(null);
@@ -441,115 +456,38 @@ export default function App() {
   };
 
   // =====================================================
-  // 🟢 Auth Screens
-  // =====================================================
-
-  if (!session) {
-    return <Auth />;
-  }
-
-  if (profileLoading) {
-    return (
-      <div className="loginScreen">
-        <div className="card onboardingCard">
-          <h2>🐍 Loading PetPassport...</h2>
-        </div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return <CreateProfile session={session} />;
-  }
-
-  // =====================================================
   // 🟢 Main App
   // =====================================================
 
   return (
-    <div className="appShell">
-      <Sidebar
+    <AppLayout
+      sidebar={
+        <Sidebar
+          page={page}
+          setPage={setPage}
+          user={currentUser}
+        />
+      }
+    >
+      <PageRenderer
         page={page}
+        profile={profile}
+        currentUser={currentUser}
+        pets={pets}
+        setPets={setPets}
         setPage={setPage}
-        user={currentUser}
+        feedPet={setFeedingPetId}
+        addLog={addLog}
+        startEdit={startEdit}
+        addPet={addPet}
+        addMedication={addMedication}
+        giveMedication={giveMedication}
+        handleLogout={handleLogout}
+        openProfile={setSelectedPetId}
+        openQuickMeds={setQuickMedsPetId}
+        openShedModal={setShedPetId}
+        toggleFavorite={toggleFavorite}
       />
-
-      <main className="mainContent">
-        {page === "Dashboard" && (
-          <Dashboard
-            pets={pets}
-            feedPet={(petId) => setFeedingPetId(petId)}
-            addLog={addLog}
-            startEdit={startEdit}
-            openProfile={setSelectedPetId}
-            openQuickMeds={setQuickMedsPetId}
-            openShedModal={setShedPetId}
-            toggleFavorite={toggleFavorite}
-            setPage={setPage}
-          />
-        )}
-
-        {page === "Pets" && (
-          <Pets
-            pets={pets}
-            feedPet={(petId) => setFeedingPetId(petId)}
-            addLog={addLog}
-            startEdit={startEdit}
-            openProfile={setSelectedPetId}
-            openQuickMeds={setQuickMedsPetId}
-            openShedModal={setShedPetId}
-            toggleFavorite={toggleFavorite}
-          />
-        )}
-
-        {page === "Favorites" && (
-          <Favorites
-            pets={pets}
-            feedPet={(petId) => setFeedingPetId(petId)}
-            startEdit={startEdit}
-            openProfile={setSelectedPetId}
-            openQuickMeds={setQuickMedsPetId}
-            openShedModal={setShedPetId}
-            toggleFavorite={toggleFavorite}
-          />
-        )}
-
-        {page === "Add Pet" && (
-          <AddPet addPet={addPet} />
-        )}
-
-        {page === "Timeline" && (
-          <Timeline pets={pets} />
-        )}
-
-        {page === "Medications" && (
-          <MedicationPanel
-            pets={pets}
-            addMedication={addMedication}
-            giveMedication={giveMedication}
-            setPets={setPets}
-          />
-        )}
-
-        {page === "Calendar" && (
-          <Calendar pets={pets} />
-        )}
-
-        {page === "Care Guides" && (
-          <CareGuide pets={pets} reptiles={ANIMALS} />
-        )}
-
-        {page === "AI Assistant" && (
-          <AI pets={pets} />
-        )}
-
-        {page === "Settings" && (
-          <Settings
-            user={currentUser}
-            setUser={handleLogout}
-          />
-        )}
-      </main>
 
       {/* =====================================================
           🟢 Modals
@@ -602,7 +540,7 @@ export default function App() {
         <PetProfile
           pet={selectedPet}
           close={() => setSelectedPetId(null)}
-          feedPet={(petId) => setFeedingPetId(petId)}
+          feedPet={setFeedingPetId}
           addLog={addLog}
           startEdit={startEdit}
           deletePet={deletePet}
@@ -621,6 +559,6 @@ export default function App() {
           cancelEdit={() => setEditingPetId(null)}
         />
       )}
-    </div>
+    </AppLayout>
   );
 }

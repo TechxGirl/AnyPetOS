@@ -1,17 +1,17 @@
 # 🐍 PetPassport
 
-**Document:** Product Roadmap  
-**Version:** 1.0  
-**Last Updated:** July 2026  
-**Status:** Active
+**Document:** Product Roadmap
+**Version:** 2.0
+**Last Updated:** July 2026
+**Status:** Active Development
 
 ---
 
 # 🚀 Vision
 
-PetPassport is the all-in-one platform for tracking, managing, sharing, and preserving every animal's story.
+PetPassport is the operating system for animal care.
 
-Our mission is to build the software every pet owner, breeder, rescue, veterinarian, educator, zoo, and animal professional wishes already existed.
+Whether someone owns one gecko, runs a reptile rescue, breeds hundreds of snakes, works in veterinary medicine, or manages a zoo, PetPassport adapts to their workflow while preserving every animal's complete story.
 
 ---
 
@@ -20,201 +20,317 @@ Our mission is to build the software every pet owner, breeder, rescue, veterinar
 ## ✅ Phase 0 — Foundation
 
 ### Goal
-Create a clean, scalable foundation for the entire platform.
 
-### Objectives
+Build a scalable architecture that will support years of development.
 
-- [x] Organize project structure
-- [x] Create reusable components
-- [x] Standardize code style
-- [x] Organize utilities
-- [x] Organize constants
-- [x] Create documentation
-- [ ] Final cleanup
-- [ ] Code consistency pass
+### Completed
 
-**Milestone**
+- [x] Project architecture
+- [x] GitHub repository
+- [x] Documentation
+- [x] Coding standards
+- [x] Utilities
+- [x] Components
+- [x] Project organization
+- [x] Initial UI system
 
-Professional codebase ready for long-term development.
+### Milestone
 
----
-
-## 🚧 Phase 1 — Owner Mode
-
-### Goal
-
-Create the best pet owner experience possible.
-
-### Objectives
-
-- [x] Onboarding
-- [x] Progress bar
-- [x] Role selection
-- [x] Role previews
-- [x] Local user persistence
-- [ ] Cloud authentication
-- [ ] User profiles
-- [ ] Dashboard personalization
-- [ ] First Passport experience
-- [ ] Settings improvements
-
-**Milestone**
-
-An owner can confidently manage their pets inside PetPassport.
+PetPassport has a professional, maintainable codebase.
 
 ---
 
-## 🚧 Phase 2 — Breeder Mode
+## ✅ Phase 1 — Cloud Platform
 
 ### Goal
 
-Build professional tools for breeders.
+Move PetPassport from a local application into a cloud platform.
 
-### Objectives
+### Completed
 
-- Collection Management
-- Pairing Planner
-- Clutch Tracking
-- Hatchling Tracking
-- Buyer Transfers
-- Inventory
-- Expo Mode
+- [x] Supabase backend
+- [x] Authentication
+- [x] User registration
+- [x] Login / Logout
+- [x] User profiles
+- [x] SQL migration system
+- [x] Row Level Security
+- [x] Profile creation
+- [x] useProfile hook
+- [x] Remove local user system
 
-**Milestone**
+### Milestone
 
-A breeder can manage an entire collection using PetPassport.
+Every user has a secure cloud account and profile.
 
 ---
 
-## 🚧 Phase 3 — Passport Platform
+## 🚧 Phase 2 — Collection Management
 
 ### Goal
 
-Turn every animal into a portable digital passport.
+Build the core experience every workspace relies on.
 
 ### Objectives
 
-- QR Codes
-- Passport Sharing
-- PDF Export
-- Secure Links
-- Transfer Ownership
-- Offline Passports
-- Timeline
+#### Animals
 
-**Milestone**
+- [ ] Cloud animal storage
+- [ ] Cloud timelines
+- [ ] Cloud medications
+- [ ] Cloud weight logs
+- [ ] Cloud feed logs
 
-An animal can change owners without losing its history.
+#### Dashboard
+
+- [ ] Personalized greeting
+- [ ] Daily Briefing
+- [ ] Upcoming reminders
+- [ ] Collection summary
+- [ ] Dashboard redesign
+
+#### Collection
+
+- [ ] Search
+- [ ] Filters
+- [ ] Favorites
+- [ ] Status indicators
+- [ ] Beautiful cards
+
+#### Passports
+
+- [ ] Passport redesign
+- [ ] Timeline improvements
+- [ ] Weight charts
+- [ ] Medical history
+
+#### Imports & Migration
+
+- [ ] Import from CSV
+- [ ] Import from spreadsheet
+- [ ] Import from other tracking apps
+- [ ] Bulk animal upload
+- [ ] Import preview before saving
+- [ ] Error checking / duplicate detection
+- [ ] Local backup restore
+
+### Milestone
+
+A user can confidently manage an entire animal collection from anywhere.
 
 ---
 
-## 🚧 Phase 4 — Professional Platform
+## 🚧 Phase 3 — Digital Passport Platform
 
 ### Goal
 
-Expand beyond individual owners.
+Give every animal a permanent portable identity.
 
 ### Objectives
 
-- Rescue Mode
-- Veterinary Mode
-- Education / Zoo Mode
-- Retail Mode
-- Workspaces
-- Team Accounts
+- [ ] QR Passports
+- [ ] Passport Sharing
+- [ ] Secure Links
+- [ ] PDF Export
+- [ ] Ownership Transfer
+- [ ] Offline Mode
+- [ ] Lifetime History
 
-**Milestone**
+### Milestone
 
-Organizations can operate entirely inside PetPassport.
+Every animal has a lifelong digital passport.
 
 ---
 
-## 🚧 Phase 5 — Community
+## 🚧 Phase 4 — Workspaces & Professional Tools
 
 ### Goal
 
-Connect the animal community.
+Transform PetPassport into a platform that adapts to different animal professionals.
 
-### Objectives
+### Workspaces
 
-- Profiles
-- Following
-- Community Feed
-- Discover
-- Rescue Pages
-- Breeder Pages
+- [ ] 🌿 Owner Workspace
+- [ ] 🧬 Breeder Workspace
+- [ ] 🛟 Rescue Workspace
+- [ ] 🏥 Veterinary Workspace
+- [ ] 🏫 Education / Zoo Workspace
+- [ ] 🐾 Pet Sitter Workspace
 
-**Milestone**
+### Features
 
-PetPassport becomes a thriving animal community.
+- [ ] Role-based dashboards
+- [ ] Personalized navigation
+- [ ] Workspace accent colors
+- [ ] Workspace terminology
+- [ ] Dynamic home screens
+- [ ] Workspace settings
+
+### Milestone
+
+Every user feels like PetPassport was designed specifically for them.
 
 ---
 
-## 🚧 Phase 6 — PetPassport AI
+## 🚧 Phase 5 — Professional Modules
 
 ### Goal
 
-Build an intelligent assistant for animal care.
+Add specialized tools for each workspace.
 
-### Objectives
+### Owner
 
-- Voice Logging
-- Timeline Search
-- Smart Reminders
-- Health Insights
-- Feeding Suggestions
-- AI Assistant
+- [ ] Care Planner
+- [ ] Feeding Schedules
+- [ ] Health Tracking
 
-**Milestone**
+### Breeder
 
-AI becomes a natural part of daily animal care.
+- [ ] Pairings
+- [ ] Genetics
+- [ ] Hatchlings
+- [ ] Sales
+- [ ] Transfers
+
+### Rescue
+
+- [ ] Intake
+- [ ] Rehabilitation
+- [ ] Adoption Pipeline
+
+### Veterinary
+
+- [ ] Patients
+- [ ] Medical Records
+- [ ] Treatments
+
+### Education
+
+- [ ] Ambassador Animals
+- [ ] Programs
+- [ ] Exhibits
+
+### Pet Sitting
+
+- [ ] Client Management
+- [ ] Visit Scheduling
+- [ ] Care Reports
+
+### Milestone
+
+Professionals can run their entire workflow inside PetPassport.
 
 ---
 
-## 🚧 Phase 7 — Public Launch
+## 🚧 Phase 6 — Community
 
 ### Goal
 
-Release PetPassport to the public.
+Connect animal keepers around the world.
 
 ### Objectives
 
-- Closed Beta
-- Open Beta
-- Bug Fixes
-- Performance
-- Expo Launch
-- Public Release
+- [ ] Public Profiles
+- [ ] Following
+- [ ] Community Feed
+- [ ] Rescue Pages
+- [ ] Breeder Pages
+- [ ] Verified Organizations
+- [ ] Achievements
+- [ ] Reputation System
 
-**Milestone**
+### Milestone
 
-PetPassport officially launches.
+PetPassport becomes the home of the animal community.
 
 ---
 
-## 🌱 Phase 8 — Growth
+## 🚧 Phase 7 — AI
 
 ### Goal
 
-Grow PetPassport into the industry's leading animal platform.
+Make AI a natural part of daily animal care.
 
 ### Objectives
 
-- Mobile Apps
-- Premium Plans
-- Partnerships
-- Sponsorships
-- International Support
-- Business Expansion
+- [ ] Voice Logging
+- [ ] Smart Search
+- [ ] Daily Briefings
+- [ ] Health Insights
+- [ ] Feeding Suggestions
+- [ ] Timeline Intelligence
+- [ ] AI Assistant
 
-**Milestone**
+### Milestone
 
-PetPassport becomes the trusted platform for animal care worldwide.
+Every user has an intelligent animal care assistant.
+
+---
+
+## 🚧 Phase 8 — Launch
+
+### Goal
+
+Prepare PetPassport for public release.
+
+### Objectives
+
+- [ ] Closed Alpha
+- [ ] Private Beta
+- [ ] Open Beta
+- [ ] UI Polish
+- [ ] Workspace Animations
+- [ ] Performance
+- [ ] Accessibility
+- [ ] Marketing Website
+- [ ] Public Launch
+
+### Milestone
+
+PetPassport launches publicly.
+
+---
+
+## 🚧 Phase 9 — Growth
+
+### Goal
+
+Become the world's leading animal platform.
+
+### Objectives
+
+- [ ] Native Mobile Apps
+- [ ] Premium
+- [ ] Team Accounts
+- [ ] Marketplace Integrations
+- [ ] API
+- [ ] Internationalization
+- [ ] Enterprise Features
+- [ ] Partnerships
+
+### Milestone
+
+PetPassport becomes the operating system for animal care.
+
+---
+
+# 🌟 Core Principles
+
+Every decision should reinforce these ideas:
+
+- One app.
+- Multiple Workspaces.
+- Every animal has a story.
+- Every user has a personalized experience.
+- Beautiful software is easier to love.
+- Build for years, not weeks.
 
 ---
 
 # 🏁 Success Metric
 
-We succeed when people say:
+People don't just use PetPassport.
 
-"I don't know how I managed my animals before PetPassport."
+They rely on it.
+
+> "I honestly don't know how I managed my animals before PetPassport."

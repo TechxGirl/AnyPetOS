@@ -1,5 +1,5 @@
 import Feed from "../components/Feed";
-import ReminderCard from "../components/ReminderCard";
+import StatCard from "../components/StatCard";
 
 // =====================================================
 // 🟢 Dashboard.jsx
@@ -9,6 +9,7 @@ import ReminderCard from "../components/ReminderCard";
 // =====================================================
 
 export default function Dashboard({
+  profile,
   pets,
   feedPet,
   addLog,
@@ -19,6 +20,31 @@ export default function Dashboard({
   toggleFavorite,
   setPage,
 }) {
+  // =====================================================
+  // 🟢 Greeting Data
+  // =====================================================
+
+  const hour = new Date().getHours();
+
+  let greeting = "Good Evening";
+
+  if (hour < 12) {
+    greeting = "Good Morning";
+  } else if (hour < 18) {
+    greeting = "Good Afternoon";
+  }
+
+  const workspaceNames = {
+    owner: "🌿 Owner Workspace",
+    breeder: "🧬 Breeder Workspace",
+    rescue: "🛟 Rescue Workspace",
+    veterinarian: "🏥 Veterinary Workspace",
+    education: "🏫 Education Workspace",
+    petsitter: "🐾 Pet Sitter Workspace",
+  };
+
+  const workspace = workspaceNames[profile?.role] || "🐍 PetPassport";
+
   // =====================================================
   // 🟢 Dashboard Data
   // =====================================================
@@ -66,6 +92,34 @@ export default function Dashboard({
     .slice(0, 3);
 
   // =====================================================
+  // 🟢 Today's Focus Data
+  // =====================================================
+
+  const todayFocus = [
+    ...dueMeds.map((med) => ({
+      id: `med-${med.petName}-${med.medName}`,
+      icon: "💊",
+      title: med.petName,
+      subtitle: `${med.medName}${med.dose ? ` • ${med.dose}` : ""}`,
+      status: "Due now",
+    })),
+    ...overdueFeedings.slice(0, 3).map((pet) => ({
+      id: `feed-${pet.id}`,
+      icon: "🍽️",
+      title: pet.name,
+      subtitle: "Feeding is overdue",
+      status: "Needs care",
+    })),
+    ...attentionPets.slice(0, 3).map((pet) => ({
+      id: `attention-${pet.id}`,
+      icon: "⚠️",
+      title: pet.name,
+      subtitle: `${pet.status} status`,
+      status: "Monitor",
+    })),
+  ].slice(0, 5);
+
+  // =====================================================
   // 🟢 Empty Dashboard
   // =====================================================
 
@@ -95,38 +149,98 @@ export default function Dashboard({
 
   return (
     <div className="feed">
-      {/* 🟢 Page Header */}
-      <div className="pageHeader">
-        <h2>🏠 Dashboard</h2>
-        <p>Your animal care command center.</p>
+      {/* =====================================================
+          🟢 Dashboard Hero
+      ===================================================== */}
+
+      <div className="dashboardHero">
+        <div>
+          <h1>
+            👋 {greeting}, {profile?.display_name}!
+          </h1>
+
+          <p>Welcome back to your {workspace}.</p>
+        </div>
+
+        <div className="heroStats">
+          <span>{pets.length} Passports</span>
+          <span>{dueMeds.length} Meds Due</span>
+          <span>{attentionPets.length} Need Attention</span>
+        </div>
       </div>
 
-      {/* 🟢 Overview Cards */}
-      <div className="petGrid">
-        <ReminderCard title="Total Passports" value={pets.length} />
+      {/* =====================================================
+          🟢 Today's Focus
+      ===================================================== */}
 
-        <ReminderCard title="Favorites" value={favoritePets.length} />
+      <div className="card focusCard">
+        <h3>📋 Today's Focus</h3>
 
-        <ReminderCard
-          title="Overdue Feedings"
-          value={overdueFeedings.length}
-          tone={overdueFeedings.length > 0 ? "danger" : "normal"}
-        />
+        {todayFocus.length === 0 ? (
+          <p>Everything looks calm today. No urgent care tasks right now.</p>
+        ) : (
+          <div className="focusList">
+            {todayFocus.map((item) => (
+              <div key={item.id} className="focusItem">
+                <span className="focusIcon">{item.icon}</span>
 
-        <ReminderCard
-          title="Meds Due"
-          value={dueMeds.length}
-          tone={dueMeds.length > 0 ? "danger" : "normal"}
-        />
+                <div>
+                  <strong>{item.title}</strong>
+                  <p>{item.subtitle}</p>
+                </div>
 
-        <ReminderCard
-          title="Need Attention"
-          value={attentionPets.length}
-          tone={attentionPets.length > 0 ? "danger" : "normal"}
-        />
+                <small>{item.status}</small>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* 🟢 Medication Reminders */}
+     {/* 🟢 Overview Cards */}
+
+<div className="statGrid">
+
+  <StatCard
+    icon="🐍"
+    value={pets.length}
+    label="Passports"
+    color="#35d49a"
+  />
+
+  <StatCard
+    icon="⭐"
+    value={favoritePets.length}
+    label="Favorites"
+    color="#f7c948"
+  />
+
+  <StatCard
+    icon="🍽️"
+    value={overdueFeedings.length}
+    label="Feedings"
+    color="#ff7b54"
+  />
+
+  <StatCard
+    icon="💊"
+    value={dueMeds.length}
+    label="Medications"
+    color="#6c63ff"
+  />
+
+  <StatCard
+    icon="⚠️"
+    value={attentionPets.length}
+    label="Need Attention"
+    color="#ff5d73"
+  />
+
+</div>
+
+      {/* =====================================================
+          🟢 Medication Reminders
+      ===================================================== */}
+
       <div className="card">
         <h3>💊 Medication Reminders</h3>
 
@@ -183,7 +297,10 @@ export default function Dashboard({
         )}
       </div>
 
-      {/* 🟢 Live Feed */}
+      {/* =====================================================
+          🟢 Live Feed
+      ===================================================== */}
+
       <Feed
         pets={pets}
         feedPet={feedPet}
