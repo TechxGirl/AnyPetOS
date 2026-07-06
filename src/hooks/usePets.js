@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { normalizePet } from "../utils/normalizePet";
+import { CARE_PROFILES } from "../data/careProfiles";
 
 // =====================================================
 // 🟢 usePets.js
@@ -29,20 +30,52 @@ export function usePets(session) {
     return value ? new Date(value).toISOString() : null;
   };
 
-  const rowToPet = (row) =>
-    normalizePet({
-      ...row.data,
-      id: row.id,
-      cloudId: row.id,
-      name: row.name,
-      species: row.species,
-      morph: row.morph,
-      sex: row.sex,
-      status: row.status,
-      favorite: row.favorite,
-      lastFed: timestampToMs(row.last_fed),
-      nextFeed: timestampToMs(row.next_feed),
-    });
+  // =====================================================
+// 🟢 Row Mapper
+// =====================================================
+
+const getCareKey = (speciesName = "") =>
+  speciesName
+    .toLowerCase()
+    .replaceAll(" ", "_")
+    .replaceAll("-", "_")
+    .replaceAll("'", "");
+
+const rowToPet = (row) => {
+  const basePet = normalizePet({
+    ...row.data,
+    id: row.id,
+    cloudId: row.id,
+    name: row.name,
+    species: row.species,
+    morph: row.morph,
+    sex: row.sex,
+    status: row.status,
+    favorite: row.favorite,
+    lastFed: timestampToMs(row.last_fed),
+    nextFeed: timestampToMs(row.next_feed),
+  });
+
+  const careKey = basePet.careProfile || getCareKey(basePet.species);
+  const careProfile = CARE_PROFILES[careKey] || null;
+
+  return normalizePet({
+    ...basePet,
+    careProfile: careKey,
+    foodOptions:
+      basePet.foodOptions?.length > 0
+        ? basePet.foodOptions
+        : careProfile?.feeding?.foodOptions || [],
+    substrateOptions:
+      basePet.substrateOptions?.length > 0
+        ? basePet.substrateOptions
+        : careProfile?.substrateOptions || [],
+    temperamentOptions:
+      basePet.temperamentOptions?.length > 0
+        ? basePet.temperamentOptions
+        : careProfile?.temperamentOptions || [],
+  });
+};
 
   // =====================================================
   // 🟢 Load Pets
@@ -137,76 +170,74 @@ export function usePets(session) {
     setPets((prev) => prev.filter((pet) => pet.id !== petId));
   };
 
-// =====================================================
-// 🟢 Update Pet
-// =====================================================
+  // =====================================================
+  // 🟢 Update Pet
+  // =====================================================
 
-const updatePetInCloud = async (petId, updates) => {
-  const currentPet = pets.find((pet) => pet.id === petId);
+  const updatePetInCloud = async (petId, updates) => {
+    const currentPet = pets.find((pet) => pet.id === petId);
 
-  if (!currentPet) return;
+    if (!currentPet) return;
 
-  const updatedPet = normalizePet({
-    ...currentPet,
-    ...updates,
-  });
+    const updatedPet = normalizePet({
+      ...currentPet,
+      ...updates,
+    });
 
-  const { error } = await supabase
-    .from("pets")
-    .update({
-      name: updatedPet.name,
-      species: updatedPet.species,
-      morph: updatedPet.morph || null,
-      sex: updatedPet.sex || null,
-      status: updatedPet.status || "Healthy",
-      favorite: Boolean(updatedPet.favorite),
-      last_fed: updatedPet.lastFed
-        ? new Date(updatedPet.lastFed).toISOString()
-        : null,
-      next_feed: updatedPet.nextFeed
-        ? new Date(updatedPet.nextFeed).toISOString()
-        : null,
-      updated_at: new Date().toISOString(),
-      data: updatedPet,
-    })
-    .eq("id", petId);
+    const { data, error } = await supabase
+      .from("pets")
+      .update({
+        name: updatedPet.name,
+        species: updatedPet.species,
+        morph: updatedPet.morph || null,
+        sex: updatedPet.sex || null,
+        status: updatedPet.status || "Healthy",
+        favorite: Boolean(updatedPet.favorite),
+        last_fed: msToTimestamp(updatedPet.lastFed),
+        next_feed: msToTimestamp(updatedPet.nextFeed),
+        updated_at: new Date().toISOString(),
+        data: updatedPet,
+      })
+      .eq("id", petId)
+      .select()
+      .single();
 
-  if (error) {
-    console.error(error);
-    alert("Could not update Passport in the cloud.");
-    return;
-  }
+    if (error) {
+      console.error(error);
+      alert("Could not update Passport in the cloud.");
+      return;
+    }
 
-  setPets((prev) =>
-    prev.map((pet) => (pet.id === petId ? updatedPet : pet))
-  );
-};
+    setPets((prev) =>
+      prev.map((pet) => (pet.id === petId ? rowToPet(data) : pet))
+    );
+  };
 
-// =====================================================
-// 🟢 Toggle Favorite
-// =====================================================
+  // =====================================================
+  // 🟢 Toggle Favorite
+  // =====================================================
 
-const toggleFavorite = async (petId) => {
-  const currentPet = pets.find((pet) => pet.id === petId);
+  const toggleFavorite = async (petId) => {
+    const currentPet = pets.find((pet) => pet.id === petId);
 
-  if (!currentPet) return;
+    if (!currentPet) return;
 
-  await updatePetInCloud(petId, {
-    favorite: !currentPet.favorite,
-  });
-};
+    await updatePetInCloud(petId, {
+      favorite: !currentPet.favorite,
+    });
+  };
 
   // =====================================================
   // 🟢 Return
   // =====================================================
 
   return {
-  pets,
-  setPets,
-  loading,
-  addPet,
-  deletePetFromCloud,
-  updatePetInCloud,
-  toggleFavorite,
-};
+    pets,
+    setPets,
+    loading,
+    addPet,
+    deletePetFromCloud,
+    updatePetInCloud,
+    toggleFavorite,
+  };
 }

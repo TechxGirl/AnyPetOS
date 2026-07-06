@@ -111,13 +111,30 @@ export default function EditPetModal({
         )}
 
         {/* 🟢 Status / Personality */}
-        <input
-          placeholder="Temperament"
-          value={editForm.temperament}
-          onChange={(e) =>
-            setEditForm({ ...editForm, temperament: e.target.value })
-          }
-        />
+        <label>Temperament</label>
+
+{editForm.temperamentOptions?.length > 0 ? (
+  <select
+    value={editForm.temperament}
+    onChange={(e) =>
+      setEditForm({ ...editForm, temperament: e.target.value })
+    }
+  >
+    {editForm.temperamentOptions.map((temperament) => (
+      <option key={temperament} value={temperament}>
+        {temperament}
+      </option>
+    ))}
+  </select>
+) : (
+  <input
+    placeholder="Temperament"
+    value={editForm.temperament}
+    onChange={(e) =>
+      setEditForm({ ...editForm, temperament: e.target.value })
+    }
+  />
+)}
 
         <label>Status</label>
         <select

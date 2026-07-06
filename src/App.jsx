@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-import { normalizePet } from "./utils/normalizePet";
 import { calculateNextFeed } from "./utils/calculateNextFeed";
-
 import { supabase } from "./services/supabaseClient";
-
 import { useProfile } from "./hooks/useProfile";
-import {
-  PetProvider,
-  usePetContext,
-} from "./context/PetContext";
+import { PetProvider, usePetContext } from "./context/PetContext";
 
 import Sidebar from "./components/Sidebar";
 import PetProfile from "./components/PetProfile";
@@ -23,24 +17,16 @@ import EditPetModal from "./components/EditPetModal";
 import CreateProfile from "./components/CreateProfile";
 import Auth from "./components/Auth";
 import PageRenderer from "./components/PageRenderer";
-
 import AppLayout from "./layouts/AppLayout";
+
 
 // =====================================================
 // 🟢 App
 // =====================================================
 
 export default function App() {
-  // =====================================================
-  // 🟢 Auth / Profile State
-  // =====================================================
-
   const [session, setSession] = useState(null);
   const { profile, loading: profileLoading } = useProfile(session);
-
-  // =====================================================
-  // 🟢 Supabase Auth Session
-  // =====================================================
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -56,13 +42,7 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // =====================================================
-  // 🟢 Auth Screens
-  // =====================================================
-
-  if (!session) {
-    return <Auth />;
-  }
+  if (!session) return <Auth />;
 
   if (profileLoading) {
     return (
@@ -74,51 +54,31 @@ export default function App() {
     );
   }
 
-  if (!profile) {
-    return <CreateProfile session={session} />;
-  }
-
-  // =====================================================
-  // 🟢 Authenticated App
-  // =====================================================
+  if (!profile) return <CreateProfile session={session} />;
 
   return (
     <PetProvider session={session}>
-      <AuthenticatedApp
-        profile={profile}
-        setSession={setSession}
-      />
+      <AuthenticatedApp profile={profile} setSession={setSession} />
     </PetProvider>
   );
 }
 
 // =====================================================
-// 🟢 AuthenticatedApp
+// 🟢 Authenticated App
 // =====================================================
 
 function AuthenticatedApp({ profile, setSession }) {
-  // =====================================================
-  // 🟢 Cloud Pet Storage
-  // =====================================================
-
   const {
     pets,
     setPets,
     loading: petsLoading,
     addPet,
     deletePetFromCloud,
+    updatePetInCloud,
     toggleFavorite,
   } = usePetContext();
 
-  // =====================================================
-  // 🟢 Navigation State
-  // =====================================================
-
   const [page, setPage] = useState("Dashboard");
-
-  // =====================================================
-  // 🟢 Modal State
-  // =====================================================
 
   const [selectedPetId, setSelectedPetId] = useState(null);
   const [editingPetId, setEditingPetId] = useState(null);
@@ -127,10 +87,6 @@ function AuthenticatedApp({ profile, setSession }) {
   const [weightPetId, setWeightPetId] = useState(null);
   const [shedPetId, setShedPetId] = useState(null);
   const [sharePetId, setSharePetId] = useState(null);
-
-  // =====================================================
-  // 🟢 Edit Form State
-  // =====================================================
 
   const [editForm, setEditForm] = useState({
     name: "",
@@ -156,10 +112,6 @@ function AuthenticatedApp({ profile, setSession }) {
     temperamentOptions: [],
   });
 
-  // =====================================================
-  // 🟢 Loading Screen
-  // =====================================================
-
   if (petsLoading) {
     return (
       <div className="loginScreen">
@@ -170,19 +122,11 @@ function AuthenticatedApp({ profile, setSession }) {
     );
   }
 
-  // =====================================================
-  // 🟢 Derived Profile Data
-  // =====================================================
-
   const currentUser = {
     displayName: profile.display_name,
     username: profile.username,
     primaryRole: profile.role,
   };
-
-  // =====================================================
-  // 🟢 Selected Pet Helpers
-  // =====================================================
 
   const selectedPet = pets.find((pet) => pet.id === selectedPetId);
   const feedingPet = pets.find((pet) => pet.id === feedingPetId);
@@ -191,19 +135,11 @@ function AuthenticatedApp({ profile, setSession }) {
   const shedPet = pets.find((pet) => pet.id === shedPetId);
   const sharePet = pets.find((pet) => pet.id === sharePetId);
 
-  // =====================================================
-  // 🟢 Auth Actions
-  // =====================================================
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setSession(null);
     setPage("Dashboard");
   };
-
-  // =====================================================
-  // 🟢 Pet Actions
-  // =====================================================
 
   const deletePet = async (petId) => {
     const confirmed = window.confirm(
@@ -251,222 +187,186 @@ function AuthenticatedApp({ profile, setSession }) {
     });
   };
 
-  const saveEdit = () => {
-    setPets((prev) =>
-      prev.map((pet) => {
-        if (pet.id !== editingPetId) return pet;
+  const saveEdit = async () => {
+    const currentPet = pets.find((pet) => pet.id === editingPetId);
 
-        const oldStatus = pet.status || "Healthy";
-        const newStatus = editForm.status || "Healthy";
-        const statusChanged = oldStatus !== newStatus;
+    if (!currentPet) return;
 
-        return normalizePet({
-          ...pet,
-          ...editForm,
-          logs: statusChanged
-            ? [
-                {
-                  id: crypto.randomUUID(),
-                  type: "Status Update",
-                  note: `${pet.name} marked ${newStatus}`,
-                  time: Date.now(),
-                },
-                ...(pet.logs || []),
-              ]
-            : pet.logs,
-        });
-      })
-    );
+    const oldStatus = currentPet.status || "Healthy";
+    const newStatus = editForm.status || "Healthy";
+    const statusChanged = oldStatus !== newStatus;
+
+    await updatePetInCloud(editingPetId, {
+  ...editForm,
+  foodOptions: currentPet.foodOptions || [],
+  substrateOptions: currentPet.substrateOptions || [],
+  temperamentOptions: currentPet.temperamentOptions || [],
+  logs: statusChanged
+        ? [
+            {
+              id: crypto.randomUUID(),
+              type: "Status Update",
+              note: `${currentPet.name} marked ${newStatus}`,
+              time: Date.now(),
+            },
+            ...(currentPet.logs || []),
+          ]
+        : currentPet.logs,
+    });
 
     setEditingPetId(null);
   };
 
-  // =====================================================
-  // 🟢 Log Actions
-  // =====================================================
+  const addLog = async (petId, type, note = "") => {
+    const pet = pets.find((item) => item.id === petId);
 
-  const addLog = (petId, type, note = "") => {
-    setPets((prev) =>
-      prev.map((pet) =>
-        pet.id === petId
-          ? {
-              ...pet,
-              logs: [
-                {
-                  id: crypto.randomUUID(),
-                  type,
-                  note,
-                  time: Date.now(),
-                },
-                ...(pet.logs || []),
-              ],
-            }
-          : pet
-      )
-    );
+    if (!pet) return;
+
+    await updatePetInCloud(petId, {
+      logs: [
+        {
+          id: crypto.randomUUID(),
+          type,
+          note,
+          time: Date.now(),
+        },
+        ...(pet.logs || []),
+      ],
+    });
   };
 
-  const feedPet = (petId, meal = null) => {
+  const feedPet = async (petId, meal = null) => {
+    const pet = pets.find((item) => item.id === petId);
+
+    if (!pet) return;
+
     const feedingTime = meal?.date
       ? new Date(meal.date).getTime()
       : Date.now();
 
-    setPets((prev) =>
-      prev.map((pet) => {
-        if (pet.id !== petId) return pet;
+    const foodText =
+      Array.isArray(meal?.foods) && meal.foods.length > 0
+        ? meal.foods.join(", ")
+        : meal?.food || pet.diet || "Meal";
 
-        const foodText =
-          Array.isArray(meal?.foods) && meal.foods.length > 0
-            ? meal.foods.join(", ")
-            : meal?.food || pet.diet || "Meal";
+    const amountText = meal?.amount ? ` - ${meal.amount}` : "";
+    const acceptedText = meal?.accepted ? ` - ${meal.accepted}` : "";
+    const notesText = meal?.notes ? ` - ${meal.notes}` : "";
 
-        const amountText = meal?.amount ? ` - ${meal.amount}` : "";
-        const acceptedText = meal?.accepted ? ` - ${meal.accepted}` : "";
-        const notesText = meal?.notes ? ` - ${meal.notes}` : "";
-
-        return {
-          ...pet,
-          lastFed: feedingTime,
-          nextFeed: calculateNextFeed(feedingTime, pet.frequency),
-          logs: [
-            {
-              id: crypto.randomUUID(),
-              type: "Fed",
-              note: `Fed ${foodText}${amountText}${acceptedText}${notesText}`,
-              time: feedingTime,
-            },
-            ...(pet.logs || []),
-          ],
-        };
-      })
-    );
+    await updatePetInCloud(petId, {
+      lastFed: feedingTime,
+      nextFeed: calculateNextFeed(feedingTime, pet.frequency),
+      logs: [
+        {
+          id: crypto.randomUUID(),
+          type: "Fed",
+          note: `Fed ${foodText}${amountText}${acceptedText}${notesText}`,
+          time: feedingTime,
+        },
+        ...(pet.logs || []),
+      ],
+    });
   };
 
-  const logWeight = (petId, weightEntry) => {
+  const logWeight = async (petId, weightEntry) => {
+    const pet = pets.find((item) => item.id === petId);
+
+    if (!pet) return;
+
     const entry = {
       id: crypto.randomUUID(),
       ...weightEntry,
       time: new Date(weightEntry.date).getTime(),
     };
 
-    setPets((prev) =>
-      prev.map((pet) =>
-        pet.id === petId
-          ? {
-              ...pet,
-              weightLogs: [entry, ...(pet.weightLogs || [])],
-              logs: [
-                {
-                  id: crypto.randomUUID(),
-                  type: "Weight Logged",
-                  note: `${pet.name} weighed ${weightEntry.weight} ${weightEntry.unit}`,
-                  time: entry.time,
-                },
-                ...(pet.logs || []),
-              ],
-            }
-          : pet
-      )
-    );
+    await updatePetInCloud(petId, {
+      weightLogs: [entry, ...(pet.weightLogs || [])],
+      logs: [
+        {
+          id: crypto.randomUUID(),
+          type: "Weight Logged",
+          note: `${pet.name} weighed ${weightEntry.weight} ${weightEntry.unit}`,
+          time: entry.time,
+        },
+        ...(pet.logs || []),
+      ],
+    });
   };
 
-  const logShed = (petId, shedEntry) => {
+  const logShed = async (petId, shedEntry) => {
+    const pet = pets.find((item) => item.id === petId);
+
+    if (!pet) return;
+
     const entryTime = new Date(shedEntry.date).getTime();
 
-    setPets((prev) =>
-      prev.map((pet) =>
-        pet.id === petId
-          ? {
-              ...pet,
-              logs: [
-                {
-                  id: crypto.randomUUID(),
-                  type: "Shed",
-                  note: `${shedEntry.shedType}${
-                    shedEntry.notes ? ` - ${shedEntry.notes}` : ""
-                  }`,
-                  time: entryTime,
-                },
-                ...(pet.logs || []),
-              ],
-            }
-          : pet
-      )
-    );
+    await updatePetInCloud(petId, {
+      logs: [
+        {
+          id: crypto.randomUUID(),
+          type: "Shed",
+          note: `${shedEntry.shedType}${
+            shedEntry.notes ? ` - ${shedEntry.notes}` : ""
+          }`,
+          time: entryTime,
+        },
+        ...(pet.logs || []),
+      ],
+    });
   };
 
-  // =====================================================
-  // 🟢 Medication Actions
-  // =====================================================
+  const addMedication = async (petId, med) => {
+    const pet = pets.find((item) => item.id === petId);
 
-  const addMedication = (petId, med) => {
-    setPets((prev) =>
-      prev.map((pet) =>
-        pet.id === petId
-          ? {
-              ...pet,
-              meds: [
-                ...(pet.meds || []),
-                {
-                  id: crypto.randomUUID(),
-                  name: med.name,
-                  dose: med.dose,
-                  route: med.route || "Oral",
-                  frequencyHours: Number(med.frequencyHours) || 72,
-                  durationDays: Number(med.durationDays) || 10,
-                  continueIndefinitely: Boolean(med.continueIndefinitely),
-                  startDate: med.firstDose || Date.now(),
-                  firstDose: med.firstDose || null,
-                  lastGiven: med.lastGiven || med.firstDose || null,
-                  notes: med.notes || "",
-                },
-              ],
-            }
-          : pet
-      )
-    );
+    if (!pet) return;
+
+    await updatePetInCloud(petId, {
+      meds: [
+        ...(pet.meds || []),
+        {
+          id: crypto.randomUUID(),
+          name: med.name,
+          dose: med.dose,
+          route: med.route || "Oral",
+          frequencyHours: Number(med.frequencyHours) || 72,
+          durationDays: Number(med.durationDays) || 10,
+          continueIndefinitely: Boolean(med.continueIndefinitely),
+          startDate: med.firstDose || Date.now(),
+          firstDose: med.firstDose || null,
+          lastGiven: med.lastGiven || med.firstDose || null,
+          notes: med.notes || "",
+        },
+      ],
+    });
   };
 
-  const giveMedication = (petId, medId) => {
+  const giveMedication = async (petId, medId) => {
+    const pet = pets.find((item) => item.id === petId);
+
+    if (!pet) return;
+
     const now = Date.now();
 
-    setPets((prev) =>
-      prev.map((pet) =>
-        pet.id === petId
-          ? {
-              ...pet,
-              meds: (pet.meds || []).map((med) =>
-                med.id === medId
-                  ? { ...med, lastGiven: now }
-                  : med
-              ),
-              logs: [
-                {
-                  id: crypto.randomUUID(),
-                  type: "Medication Administered",
-                  note: "Medication dose logged",
-                  time: now,
-                },
-                ...(pet.logs || []),
-              ],
-            }
-          : pet
-      )
-    );
+    await updatePetInCloud(petId, {
+      meds: (pet.meds || []).map((med) =>
+        med.id === medId ? { ...med, lastGiven: now } : med
+      ),
+      logs: [
+        {
+          id: crypto.randomUUID(),
+          type: "Medication Administered",
+          note: "Medication dose logged",
+          time: now,
+        },
+        ...(pet.logs || []),
+      ],
+    });
   };
-
-  // =====================================================
-  // 🟢 Main App
-  // =====================================================
 
   return (
     <AppLayout
       sidebar={
-        <Sidebar
-          page={page}
-          setPage={setPage}
-          user={currentUser}
-        />
+        <Sidebar page={page} setPage={setPage} user={currentUser} />
       }
     >
       <PageRenderer
@@ -488,10 +388,6 @@ function AuthenticatedApp({ profile, setSession }) {
         openShedModal={setShedPetId}
         toggleFavorite={toggleFavorite}
       />
-
-      {/* =====================================================
-          🟢 Modals
-      ===================================================== */}
 
       {sharePet && (
         <SharePassportModal
