@@ -315,54 +315,90 @@ function AuthenticatedApp({ profile, setSession }) {
     });
   };
 
-  const addMedication = async (petId, med) => {
-    const pet = pets.find((item) => item.id === petId);
+// =====================================================
+// 🟢 Medication Actions
+// =====================================================
 
-    if (!pet) return;
+const findPetById = (petId) =>
+  pets.find(
+    (item) =>
+      String(item.id) === String(petId) ||
+      String(item.cloudId) === String(petId)
+  );
 
-    await updatePetInCloud(petId, {
-      meds: [
-        ...(pet.meds || []),
-        {
-          id: crypto.randomUUID(),
-          name: med.name,
-          dose: med.dose,
-          route: med.route || "Oral",
-          frequencyHours: Number(med.frequencyHours) || 72,
-          durationDays: Number(med.durationDays) || 10,
-          continueIndefinitely: Boolean(med.continueIndefinitely),
-          startDate: med.firstDose || Date.now(),
-          firstDose: med.firstDose || null,
-          lastGiven: med.lastGiven || med.firstDose || null,
-          notes: med.notes || "",
-        },
-      ],
-    });
+const addMedication = async (petId, med) => {
+  const pet = findPetById(petId);
+
+  if (!pet) {
+    alert("Could not find pet.");
+    return;
+  }
+
+  const newMedication = {
+    id: crypto.randomUUID(),
+    name: med.name,
+    dose: med.dose,
+    route: med.route || "Oral",
+    frequencyHours: Number(med.frequencyHours) || 72,
+    durationDays: Number(med.durationDays) || 10,
+    continueIndefinitely: Boolean(med.continueIndefinitely),
+    startDate: med.firstDose || Date.now(),
+    firstDose: med.firstDose || null,
+    lastGiven: med.lastGiven || med.firstDose || null,
+    notes: med.notes || "",
   };
 
-  const giveMedication = async (petId, medId) => {
-    const pet = pets.find((item) => item.id === petId);
+  await updatePetInCloud(pet.id, {
+    meds: [...(pet.meds || []), newMedication],
+    logs: [
+      {
+        id: crypto.randomUUID(),
+        type: "Medication Added",
+        note: `${newMedication.name}${
+          newMedication.dose ? ` • ${newMedication.dose}` : ""
+        }`,
+        time: Date.now(),
+      },
+      ...(pet.logs || []),
+    ],
+  });
+};
 
-    if (!pet) return;
+const giveMedication = async (petId, medId) => {
+  const pet = findPetById(petId);
 
-    const now = Date.now();
+  if (!pet) return;
 
-    await updatePetInCloud(petId, {
-      meds: (pet.meds || []).map((med) =>
-        med.id === medId ? { ...med, lastGiven: now } : med
-      ),
-      logs: [
-        {
-          id: crypto.randomUUID(),
-          type: "Medication Administered",
-          note: "Medication dose logged",
-          time: now,
-        },
-        ...(pet.logs || []),
-      ],
-    });
-  };
+  const now = Date.now();
 
+  const medication = (pet.meds || []).find((med) => med.id === medId);
+
+  const updatedMeds = (pet.meds || []).map((med) =>
+    med.id === medId
+      ? {
+          ...med,
+          lastGiven: now,
+        }
+      : med
+  );
+
+  await updatePetInCloud(pet.id, {
+    meds: updatedMeds,
+    logs: [
+      {
+        id: crypto.randomUUID(),
+        type: "Medication Administered",
+        note: medication
+          ? `${medication.name}${
+              medication.dose ? ` • ${medication.dose}` : ""
+            }`
+          : "Medication dose logged",
+        time: now,
+      },
+      ...(pet.logs || []),
+    ],
+  });
+};
   return (
     <AppLayout
       sidebar={
@@ -370,24 +406,25 @@ function AuthenticatedApp({ profile, setSession }) {
       }
     >
       <PageRenderer
-        page={page}
-        profile={profile}
-        currentUser={currentUser}
-        pets={pets}
-        setPets={setPets}
-        setPage={setPage}
-        feedPet={setFeedingPetId}
-        addLog={addLog}
-        startEdit={startEdit}
-        addPet={addPet}
-        addMedication={addMedication}
-        giveMedication={giveMedication}
-        handleLogout={handleLogout}
-        openProfile={setSelectedPetId}
-        openQuickMeds={setQuickMedsPetId}
-        openShedModal={setShedPetId}
-        toggleFavorite={toggleFavorite}
-      />
+  page={page}
+  profile={profile}
+  currentUser={currentUser}
+  pets={pets}
+  setPets={setPets}
+  setPage={setPage}
+  feedPet={setFeedingPetId}
+  addLog={addLog}
+  startEdit={startEdit}
+  addPet={addPet}
+  addMedication={addMedication}
+  giveMedication={giveMedication}
+  updatePetInCloud={updatePetInCloud}
+  handleLogout={handleLogout}
+  openProfile={setSelectedPetId}
+  openQuickMeds={setQuickMedsPetId}
+  openShedModal={setShedPetId}
+  toggleFavorite={toggleFavorite}
+/>
 
       {sharePet && (
         <SharePassportModal

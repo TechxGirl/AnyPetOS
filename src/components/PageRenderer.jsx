@@ -23,7 +23,6 @@ export default function PageRenderer({
   profile,
   currentUser,
   pets,
-  setPets,
   setPage,
   feedPet,
   addLog,
@@ -31,12 +30,17 @@ export default function PageRenderer({
   addPet,
   addMedication,
   giveMedication,
+  updatePetInCloud,
   handleLogout,
   openProfile,
   openQuickMeds,
   openShedModal,
   toggleFavorite,
 }) {
+  // =====================================================
+  // 🟢 Dashboard
+  // =====================================================
+
   if (page === "Dashboard") {
     return (
       <Dashboard
@@ -53,6 +57,10 @@ export default function PageRenderer({
       />
     );
   }
+
+  // =====================================================
+  // 🟢 Collection
+  // =====================================================
 
   if (page === "Pets") {
     return (
@@ -87,6 +95,10 @@ export default function PageRenderer({
     return <AddPet addPet={addPet} />;
   }
 
+  // =====================================================
+  // 🟢 Records
+  // =====================================================
+
   if (page === "Timeline") {
     return <Timeline pets={pets} />;
   }
@@ -97,7 +109,7 @@ export default function PageRenderer({
         pets={pets}
         addMedication={addMedication}
         giveMedication={giveMedication}
-        setPets={setPets}
+        updatePetInCloud={updatePetInCloud}
       />
     );
   }
@@ -105,6 +117,10 @@ export default function PageRenderer({
   if (page === "Calendar") {
     return <Calendar pets={pets} />;
   }
+
+  // =====================================================
+  // 🟢 Tools
+  // =====================================================
 
   if (page === "Care Guides") {
     return <CareGuide pets={pets} reptiles={ANIMALS} />;
@@ -115,13 +131,12 @@ export default function PageRenderer({
   }
 
   if (page === "Settings") {
-    return (
-      <Settings
-        user={currentUser}
-        setUser={handleLogout}
-      />
-    );
+    return <Settings user={currentUser} setUser={handleLogout} />;
   }
+
+  // =====================================================
+  // 🟢 Fallback
+  // =====================================================
 
   return null;
 }

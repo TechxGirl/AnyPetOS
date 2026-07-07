@@ -1,12 +1,23 @@
 import { useState } from "react";
 
+// =====================================================
+// 🟢 MedicationPanel.jsx
+//
+// Cloud-synced medication management.
+// Handles adding, editing, deleting, and logging doses.
+//
+// =====================================================
+
 export default function MedicationPanel({
   pets,
   addMedication,
   giveMedication,
-  setPets,
+  updatePetInCloud,
 }) {
-  // 🟢 Empty Medication Form
+  // =====================================================
+  // 🟢 Empty Form
+  // =====================================================
+
   const emptyForm = {
     petId: "",
     name: "",
@@ -20,25 +31,42 @@ export default function MedicationPanel({
     continueIndefinitely: false,
   };
 
+  // =====================================================
   // 🟢 State
+  // =====================================================
+
   const [form, setForm] = useState(emptyForm);
   const [editingMed, setEditingMed] = useState(null);
 
+  // =====================================================
   // 🟢 Helpers
-  const scrollToTop = () => {
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 50);
+  // =====================================================
+
+  const findPet = (petId) =>
+    pets.find(
+      (pet) =>
+        String(pet.id) === String(petId) ||
+        String(pet.cloudId) === String(petId)
+    );
+
+  const buildFirstDoseTimestamp = () => {
+    if (!form.firstDoseDate) return null;
+
+    const time = form.firstDoseTime || "00:00";
+    return new Date(`${form.firstDoseDate}T${time}`).getTime();
   };
 
   const getNextDose = (med) => {
     if (!med.lastGiven) return null;
+
     return med.lastGiven + Number(med.frequencyHours) * 60 * 60 * 1000;
   };
 
   const isDue = (med) => {
     const nextDose = getNextDose(med);
+
     if (!nextDose) return true;
+
     return Date.now() >= nextDose;
   };
 
@@ -53,23 +81,26 @@ export default function MedicationPanel({
     return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
   };
 
-  const buildFirstDoseTimestamp = () => {
-    if (!form.firstDoseDate) return null;
-
-    const time = form.firstDoseTime || "00:00";
-    return new Date(`${form.firstDoseDate}T${time}`).getTime();
-  };
-
+  // =====================================================
   // 🟢 Add Medication
-  const handleAdd = () => {
+  // =====================================================
+
+  const handleAdd = async () => {
     if (!form.petId || !form.name.trim()) {
-      alert("Please choose a pet and enter a medication name.");
+      alert("Please choose an animal and enter a medication name.");
+      return;
+    }
+
+    const pet = findPet(form.petId);
+
+    if (!pet) {
+      alert("Could not find that animal.");
       return;
     }
 
     const firstDoseTimestamp = buildFirstDoseTimestamp();
 
-    addMedication(form.petId, {
+    await addMedication(pet.id, {
       ...form,
       firstDose: firstDoseTimestamp,
       lastGiven: firstDoseTimestamp,
@@ -78,8 +109,15 @@ export default function MedicationPanel({
     setForm(emptyForm);
   };
 
-  // 🟢 Start Editing Medication
+  // =====================================================
+  // 🟢 Edit Medication
+  // =====================================================
+
   const startEditMed = (petId, med) => {
+    const pet = findPet(petId);
+
+    if (!pet) return;
+
     const firstDoseDate = med.firstDose
       ? new Date(med.firstDose).toISOString().slice(0, 10)
       : "";
@@ -88,10 +126,13 @@ export default function MedicationPanel({
       ? new Date(med.firstDose).toTimeString().slice(0, 5)
       : "";
 
-    setEditingMed({ petId, medId: med.id });
+    setEditingMed({
+      petId: pet.id,
+      medId: med.id,
+    });
 
     setForm({
-      petId,
+      petId: pet.id,
       name: med.name || "",
       dose: med.dose || "",
       route: med.route || "Oral",
@@ -103,86 +144,112 @@ export default function MedicationPanel({
       continueIndefinitely: Boolean(med.continueIndefinitely),
     });
 
-    scrollToTop();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 🟢 Save Medication Edits
-  const saveEditMed = () => {
+  const saveEditMed = async () => {
+    if (!editingMed) return;
+
+    const pet = findPet(editingMed.petId);
+
+    if (!pet) return;
+
     const firstDoseTimestamp = buildFirstDoseTimestamp();
 
-    setPets((prev) =>
-      prev.map((pet) =>
-        pet.id === editingMed.petId
-          ? {
-              ...pet,
-              meds: (pet.meds || []).map((med) =>
-                med.id === editingMed.medId
-                  ? {
-                      ...med,
-                      name: form.name,
-                      dose: form.dose,
-                      route: form.route,
-                      frequencyHours: Number(form.frequencyHours) || 72,
-                      durationDays: Number(form.durationDays) || 10,
-                      continueIndefinitely: Boolean(form.continueIndefinitely),
-                      firstDose: firstDoseTimestamp,
-                      startDate:
-                        firstDoseTimestamp || med.startDate || Date.now(),
-                      lastGiven: firstDoseTimestamp || med.lastGiven || null,
-                      notes: form.notes || "",
-                    }
-                  : med
-              ),
-            }
-          : pet
-      )
+    const updatedMeds = (pet.meds || []).map((med) =>
+      med.id === editingMed.medId
+        ? {
+            ...med,
+            name: form.name,
+            dose: form.dose,
+            route: form.route,
+            frequencyHours: Number(form.frequencyHours) || 72,
+            durationDays: Number(form.durationDays) || 10,
+            continueIndefinitely: Boolean(form.continueIndefinitely),
+            firstDose: firstDoseTimestamp,
+            startDate: firstDoseTimestamp || med.startDate || Date.now(),
+            lastGiven: firstDoseTimestamp || med.lastGiven || null,
+            notes: form.notes || "",
+          }
+        : med
     );
+
+    await updatePetInCloud(pet.id, {
+      meds: updatedMeds,
+      logs: [
+        {
+          id: crypto.randomUUID(),
+          type: "Medication Updated",
+          note: form.name,
+          time: Date.now(),
+        },
+        ...(pet.logs || []),
+      ],
+    });
 
     setEditingMed(null);
     setForm(emptyForm);
   };
 
+  // =====================================================
   // 🟢 Delete Medication
-  const deleteMedication = (petId, medId) => {
+  // =====================================================
+
+  const deleteMedication = async (petId, medId) => {
     const confirmed = window.confirm(
       "Delete this medication? This cannot be undone."
     );
 
     if (!confirmed) return;
 
-    setPets((prev) =>
-      prev.map((pet) =>
-        pet.id === petId
-          ? {
-              ...pet,
-              meds: (pet.meds || []).filter((med) => med.id !== medId),
-            }
-          : pet
-      )
-    );
+    const pet = findPet(petId);
+
+    if (!pet) return;
+
+    const medication = (pet.meds || []).find((med) => med.id === medId);
+
+    await updatePetInCloud(pet.id, {
+      meds: (pet.meds || []).filter((med) => med.id !== medId),
+      logs: [
+        {
+          id: crypto.randomUUID(),
+          type: "Medication Deleted",
+          note: medication?.name || "Medication removed",
+          time: Date.now(),
+        },
+        ...(pet.logs || []),
+      ],
+    });
   };
 
+  // =====================================================
   // 🟢 Cancel Edit
+  // =====================================================
+
   const cancelEdit = () => {
     setEditingMed(null);
     setForm(emptyForm);
   };
 
+  // =====================================================
+  // 🟢 Render
+  // =====================================================
+
   return (
     <div className="feed">
       <h2>💊 Medications</h2>
 
-      {/* 🟢 Medication Form */}
       <div className="card">
         <h3>{editingMed ? "Edit Medication Course" : "Add Medication Course"}</h3>
 
-        <label>Pet</label>
+        <label>Animal</label>
         <select
           value={form.petId}
           disabled={Boolean(editingMed)}
           onChange={(e) => setForm({ ...form, petId: e.target.value })}
         >
-          <option value="">Select pet</option>
+          <option value="">Select animal</option>
+
           {pets.map((pet) => (
             <option key={pet.id} value={pet.id}>
               {pet.name}
@@ -264,7 +331,10 @@ export default function MedicationPanel({
             type="checkbox"
             checked={form.continueIndefinitely}
             onChange={(e) =>
-              setForm({ ...form, continueIndefinitely: e.target.checked })
+              setForm({
+                ...form,
+                continueIndefinitely: e.target.checked,
+              })
             }
           />
           Continue indefinitely
@@ -287,7 +357,6 @@ export default function MedicationPanel({
         )}
       </div>
 
-      {/* 🟢 Medication Cards */}
       {pets.map((pet) =>
         (pet.meds || []).map((med) => {
           const nextDose = getNextDose(med);
