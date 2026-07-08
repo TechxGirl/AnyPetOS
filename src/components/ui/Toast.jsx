@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import Icon from "./Icon";
+import { createId } from "../../utils/id";
 
 const ToastContext = createContext(null);
 
@@ -11,7 +12,7 @@ export function ToastProvider({ children }) {
   }, []);
 
   const showToast = useCallback(({ title, message, variant = "info", duration = 4200 }) => {
-    const id = crypto.randomUUID();
+    const id = createId("toast");
     setToasts((current) => [...current, { id, title, message, variant }]);
     if (duration > 0) window.setTimeout(() => dismissToast(id), duration);
     return id;

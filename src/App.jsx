@@ -8,6 +8,7 @@ import "./styles/ui.css";
 
 import { calculateNextFeed } from "./utils/calculateNextFeed";
 import { supabase } from "./services/supabaseClient";
+import { createId } from "./utils/id";
 
 // =====================================================
 // 🟢 Hooks
@@ -47,6 +48,9 @@ import AppLayout from "./layouts/AppLayout";
 import AppLoadingScreen from "./components/app/AppLoadingScreen";
 import AppErrorState from "./components/app/AppErrorState";
 import AppModalRenderer from "./components/app/AppModalRenderer";
+import PublicPassportView from "./pages/PublicPassportView";
+import TransferPassportView from "./pages/TransferPassportView";
+import { getPassportTransportRoute } from "./utils/passportTransport";
 
 // =====================================================
 // 🟢 Default Edit Form
@@ -132,6 +136,7 @@ function AppContent() {
 
   const { showToast } = useToast();
   const { closeModal } = useModal();
+  const transportRoute = getPassportTransportRoute();
 
   // =====================================================
   // 🟢 Supabase Session Listener
@@ -179,11 +184,32 @@ function AppContent() {
   }, [closeModal, showToast]);
 
   // =====================================================
+  // 🟢 Public Share Route
+  // =====================================================
+
+  if (transportRoute?.type === "share") {
+    return <PublicPassportView token={transportRoute.token} />;
+  }
+
+  // =====================================================
   // 🟢 Authentication Loading State
   // =====================================================
 
   if (authLoading) {
     return <AppLoadingScreen message="Opening PetPassport..." />;
+  }
+
+  // =====================================================
+  // 🟢 Transfer Route
+  // =====================================================
+
+  if (transportRoute?.type === "transfer") {
+    return (
+      <TransferPassportView
+        token={transportRoute.token}
+        session={session}
+      />
+    );
   }
 
   // =====================================================
@@ -252,6 +278,10 @@ function AuthenticatedApp({ profile }) {
     deletePetFromCloud,
     updatePetInCloud,
     toggleFavorite,
+    createPassportShareLink,
+    revokePassportShareLink,
+    createTransferInvite,
+    cancelTransferInvite,
   } = usePetContext();
 
   // =====================================================
@@ -432,7 +462,7 @@ function AuthenticatedApp({ profile }) {
           logs: statusChanged
             ? [
                 {
-                  id: crypto.randomUUID(),
+                  id: createId("event"),
                   type: "Status Update",
                   note: `${currentPet.name} marked ${newStatus}`,
                   time: Date.now(),
@@ -468,7 +498,7 @@ function AuthenticatedApp({ profile }) {
         updatePetInCloud(pet.id, {
           logs: [
             {
-              id: crypto.randomUUID(),
+              id: createId("event"),
               type,
               note,
               time: Date.now(),
@@ -527,7 +557,7 @@ function AuthenticatedApp({ profile }) {
           nextFeed: calculateNextFeed(feedingTime, pet.frequency),
           logs: [
             {
-              id: crypto.randomUUID(),
+              id: createId("event"),
               type: "Fed",
               note: `Fed ${foodText}${amountText}${acceptedText}${notesText}`,
               time: feedingTime,
@@ -583,7 +613,7 @@ function AuthenticatedApp({ profile }) {
     }
 
     const entry = {
-      id: crypto.randomUUID(),
+      id: createId("event"),
       ...weightEntry,
       weight,
       time: entryTime,
@@ -596,7 +626,7 @@ function AuthenticatedApp({ profile }) {
           weightLogs: [entry, ...(pet.weightLogs || [])],
           logs: [
             {
-              id: crypto.randomUUID(),
+              id: createId("event"),
               type: "Weight Logged",
               note: `${pet.name} weighed ${weight} ${weightEntry.unit}`,
               time: entryTime,
@@ -643,7 +673,7 @@ function AuthenticatedApp({ profile }) {
         updatePetInCloud(pet.id, {
           logs: [
             {
-              id: crypto.randomUUID(),
+              id: createId("event"),
               type: "Shed",
               note: `${shedEntry.shedType}${
                 shedEntry.notes ? ` - ${shedEntry.notes}` : ""
@@ -688,7 +718,7 @@ function AuthenticatedApp({ profile }) {
     }
 
     const newMedication = {
-      id: crypto.randomUUID(),
+      id: createId("event"),
       name: med.name,
       dose: med.dose,
       route: med.route || "Oral",
@@ -708,7 +738,7 @@ function AuthenticatedApp({ profile }) {
           meds: [...(pet.meds || []), newMedication],
           logs: [
             {
-              id: crypto.randomUUID(),
+              id: createId("event"),
               type: "Medication Added",
               note: `${newMedication.name}${
                 newMedication.dose ? ` • ${newMedication.dose}` : ""
@@ -757,7 +787,7 @@ function AuthenticatedApp({ profile }) {
           meds: updatedMeds,
           logs: [
             {
-              id: crypto.randomUUID(),
+              id: createId("event"),
               type: "Medication Administered",
               note: medication
                 ? `${medication.name}${
@@ -775,6 +805,86 @@ function AuthenticatedApp({ profile }) {
       } was recorded for ${pet.name}.`,
       errorMessage: `The medication dose could not be saved for ${pet.name}.`,
     });
+  };
+
+  // =====================================================
+  // 🟢 Passport Share Actions
+  // =====================================================
+
+  const sharePassport = async (petId, view = "buyer") => {
+    const pet = findPetById(petId);
+
+    if (!pet) {
+      return null;
+    }
+
+    const result = await runAction({
+      key: `share-passport-${pet.id}`,
+      action: () => createPassportShareLink(pet.id, view),
+      successTitle: "Share link created",
+      successMessage: `${pet.name}'s read-only Passport link is ready.`,
+      errorMessage: `${pet.name}'s share link could not be created.`,
+    });
+
+    return result;
+  };
+
+  const revokePassportShare = async (petId) => {
+    const pet = findPetById(petId);
+
+    if (!pet) {
+      return null;
+    }
+
+    const result = await runAction({
+      key: `revoke-share-${pet.id}`,
+      action: () => revokePassportShareLink(pet.id),
+      successTitle: "Share link revoked",
+      successMessage: `${pet.name}'s old Passport link no longer works.`,
+      errorMessage: `${pet.name}'s share link could not be revoked.`,
+    });
+
+    return result;
+  };
+
+  // =====================================================
+  // 🟢 Passport Transfer Actions
+  // =====================================================
+
+  const createPassportTransfer = async (petId) => {
+    const pet = findPetById(petId);
+
+    if (!pet) {
+      return null;
+    }
+
+    const result = await runAction({
+      key: `create-transfer-${pet.id}`,
+      action: () => createTransferInvite(pet.id),
+      successTitle: "Transfer invite created",
+      successMessage: `${pet.name}'s ownership invite is ready.`,
+      errorMessage: `${pet.name}'s transfer invite could not be created.`,
+    });
+
+    return result;
+  };
+
+  const cancelPassportTransfer = async (petId) => {
+    const pet = findPetById(petId);
+
+    if (!pet) {
+      return null;
+    }
+
+    const result = await runAction({
+      key: `cancel-transfer-${pet.id}`,
+      action: () => cancelTransferInvite(pet.id),
+      successTitle: "Transfer invite cancelled",
+      successMessage: `${pet.name}'s transfer invite was cancelled.`,
+      errorMessage: `${pet.name}'s transfer invite could not be cancelled.`,
+    });
+
+    return result;
   };
 
   // =====================================================
@@ -812,6 +922,16 @@ function AuthenticatedApp({ profile }) {
 
     medication: activePetId
       ? isPendingPrefix(`give-medication-${activePetId}-`)
+      : false,
+
+    share: activePetId
+      ? isPending(`share-passport-${activePetId}`) ||
+        isPending(`revoke-share-${activePetId}`)
+      : false,
+
+    transfer: activePetId
+      ? isPending(`create-transfer-${activePetId}`) ||
+        isPending(`cancel-transfer-${activePetId}`)
       : false,
   };
 
@@ -865,12 +985,16 @@ function AuthenticatedApp({ profile }) {
         saving={saving}
         actions={{
           addLog,
+          cancelPassportTransfer,
+          createPassportTransfer,
           deletePet,
           feedPet,
           giveMedication,
           logShed,
           logWeight,
+          revokePassportShare,
           saveEdit,
+          sharePassport,
           startEdit,
         }}
       />

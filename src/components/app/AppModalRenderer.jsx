@@ -35,7 +35,16 @@ export default function AppModalRenderer({
   switch (activeModal.type) {
     case "sharePassport":
       return pet ? (
-        <SharePassportModal pet={pet} close={closeModal} />
+        <SharePassportModal
+          pet={pet}
+          close={closeModal}
+          createShareLink={actions.sharePassport}
+          revokeShareLink={actions.revokePassportShare}
+          createTransferInvite={actions.createPassportTransfer}
+          cancelTransferInvite={actions.cancelPassportTransfer}
+          savingShare={saving.share}
+          savingTransfer={saving.transfer}
+        />
       ) : null;
 
     case "weight":

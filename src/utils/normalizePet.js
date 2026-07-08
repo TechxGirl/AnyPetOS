@@ -4,6 +4,7 @@
 // ==========================================
 
 import { generateAnimalId } from "./generateAnimalId";
+import { createId } from "./id";
 
 // =====================================================
 // 🟢 Default Passport Share Settings
@@ -12,8 +13,23 @@ import { generateAnimalId } from "./generateAnimalId";
 const defaultShareSettings = {
   enabled: false,
   token: "",
+  view: "buyer",
   createdAt: null,
   revokedAt: null,
+};
+
+// =====================================================
+// 🟢 Default Passport Transfer Settings
+// =====================================================
+
+const defaultTransferSettings = {
+  enabled: false,
+  token: "",
+  status: "",
+  createdAt: null,
+  expiresAt: null,
+  cancelledAt: null,
+  acceptedAt: null,
 };
 
 // =====================================================
@@ -28,8 +44,29 @@ function normalizeShareSettings(share) {
   return {
     enabled: Boolean(share.enabled),
     token: share.token || "",
+    view: share.view || "buyer",
     createdAt: share.createdAt || null,
     revokedAt: share.revokedAt || null,
+  };
+}
+
+// =====================================================
+// 🟢 Normalize Transfer Settings
+// =====================================================
+
+function normalizeTransferSettings(transfer) {
+  if (!transfer || typeof transfer !== "object") {
+    return defaultTransferSettings;
+  }
+
+  return {
+    enabled: Boolean(transfer.enabled),
+    token: transfer.token || "",
+    status: transfer.status || "",
+    createdAt: transfer.createdAt || null,
+    expiresAt: transfer.expiresAt || null,
+    cancelledAt: transfer.cancelledAt || null,
+    acceptedAt: transfer.acceptedAt || null,
   };
 }
 
@@ -43,7 +80,7 @@ export function normalizePet(pet = {}) {
     // 🟢 Core IDs
     // =====================================================
 
-    id: pet.id || crypto.randomUUID(),
+    id: pet.id || createId("pet"),
     cloudId: pet.cloudId || null,
 
     passportId:
@@ -138,5 +175,6 @@ export function normalizePet(pet = {}) {
     // =====================================================
 
     share: normalizeShareSettings(pet.share),
+    transfer: normalizeTransferSettings(pet.transfer),
   };
 }

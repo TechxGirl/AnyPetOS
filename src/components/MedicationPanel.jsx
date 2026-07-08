@@ -13,6 +13,7 @@ import {
   Textarea,
   useToast,
 } from "./ui";
+import { createId } from "../utils/id";
 
 const EMPTY_FORM = {
   petId: "",
@@ -215,7 +216,7 @@ export default function MedicationPanel({
         meds: updatedMeds,
         logs: [
           {
-            id: crypto.randomUUID(),
+            id: createId("event"),
             type: "Medication Updated",
             note: form.name.trim(),
             time: Date.now(),
@@ -254,7 +255,7 @@ export default function MedicationPanel({
         meds: (pet.meds || []).filter((med) => med.id !== deleteTarget.medId),
         logs: [
           {
-            id: crypto.randomUUID(),
+            id: createId("event"),
             type: "Medication Deleted",
             note: deleteTarget.name || "Medication removed",
             time: Date.now(),

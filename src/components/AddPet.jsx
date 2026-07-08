@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CARE_PROFILES } from "../data/careProfiles";
+import { resolveCareProfile } from "../utils/careProfileResolver";
 import { ANIMAL_TAXONOMY } from "../data/animalTaxonomy";
 import { PET_STATUSES } from "../data/statuses";
 import { Button, Icon, useToast } from "./ui";
@@ -87,17 +87,14 @@ export default function AddPet({ addPet }) {
   // 🟢 Care Profile Helpers
   // =====================================================
 
-  const getCareKey = (speciesName) =>
-    speciesName
-      .toLowerCase()
-      .replaceAll(" ", "_")
-      .replaceAll("-", "_")
-      .replaceAll("'", "");
-
   const applySpeciesData = (speciesName, extraData = {}) => {
-    const careKey = getCareKey(speciesName);
-    const profile = CARE_PROFILES[careKey];
+    const resolved = resolveCareProfile({
+      species: speciesName,
+      category: extraData.category || form.category,
+      animalGroup: extraData.animalGroup || form.animalGroup,
+    });
 
+    const profile = resolved.profile;
     const defaultFoodOptions = profile?.feeding?.foodOptions || [];
     const defaultFood = defaultFoodOptions[0] || "";
 
@@ -105,7 +102,7 @@ export default function AddPet({ addPet }) {
       ...prev,
       ...extraData,
       species: speciesName,
-      careProfile: careKey,
+      careProfile: resolved.key,
       temperament: profile?.temperamentOptions?.[0] || "",
       diet: defaultFood,
       foodList: defaultFood ? [defaultFood] : [],

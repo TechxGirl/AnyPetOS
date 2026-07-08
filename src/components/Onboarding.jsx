@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { USER_ROLES } from "../constants/roles";
 import { Icon } from "./ui";
+import { createId } from "../utils/id";
 
 // =====================================================
 // 🟢 Onboarding.jsx
@@ -72,7 +73,7 @@ const progress = STEP_PROGRESS[step] || 0;
 
   const finishOnboarding = () => {
     setUser({
-      id: crypto.randomUUID(),
+      id: createId("profile"),
       ...account,
       createdAt: Date.now(),
     });
