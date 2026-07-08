@@ -1,0 +1,76 @@
+:root {
+  color-scheme: dark;
+
+  --pp-color-canvas: #070b12;
+  --pp-color-sidebar: #101722;
+  --pp-color-sidebar-raised: #172131;
+  --pp-color-surface: #101826;
+  --pp-color-surface-raised: #151f2f;
+  --pp-color-surface-hover: #1a2638;
+  --pp-color-surface-muted: #0c1320;
+
+  --pp-color-primary: #2dd4bf;
+  --pp-color-primary-hover: #5eead4;
+  --pp-color-primary-active: #14b8a6;
+  --pp-color-primary-soft: rgba(45, 212, 191, 0.12);
+  --pp-color-primary-border: rgba(45, 212, 191, 0.3);
+
+  --pp-color-text: #f8fafc;
+  --pp-color-text-muted: #b8c2d0;
+  --pp-color-text-subtle: #8390a2;
+  --pp-color-text-inverse: #071018;
+
+  --pp-color-border: #263247;
+  --pp-color-border-strong: #37465d;
+  --pp-color-divider: rgba(148, 163, 184, 0.15);
+
+  --pp-color-success: #34d399;
+  --pp-color-success-soft: rgba(52, 211, 153, 0.12);
+  --pp-color-warning: #fbbf24;
+  --pp-color-warning-soft: rgba(251, 191, 36, 0.13);
+  --pp-color-danger: #fb7185;
+  --pp-color-danger-hover: #f43f5e;
+  --pp-color-danger-soft: rgba(251, 113, 133, 0.12);
+  --pp-color-info: #60a5fa;
+  --pp-color-info-soft: rgba(96, 165, 250, 0.12);
+
+  --pp-space-1: 0.25rem;
+  --pp-space-2: 0.5rem;
+  --pp-space-3: 0.75rem;
+  --pp-space-4: 1rem;
+  --pp-space-5: 1.25rem;
+  --pp-space-6: 1.5rem;
+  --pp-space-7: 1.75rem;
+  --pp-space-8: 2rem;
+  --pp-space-10: 2.5rem;
+  --pp-space-12: 3rem;
+  --pp-space-16: 4rem;
+
+  --pp-radius-xs: 0.375rem;
+  --pp-radius-sm: 0.5rem;
+  --pp-radius-md: 0.75rem;
+  --pp-radius-lg: 1rem;
+  --pp-radius-xl: 1.25rem;
+  --pp-radius-pill: 999px;
+
+  --pp-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25), 0 14px 34px rgba(0, 0, 0, 0.18);
+  --pp-shadow-card-hover: 0 1px 2px rgba(0, 0, 0, 0.28), 0 20px 46px rgba(0, 0, 0, 0.24);
+  --pp-shadow-modal: 0 28px 80px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(0, 0, 0, 0.3);
+  --pp-focus-ring: 0 0 0 3px rgba(45, 212, 191, 0.25);
+
+  --pp-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --pp-font-size-xs: 0.75rem;
+  --pp-font-size-sm: 0.875rem;
+  --pp-font-size-md: 1rem;
+  --pp-font-size-lg: 1.125rem;
+  --pp-font-size-xl: 1.35rem;
+
+  --pp-transition-fast: 150ms ease;
+  --pp-transition-standard: 220ms ease;
+
+  --pp-sidebar-width: 292px;
+  --pp-content-max-width: 1320px;
+  --pp-z-sidebar: 800;
+  --pp-z-modal: 1200;
+  --pp-z-toast: 1400;
+}

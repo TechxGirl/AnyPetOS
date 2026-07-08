@@ -1,0 +1,123 @@
+.pp-sidebar {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  padding: var(--pp-space-6) var(--pp-space-4);
+  background: radial-gradient(circle at 12% 0%, rgba(45, 212, 191, 0.08), transparent 25rem), var(--pp-color-sidebar);
+  color: var(--pp-color-text);
+  font-family: var(--pp-font-sans);
+}
+
+.pp-sidebar__brand {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: var(--pp-space-3);
+  padding: 0 var(--pp-space-2);
+}
+
+.pp-sidebar__brand-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--pp-color-primary-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-primary-soft);
+  color: var(--pp-color-primary-hover);
+  box-shadow: 0 10px 26px rgba(45, 212, 191, 0.08);
+}
+
+.pp-sidebar__brand-name {
+  margin: 0;
+  color: var(--pp-color-text);
+  font-size: 1.14rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.pp-sidebar__brand-subtitle {
+  margin: 0.15rem 0 0;
+  color: var(--pp-color-text-subtle);
+  font-size: var(--pp-font-size-xs);
+  font-weight: 600;
+}
+
+.pp-sidebar__profile {
+  margin: var(--pp-space-6) 0 var(--pp-space-7);
+  padding: var(--pp-space-4);
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-lg);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.pp-sidebar__profile-label {
+  margin: 0;
+  color: var(--pp-color-text-subtle);
+  font-size: var(--pp-font-size-xs);
+  font-weight: 650;
+}
+
+.pp-sidebar__profile-name {
+  margin: var(--pp-space-1) 0 var(--pp-space-3);
+  color: var(--pp-color-text);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.pp-sidebar__role {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  gap: var(--pp-space-2);
+  padding: 0 var(--pp-space-3);
+  border: 1px solid var(--pp-color-primary-border);
+  border-radius: var(--pp-radius-pill);
+  background: var(--pp-color-primary-soft);
+  color: var(--pp-color-primary-hover);
+  font-size: var(--pp-font-size-xs);
+  font-weight: 750;
+}
+
+.pp-sidebar__nav { display: grid; gap: var(--pp-space-6); }
+.pp-sidebar__section { display: grid; gap: var(--pp-space-2); }
+.pp-sidebar__section-label {
+  margin: 0;
+  padding: 0 var(--pp-space-3);
+  color: var(--pp-color-text-subtle);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.pp-sidebar__items { display: grid; gap: var(--pp-space-2); }
+
+.pp-sidebar__item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 50px;
+  align-items: center;
+  gap: var(--pp-space-3);
+  padding: 0 var(--pp-space-3);
+  border: 1px solid transparent;
+  border-radius: var(--pp-radius-md);
+  background: transparent;
+  color: var(--pp-color-text-muted);
+  font: inherit;
+  font-size: var(--pp-font-size-sm);
+  font-weight: 680;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--pp-transition-fast), border-color var(--pp-transition-fast), background var(--pp-transition-fast), transform var(--pp-transition-fast);
+}
+.pp-sidebar__item:hover { background: rgba(255,255,255,0.045); color: var(--pp-color-text); transform: translateX(2px); }
+.pp-sidebar__item.is-active { border-color: var(--pp-color-primary-border); background: linear-gradient(90deg, rgba(45,212,191,0.16), rgba(45,212,191,0.055)); color: var(--pp-color-text); }
+.pp-sidebar__item.is-active::before { content: ""; position: absolute; top: 12px; bottom: 12px; left: -1px; width: 3px; border-radius: 0 var(--pp-radius-pill) var(--pp-radius-pill) 0; background: var(--pp-color-primary); }
+.pp-sidebar__item:focus-visible { outline: none; box-shadow: var(--pp-focus-ring); }
+.pp-sidebar__item-icon { display: grid; width: 22px; height: 22px; flex: 0 0 auto; place-items: center; color: var(--pp-color-text-subtle); }
+.pp-sidebar__item:hover .pp-sidebar__item-icon, .pp-sidebar__item.is-active .pp-sidebar__item-icon { color: var(--pp-color-primary-hover); }
+.pp-sidebar__item-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pp-sidebar__footer { margin-top: auto; padding-top: var(--pp-space-7); }
+.pp-sidebar__footer-note { margin: 0; padding: 0 var(--pp-space-3); color: var(--pp-color-text-subtle); font-size: 0.7rem; line-height: 1.5; }

@@ -1,0 +1,142 @@
+// =====================================================
+// 🟢 PageRenderer.jsx
+//
+// Decides which main page to display.
+//
+// =====================================================
+
+import Dashboard from "../pages/Dashboard";
+import Pets from "../pages/Pets";
+import Favorites from "../pages/Favorites";
+import AddPet from "./AddPet";
+import Timeline from "./Timeline";
+import MedicationPanel from "./MedicationPanel";
+import Calendar from "../pages/Calendar";
+import CareGuide from "../pages/CareGuide";
+import AI from "../pages/AI";
+import Settings from "../pages/Settings";
+
+import { ANIMALS } from "../data/animals";
+
+export default function PageRenderer({
+  page,
+  profile,
+  currentUser,
+  pets,
+  setPage,
+  feedPet,
+  addLog,
+  startEdit,
+  addPet,
+  addMedication,
+  giveMedication,
+  updatePetInCloud,
+  handleLogout,
+  openProfile,
+  openQuickMeds,
+  openShedModal,
+  toggleFavorite,
+}) {
+  // =====================================================
+  // 🟢 Dashboard
+  // =====================================================
+
+  if (page === "Dashboard") {
+    return (
+      <Dashboard
+        profile={profile}
+        pets={pets}
+        feedPet={feedPet}
+        addLog={addLog}
+        startEdit={startEdit}
+        openProfile={openProfile}
+        openQuickMeds={openQuickMeds}
+        openShedModal={openShedModal}
+        toggleFavorite={toggleFavorite}
+        setPage={setPage}
+      />
+    );
+  }
+
+  // =====================================================
+  // 🟢 Collection
+  // =====================================================
+
+  if (page === "Pets") {
+    return (
+      <Pets
+        pets={pets}
+        feedPet={feedPet}
+        addLog={addLog}
+        startEdit={startEdit}
+        openProfile={openProfile}
+        openQuickMeds={openQuickMeds}
+        openShedModal={openShedModal}
+        toggleFavorite={toggleFavorite}
+      />
+    );
+  }
+
+  if (page === "Favorites") {
+    return (
+      <Favorites
+        pets={pets}
+        feedPet={feedPet}
+        startEdit={startEdit}
+        openProfile={openProfile}
+        openQuickMeds={openQuickMeds}
+        openShedModal={openShedModal}
+        toggleFavorite={toggleFavorite}
+      />
+    );
+  }
+
+  if (page === "Add Pet") {
+    return <AddPet addPet={addPet} />;
+  }
+
+  // =====================================================
+  // 🟢 Records
+  // =====================================================
+
+  if (page === "Timeline") {
+    return <Timeline pets={pets} />;
+  }
+
+  if (page === "Medications") {
+    return (
+      <MedicationPanel
+        pets={pets}
+        addMedication={addMedication}
+        giveMedication={giveMedication}
+        updatePetInCloud={updatePetInCloud}
+      />
+    );
+  }
+
+  if (page === "Calendar") {
+    return <Calendar pets={pets} />;
+  }
+
+  // =====================================================
+  // 🟢 Tools
+  // =====================================================
+
+  if (page === "Care Guides") {
+    return <CareGuide pets={pets} reptiles={ANIMALS} />;
+  }
+
+  if (page === "AI Assistant") {
+    return <AI pets={pets} />;
+  }
+
+  if (page === "Settings") {
+    return <Settings user={currentUser} setUser={handleLogout} />;
+  }
+
+  // =====================================================
+  // 🟢 Fallback
+  // =====================================================
+
+  return null;
+}

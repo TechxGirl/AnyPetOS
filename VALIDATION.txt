@@ -1,0 +1,14 @@
+PetPassport light/dark theme build validation
+
+PASS - JavaScript and JSX syntax parsing
+PASS - Relative import paths
+PASS - CSS variables referenced by styles are defined
+PASS - Light and dark token palettes are present
+PASS - Theme is applied before React render
+PASS - Settings theme selector is connected to ThemeProvider
+PASS - Desktop sidebar theme switcher is connected
+PASS - Mobile header theme switcher is connected
+PASS - Existing Supabase service and pet action APIs were not changed
+PASS - No new npm dependency is required
+
+Runtime Supabase validation requires the user's local .env and project dependencies.
