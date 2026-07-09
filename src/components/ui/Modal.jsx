@@ -26,6 +26,11 @@ export default function Modal({
   const descriptionId = useId();
   const dialogRef = useRef(null);
   const previouslyFocusedRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -35,13 +40,16 @@ export default function Modal({
     document.body.style.overflow = "hidden";
 
     const dialog = dialogRef.current;
-    const firstFocusable = dialog?.querySelector(FOCUSABLE_SELECTOR);
+    const preferredFocusable = dialog?.querySelector(
+      '[data-autofocus], input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
+    );
+    const firstFocusable = preferredFocusable || dialog?.querySelector(FOCUSABLE_SELECTOR);
     window.requestAnimationFrame(() => (firstFocusable || dialog)?.focus());
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape" && closeOnEscape) {
         event.preventDefault();
-        onClose?.();
+        onCloseRef.current?.();
         return;
       }
 
@@ -69,7 +77,7 @@ export default function Modal({
       document.body.style.overflow = originalOverflow;
       previouslyFocusedRef.current?.focus?.();
     };
-  }, [open, closeOnEscape, onClose]);
+  }, [open, closeOnEscape]);
 
   if (!open) return null;
 

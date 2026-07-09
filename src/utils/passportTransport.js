@@ -11,6 +11,7 @@ import { createId, createRandomString } from "./id";
 const SHARE_PATH = "/passport/share";
 const TRANSFER_PATH = "/passport/transfer";
 const ACCESS_PATH = "/passport/access";
+const EXPO_PATH = "/expo";
 
 // =====================================================
 // 🟢 Route Helpers
@@ -38,6 +39,28 @@ export function getPassportTransportRoute() {
       type: "access",
       token: decodeURIComponent(path.replace(`${ACCESS_PATH}/`, "")),
     };
+  }
+
+  if (path.startsWith(`${EXPO_PATH}/`)) {
+    const segments = path
+      .replace(`${EXPO_PATH}/`, "")
+      .split("/")
+      .filter(Boolean)
+      .map((segment) => decodeURIComponent(segment));
+
+    const [slug, section, value] = segments;
+
+    if (slug && section === "animal" && value) {
+      return { type: "expoListing", slug, listingToken: value };
+    }
+
+    if (slug && section === "kiosk") {
+      return { type: "expoKiosk", slug };
+    }
+
+    if (slug) {
+      return { type: "expo", slug };
+    }
   }
 
   return null;

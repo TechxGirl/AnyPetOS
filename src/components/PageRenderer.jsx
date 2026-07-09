@@ -19,6 +19,8 @@ import Workspaces from "../pages/Workspaces";
 import DataCenter from "../pages/DataCenter";
 import WorkspaceModulePage from "../pages/WorkspaceModulePage";
 import CareInfrastructure from "../pages/CareInfrastructure";
+import ExpoMode from "../pages/ExpoMode";
+import Community from "../pages/Community";
 
 import { ANIMALS } from "../data/animals";
 import { WORKSPACE_PAGE_SET } from "../data/workspaces";
@@ -41,6 +43,7 @@ export default function PageRenderer({
   openQuickMeds,
   openShedModal,
   toggleFavorite,
+  createPassportTransfer,
 }) {
   // =====================================================
   // 🟢 Dashboard
@@ -141,6 +144,20 @@ export default function PageRenderer({
 
   if (page === "Data Center") {
     return <DataCenter pets={pets} addPet={addPet} setPage={setPage} />;
+  }
+
+  if (page === "Expo Mode") {
+    return (
+      <ExpoMode
+        pets={pets}
+        profile={profile}
+        createPassportTransfer={createPassportTransfer}
+      />
+    );
+  }
+
+  if (page === "Community") {
+    return <Community pets={pets} profile={profile} />;
   }
 
   if (["Care Infrastructure", "Enclosures", "Equipment", "Smart Reminders", "Files", "Access Center"].includes(page)) {

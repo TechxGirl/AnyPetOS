@@ -52,6 +52,7 @@ import AppModalRenderer from "./components/app/AppModalRenderer";
 import PublicPassportView from "./pages/PublicPassportView";
 import TransferPassportView from "./pages/TransferPassportView";
 import AccessInviteView from "./pages/AccessInviteView";
+import PublicExpoView from "./pages/PublicExpoView";
 import { getPassportTransportRoute } from "./utils/passportTransport";
 
 // =====================================================
@@ -203,6 +204,21 @@ function AppContent() {
     return (
       <AccessInviteView
         token={transportRoute.token}
+        session={session}
+      />
+    );
+  }
+
+  // =====================================================
+  // 🟢 Public Expo Routes
+  // =====================================================
+
+  if (["expo", "expoListing", "expoKiosk"].includes(transportRoute?.type)) {
+    return (
+      <PublicExpoView
+        slug={transportRoute.slug}
+        listingToken={transportRoute.listingToken || ""}
+        kiosk={transportRoute.type === "expoKiosk"}
         session={session}
       />
     );
@@ -1055,6 +1071,7 @@ function AuthenticatedApp({ profile }) {
           openModal("shed", petId)
         }
         toggleFavorite={toggleFavorite}
+        createPassportTransfer={createPassportTransfer}
       />
 
       <AppModalRenderer
