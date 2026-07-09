@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import QRCode from "qrcode";
 import {
   Badge,
   Button,
@@ -139,6 +138,23 @@ function downloadDataUrl(dataUrl, filename) {
   document.body.removeChild(link);
 }
 
+let qrModulePromise = null;
+
+async function createExpoQr(value, options = {}) {
+  qrModulePromise ||= import("qrcode");
+  const module = await qrModulePromise;
+  const QRCode = module.default || module;
+  return QRCode.toDataURL(value, options);
+}
+
+function pluralize(count, singular, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function leadColumnId(status) {
+  return `expo-lead-${String(status || "stage").toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+}
+
 function formDateTimeValue(value) {
   if (!value) return "";
   const date = new Date(value);
@@ -172,6 +188,61 @@ function ExpoAnimalThumb({ listing }) {
   return <div className="expo-animal-thumb-placeholder"><b>{initials(listing.display_name)}</b><small>{listing.species || "Animal"}</small></div>;
 }
 
+function ExpoLeadCard({ lead, listing, hasActiveHold, onOpen, onCreateHold, onStatusChange }) {
+  const primaryContact = lead.email || lead.phone || "No contact listed";
+  const contactHref = lead.email
+    ? `mailto:${lead.email}`
+    : lead.phone
+      ? `tel:${lead.phone}`
+      : "";
+
+  return (
+    <article className="expo-lead-card">
+      <div className="expo-lead-card-head">
+        <div>
+          <strong>{lead.name || "Expo visitor"}</strong>
+          <span>{lead.preferred_contact ? `Prefers ${lead.preferred_contact}` : "Contact preference not set"}</span>
+        </div>
+        <Badge variant="neutral">{lead.interest_level || "Interested"}</Badge>
+      </div>
+
+      <div className="expo-lead-animal">
+        {listing && <ExpoAnimalThumb listing={listing} />}
+        <div>
+          <strong>{listing?.display_name || "Event inquiry"}</strong>
+          <span>{listing?.listing_code || "No listing code"}</span>
+        </div>
+      </div>
+
+      {contactHref ? (
+        <a className="expo-lead-contact" href={contactHref} title={primaryContact}>
+          <Icon name={lead.email ? "mail" : "phone"} size={15} />
+          <span>{primaryContact}</span>
+        </a>
+      ) : (
+        <div className="expo-lead-contact is-muted">
+          <Icon name="info" size={15} />
+          <span>{primaryContact}</span>
+        </div>
+      )}
+
+      <div className="expo-lead-card-actions">
+        <Button size="sm" variant="outline" onClick={onOpen}>Open details</Button>
+        {!hasActiveHold && listing && (
+          <Button size="sm" onClick={onCreateHold}>Create hold</Button>
+        )}
+      </div>
+
+      <label className="expo-lead-stage-select">
+        <span>Pipeline stage</span>
+        <Select value={lead.status} onChange={(event) => onStatusChange(event.target.value)}>
+          {EXPO_LEAD_STATUSES.map((item) => <option key={item}>{item}</option>)}
+        </Select>
+      </label>
+    </article>
+  );
+}
+
 export default function ExpoMode({ pets, profile, createPassportTransfer }) {
   const expo = useExpoMode(pets);
   const { runAction, isPending } = useAsyncAction();
@@ -190,6 +261,7 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
   const [eventQr, setEventQr] = useState("");
   const [listingQrs, setListingQrs] = useState({});
   const [vendorQrs, setVendorQrs] = useState({});
+  const [qrLoading, setQrLoading] = useState(false);
   const [analytics, setAnalytics] = useState({ views: 0, followers: 0, favorites: 0, leads: 0, holds: 0, completed: 0, listing_views: [], listing_favorites: [] });
   const [transferModal, setTransferModal] = useState(null);
   const [printMode, setPrintMode] = useState("cage-cards");
@@ -302,31 +374,65 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
     if (!activeEvent) {
       setEventQr("");
       setListingQrs({});
-      return;
+      setVendorQrs({});
+      setQrLoading(false);
+      return undefined;
     }
+
+    // QR generation is deliberately deferred until the Print Center is opened.
+    // This keeps normal Expo dashboard loads light and avoids generating dozens
+    // of large data URLs when the user only needs leads, inventory, or settings.
+    if (activeTab !== "print") return undefined;
+
+    let cancelled = false;
+    setQrLoading(true);
 
     const createQrs = async () => {
       const eventUrl = buildExpoEventUrl(activeEvent.slug);
-      const eventDataUrl = await QRCode.toDataURL(eventUrl, { width: 480, margin: 2, errorCorrectionLevel: "H" });
-      setEventQr(eventDataUrl);
+      const eventDataUrl = await createExpoQr(eventUrl, {
+        width: 480,
+        margin: 2,
+        errorCorrectionLevel: "H",
+      });
 
       const entries = await Promise.all(activeListings.map(async (listing) => {
         const listingUrl = buildExpoListingUrl(activeEvent.slug, listing.listing_token);
-        const dataUrl = await QRCode.toDataURL(listingUrl, { width: 420, margin: 2, errorCorrectionLevel: "H" });
+        const dataUrl = await createExpoQr(listingUrl, {
+          width: 420,
+          margin: 2,
+          errorCorrectionLevel: "H",
+        });
         return [listing.id, dataUrl];
       }));
-      setListingQrs(Object.fromEntries(entries));
 
-      const vendorEntries = await Promise.all(activeVendors.map(async (vendor) => {
-        const vendorUrl = `${buildExpoEventUrl(activeEvent.slug)}?vendor=${encodeURIComponent(vendor.id)}`;
-        const dataUrl = await QRCode.toDataURL(vendorUrl, { width: 420, margin: 2, errorCorrectionLevel: "H" });
-        return [vendor.id, dataUrl];
-      }));
+      const vendorEntries = await Promise.all(activeVendors
+        .filter((vendor) => vendor.status === "approved")
+        .map(async (vendor) => {
+          const vendorUrl = `${buildExpoEventUrl(activeEvent.slug)}?vendor=${encodeURIComponent(vendor.id)}`;
+          const dataUrl = await createExpoQr(vendorUrl, {
+            width: 420,
+            margin: 2,
+            errorCorrectionLevel: "H",
+          });
+          return [vendor.id, dataUrl];
+        }));
+
+      if (cancelled) return;
+      setEventQr(eventDataUrl);
+      setListingQrs(Object.fromEntries(entries));
       setVendorQrs(Object.fromEntries(vendorEntries));
     };
 
-    createQrs().catch((error) => console.warn("Expo QR codes could not be generated:", error));
-  }, [activeEvent, activeListings, activeVendors]);
+    createQrs()
+      .catch((error) => console.warn("Expo QR codes could not be generated:", error))
+      .finally(() => {
+        if (!cancelled) setQrLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, activeEvent, activeListings, activeVendors]);
 
   useEffect(() => {
     if (!resolvedEventId) {
@@ -554,7 +660,7 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
     const token = result?.data?.transfer?.token;
     if (result?.ok && token) {
       const transferUrl = buildTransferUrl(token);
-      const transferQr = await QRCode.toDataURL(transferUrl, { width: 480, margin: 2, errorCorrectionLevel: "H" });
+      const transferQr = await createExpoQr(transferUrl, { width: 480, margin: 2, errorCorrectionLevel: "H" });
       await copyTextToClipboard(transferUrl);
       setTransferModal({ listing, transferUrl, transferQr });
     }
@@ -590,6 +696,14 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
       },
       successTitle: "Deposit marked paid",
       successMessage: "The hold, lead, and public animal status were updated.",
+    });
+  };
+
+  const scrollToLeadStage = (status) => {
+    document.getElementById(leadColumnId(status))?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "start",
     });
   };
 
@@ -674,7 +788,7 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
 
   const downloadCareQr = async (listing) => {
     const url = `${buildExpoListingUrl(activeEvent.slug, listing.listing_token)}?view=care`;
-    const qr = await QRCode.toDataURL(url, { width: 420, margin: 2, errorCorrectionLevel: "H" });
+    const qr = await createExpoQr(url, { width: 420, margin: 2, errorCorrectionLevel: "H" });
     downloadDataUrl(qr, `${listing.listing_code}-care-guide-qr.png`);
   };
 
@@ -958,11 +1072,61 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
 
           {activeTab === "leads" && (
             <section className="expo-tab-panel">
-              <div className="expo-panel-heading"><div><p>Visitor pipeline</p><h2>Interest, holds, deposits, and completion</h2><span>Move visitors from public interest to booth conversation, temporary hold, deposit, and completed Passport transfer.</span></div><Badge variant="primary">{activeLeads.length} leads</Badge></div>
-              <div className="expo-lead-board">
+              <div className="expo-panel-heading">
+                <div>
+                  <p>Visitor pipeline</p>
+                  <h2>Interest, holds, deposits, and completion</h2>
+                  <span>Move visitors from public interest to booth conversation, temporary hold, deposit, and completed Passport transfer.</span>
+                </div>
+                <Badge variant="primary">{pluralize(activeLeads.length, "lead")}</Badge>
+              </div>
+
+              <nav className="expo-lead-stage-nav" aria-label="Lead pipeline stages">
+                {EXPO_LEAD_STATUSES.map((status) => {
+                  const count = activeLeads.filter((lead) => lead.status === status).length;
+                  return (
+                    <button key={status} type="button" onClick={() => scrollToLeadStage(status)}>
+                      <span>{status}</span>
+                      <b>{count}</b>
+                    </button>
+                  );
+                })}
+              </nav>
+
+              <div className="expo-lead-board" aria-label="Visitor lead pipeline">
                 {EXPO_LEAD_STATUSES.map((status) => {
                   const statusLeads = activeLeads.filter((lead) => lead.status === status);
-                  return <section key={status} className="expo-lead-column"><header><span>{status}</span><b>{statusLeads.length}</b></header><div>{statusLeads.map((lead) => { const listing = activeListings.find((item) => item.id === lead.listing_id); return <article key={lead.id}><div><strong>{lead.name || "Expo visitor"}</strong><Badge variant="neutral">{lead.interest_level || "Interested"}</Badge></div><p>{listing?.display_name || "Event inquiry"} {listing?.listing_code ? `• ${listing.listing_code}` : ""}</p><small>{lead.email || lead.phone || "No contact listed"}</small><div className="expo-lead-card-actions"><Button size="sm" variant="outline" onClick={() => setLeadModal({ ...lead, listing })}>Open</Button>{!activeHolds.some((hold) => hold.lead_id === lead.id && hold.status === "active") && listing && <Button size="sm" onClick={() => setHoldModal({ lead, form: { hours: "2", deposit_amount: listing.deposit_amount ?? "", payment_status: "Not paid", notes: "" } })}>Create hold</Button>}</div><Select value={lead.status} onChange={(event) => updateLeadStatus(lead, event.target.value)}>{EXPO_LEAD_STATUSES.map((item) => <option key={item}>{item}</option>)}</Select></article>; })}{!statusLeads.length && <p className="expo-empty-column">No leads</p>}</div></section>;
+                  return (
+                    <section key={status} id={leadColumnId(status)} className={`expo-lead-column ${statusLeads.length ? "has-leads" : "is-empty"}`}>
+                      <header><span>{status}</span><b>{statusLeads.length}</b></header>
+                      <div>
+                        {statusLeads.map((lead) => {
+                          const listing = activeListings.find((item) => item.id === lead.listing_id);
+                          const hasActiveHold = activeHolds.some((hold) => hold.lead_id === lead.id && hold.status === "active");
+                          return (
+                            <ExpoLeadCard
+                              key={lead.id}
+                              lead={lead}
+                              listing={listing}
+                              hasActiveHold={hasActiveHold}
+                              onOpen={() => setLeadModal({ ...lead, listing })}
+                              onCreateHold={() => setHoldModal({
+                                lead,
+                                form: {
+                                  hours: "2",
+                                  deposit_amount: listing?.deposit_amount ?? "",
+                                  payment_status: "Not paid",
+                                  notes: "",
+                                },
+                              })}
+                              onStatusChange={(nextStatus) => updateLeadStatus(lead, nextStatus)}
+                            />
+                          );
+                        })}
+                        {!statusLeads.length && <p className="expo-empty-column">No leads in this stage</p>}
+                      </div>
+                    </section>
+                  );
                 })}
               </div>
 
@@ -976,6 +1140,12 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
               <div className="expo-print-layout">
                 <Card>
                   <CardHeader icon={<Icon name="scan" size={18} />} title="Event QR + kiosk" description="Place the event QR at the entrance or booth so visitors can open the full catalog. Kiosk mode is touch-friendly and resets after inactivity." />
+                  {qrLoading && (
+                    <div className="expo-qr-loading" role="status">
+                      <Icon name="loader" size={18} />
+                      <span>Preparing print-quality QR codes...</span>
+                    </div>
+                  )}
                   {eventQr && <img className="expo-event-qr" src={eventQr} alt="Event QR code" />}
                   <strong>{activeEvent.name}</strong>
                   <code className="expo-url-code">{buildExpoEventUrl(activeEvent.slug)}</code>
@@ -1133,8 +1303,66 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
         </form>
       </Modal>
 
-      <Modal open={Boolean(leadModal)} onClose={() => setLeadModal(null)} title={leadModal?.name || "Visitor lead"} description={leadModal?.listing ? `${leadModal.listing.display_name} • ${leadModal.listing.listing_code}` : "Expo inquiry"} size="md" footer={<Button onClick={() => setLeadModal(null)}>Close</Button>}>
-        {leadModal && <div className="expo-lead-detail"><dl><div><dt>Email</dt><dd>{leadModal.email || "Not provided"}</dd></div><div><dt>Phone</dt><dd>{leadModal.phone || "Not provided"}</dd></div><div><dt>Preferred contact</dt><dd>{leadModal.preferred_contact || "Not specified"}</dd></div><div><dt>Interest</dt><dd>{leadModal.interest_level || "Interested"}</dd></div><div><dt>Timeframe</dt><dd>{leadModal.timeframe || "Not specified"}</dd></div><div><dt>Hold requested</dt><dd>{leadModal.hold_requested ? "Yes" : "No"}</dd></div></dl><section><h4>Message</h4><p>{leadModal.message || "No message."}</p></section></div>}
+      <Modal
+        open={Boolean(leadModal)}
+        onClose={() => setLeadModal(null)}
+        title={leadModal?.name || "Visitor lead"}
+        description={leadModal?.listing ? `${leadModal.listing.display_name} • ${leadModal.listing.listing_code}` : "Expo inquiry"}
+        size="md"
+        footer={<Button onClick={() => setLeadModal(null)}>Close</Button>}
+      >
+        {leadModal && (
+          <div className="expo-lead-detail">
+            {leadModal.listing && (
+              <div className="expo-lead-detail-animal">
+                <ExpoAnimalThumb listing={leadModal.listing} />
+                <div>
+                  <strong>{leadModal.listing.display_name}</strong>
+                  <span>{leadModal.listing.listing_code} • Booth {leadModal.listing.booth_location || "TBD"}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="expo-lead-quick-actions">
+              {leadModal.email && <Button variant="outline" onClick={() => window.location.href = `mailto:${leadModal.email}`}>Email visitor</Button>}
+              {leadModal.phone && <Button variant="outline" onClick={() => window.location.href = `tel:${leadModal.phone}`}>Call visitor</Button>}
+              {leadModal.listing && !activeHolds.some((hold) => hold.lead_id === leadModal.id && hold.status === "active") && (
+                <Button onClick={() => {
+                  setHoldModal({
+                    lead: leadModal,
+                    form: {
+                      hours: "2",
+                      deposit_amount: leadModal.listing.deposit_amount ?? "",
+                      payment_status: "Not paid",
+                      notes: "",
+                    },
+                  });
+                  setLeadModal(null);
+                }}>Create hold</Button>
+              )}
+            </div>
+
+            <label className="expo-lead-detail-stage">
+              <span>Pipeline stage</span>
+              <Select value={leadModal.status} onChange={(event) => {
+                updateLeadStatus(leadModal, event.target.value);
+                setLeadModal((current) => current ? { ...current, status: event.target.value } : current);
+              }}>
+                {EXPO_LEAD_STATUSES.map((status) => <option key={status}>{status}</option>)}
+              </Select>
+            </label>
+
+            <dl>
+              <div><dt>Email</dt><dd>{leadModal.email || "Not provided"}</dd></div>
+              <div><dt>Phone</dt><dd>{leadModal.phone || "Not provided"}</dd></div>
+              <div><dt>Preferred contact</dt><dd>{leadModal.preferred_contact || "Not specified"}</dd></div>
+              <div><dt>Interest</dt><dd>{leadModal.interest_level || "Interested"}</dd></div>
+              <div><dt>Timeframe</dt><dd>{leadModal.timeframe || "Not specified"}</dd></div>
+              <div><dt>Hold requested</dt><dd>{leadModal.hold_requested ? "Yes" : "No"}</dd></div>
+            </dl>
+            <section><h4>Visitor message</h4><p>{leadModal.message || "No message."}</p></section>
+          </div>
+        )}
       </Modal>
 
       <Modal open={Boolean(holdModal)} onClose={() => setHoldModal(null)} title="Create temporary hold" description={holdModal ? `${holdModal.lead.name || "Visitor"} • ${activeListings.find((item) => item.id === holdModal.lead.listing_id)?.display_name || "Animal"}` : ""} footer={<><Button variant="outline" onClick={() => setHoldModal(null)}>Cancel</Button><Button type="submit" form="expo-hold-form" loading={isPending(`expo-create-hold-${holdModal?.lead?.id}`)}>Create hold</Button></>}>

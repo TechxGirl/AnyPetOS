@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import QRCode from "qrcode";
 import { Button, Icon, IconButton, useToast } from "./ui";
 import {
   buildEmailHref,
@@ -13,6 +12,15 @@ import {
 // =====================================================
 // 🟢 Share View Presets
 // =====================================================
+
+let shareQrModulePromise = null;
+
+async function createShareQr(value, options = {}) {
+  shareQrModulePromise ||= import("qrcode");
+  const module = await shareQrModulePromise;
+  const QRCode = module.default || module;
+  return QRCode.toDataURL(value, options);
+}
 
 const SHARE_VIEWS = {
   sitter: {
@@ -103,7 +111,7 @@ export default function SharePassportModal({
       }
 
       try {
-        const dataUrl = await QRCode.toDataURL(shareUrl, {
+        const dataUrl = await createShareQr(shareUrl, {
           margin: 2,
           width: 220,
         });

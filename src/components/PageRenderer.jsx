@@ -1,3 +1,5 @@
+import { lazy, Suspense } from "react";
+
 // =====================================================
 // 🟢 PageRenderer.jsx
 //
@@ -19,8 +21,10 @@ import Workspaces from "../pages/Workspaces";
 import DataCenter from "../pages/DataCenter";
 import WorkspaceModulePage from "../pages/WorkspaceModulePage";
 import CareInfrastructure from "../pages/CareInfrastructure";
-import ExpoMode from "../pages/ExpoMode";
-import Community from "../pages/Community";
+import PageLoadingFallback from "./app/PageLoadingFallback";
+
+const ExpoMode = lazy(() => import("../pages/ExpoMode"));
+const Community = lazy(() => import("../pages/Community"));
 
 import { ANIMALS } from "../data/animals";
 import { WORKSPACE_PAGE_SET } from "../data/workspaces";
@@ -148,16 +152,36 @@ export default function PageRenderer({
 
   if (page === "Expo Mode") {
     return (
-      <ExpoMode
-        pets={pets}
-        profile={profile}
-        createPassportTransfer={createPassportTransfer}
-      />
+      <Suspense
+        fallback={
+          <PageLoadingFallback
+            title="Opening Expo Command Center"
+            message="Loading event operations without slowing the rest of PetPassport."
+          />
+        }
+      >
+        <ExpoMode
+          pets={pets}
+          profile={profile}
+          createPassportTransfer={createPassportTransfer}
+        />
+      </Suspense>
     );
   }
 
   if (page === "Community") {
-    return <Community pets={pets} profile={profile} />;
+    return (
+      <Suspense
+        fallback={
+          <PageLoadingFallback
+            title="Opening Community"
+            message="Loading public discovery and expo updates."
+          />
+        }
+      >
+        <Community pets={pets} profile={profile} />
+      </Suspense>
+    );
   }
 
   if (["Care Infrastructure", "Enclosures", "Equipment", "Smart Reminders", "Files", "Access Center"].includes(page)) {

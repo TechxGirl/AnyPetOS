@@ -1,0 +1,26 @@
+PetPassport Expo Performance + Lead Pipeline Polish v1
+======================================================
+
+Production build: PASS
+
+Vite output:
+- 183 modules transformed
+- Main JS: 759.67 kB, gzip 205.74 kB
+- ExpoMode chunk: 65.33 kB, gzip 15.29 kB
+- PublicExpoView chunk: 27.70 kB, gzip 7.50 kB
+- Community chunk: 12.78 kB, gzip 4.19 kB
+- useExpoMode chunk: 14.70 kB, gzip 4.17 kB
+- QR browser chunk: 23.47 kB, gzip 8.85 kB
+
+Previous working Expo build main JS:
+- 898.95 kB, gzip 241.36 kB
+
+Approximate main-bundle reduction:
+- 139.28 kB before gzip
+- 15.5%
+
+No Supabase SQL changes are required.
+
+ESLint was not validated in the isolated environment because the available parent
+ESLint configuration imports @eslint/js outside the project directory. The Vite
+production build completed successfully.

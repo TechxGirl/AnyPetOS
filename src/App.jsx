@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import "./App.css";
 import "./styles/ui.css";
 
@@ -52,8 +52,9 @@ import AppModalRenderer from "./components/app/AppModalRenderer";
 import PublicPassportView from "./pages/PublicPassportView";
 import TransferPassportView from "./pages/TransferPassportView";
 import AccessInviteView from "./pages/AccessInviteView";
-import PublicExpoView from "./pages/PublicExpoView";
 import { getPassportTransportRoute } from "./utils/passportTransport";
+
+const PublicExpoView = lazy(() => import("./pages/PublicExpoView"));
 
 // =====================================================
 // 🟢 Default Edit Form
@@ -215,12 +216,14 @@ function AppContent() {
 
   if (["expo", "expoListing", "expoKiosk"].includes(transportRoute?.type)) {
     return (
-      <PublicExpoView
-        slug={transportRoute.slug}
-        listingToken={transportRoute.listingToken || ""}
-        kiosk={transportRoute.type === "expoKiosk"}
-        session={session}
-      />
+      <Suspense fallback={<AppLoadingScreen message="Opening the public Expo catalog..." />}>
+        <PublicExpoView
+          slug={transportRoute.slug}
+          listingToken={transportRoute.listingToken || ""}
+          kiosk={transportRoute.type === "expoKiosk"}
+          session={session}
+        />
+      </Suspense>
     );
   }
 

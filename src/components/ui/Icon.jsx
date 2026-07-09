@@ -70,6 +70,9 @@ export default function Icon({
     package: ["M21 8 12 3 3 8l9 5 9-5Z", "M3 8v8l9 5 9-5V8", "M12 13v8"],
     truck: ["M3 6h11v10H3V6Z", "M14 10h4l3 3v3h-7v-6Z", "M7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z", "M18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"],
     chart: ["M4 19V5", "M4 19h16", "M8 15v-4", "M12 15V8", "M16 15v-7"],
+    mail: ["M3 5h18v14H3V5Z", "m3 7 6.8 5.1a3.7 3.7 0 0 0 4.4 0L20 7"],
+    phone: ["M7.2 3h3l1.4 4.1-2 1.6a15.2 15.2 0 0 0 5.7 5.7l1.6-2 4.1 1.4v3c0 1.1-.9 2-2 2C10.2 18.8 3.2 11.8 3.2 3c0-1.1.9-2 2-2h2Z"],
+    loader: ["M21 12a9 9 0 1 1-2.64-6.36"],
   };
 
   const selected = paths[name] || paths.info;

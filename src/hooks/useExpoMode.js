@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import {
   buildExpoEventUrl,
@@ -21,27 +21,57 @@ function numericId(value) {
   return /^\d+$/.test(String(value)) ? Number(value) : null;
 }
 
-export function useExpoDiscovery() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const EXPO_CACHE_TTL_MS = 2 * 60 * 1000;
+const DISCOVERY_CACHE_TTL_MS = 60 * 1000;
+const expoSessionCache = new Map();
+let discoveryCache = null;
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    const { data, error: rpcError } = await supabase.rpc("get_public_expo_events");
-    if (rpcError) {
-      setError(rpcError);
-      setEvents([]);
-    } else {
-      const normalized = normalizePublicExpoPayload(data);
-      setEvents(Array.isArray(normalized) ? normalized : []);
+function cacheIsFresh(entry, ttl) {
+  return Boolean(entry && Date.now() - entry.savedAt < ttl);
+}
+
+export function useExpoDiscovery() {
+  const cachedEvents = cacheIsFresh(discoveryCache, DISCOVERY_CACHE_TTL_MS)
+    ? discoveryCache.events
+    : [];
+  const [events, setEvents] = useState(cachedEvents);
+  const [loading, setLoading] = useState(!cachedEvents.length);
+  const [error, setError] = useState(null);
+  const requestRef = useRef(null);
+  const hasDataRef = useRef(Boolean(cachedEvents.length));
+
+  const refresh = useCallback(async ({ silent = false, force = false } = {}) => {
+    if (requestRef.current && !force) return requestRef.current;
+
+    const request = (async () => {
+      if (!silent && !hasDataRef.current) setLoading(true);
+      setError(null);
+
+      const { data, error: rpcError } = await supabase.rpc("get_public_expo_events");
+      if (rpcError) {
+        setError(rpcError);
+        if (!hasDataRef.current) setEvents([]);
+      } else {
+        const normalized = normalizePublicExpoPayload(data);
+        const nextEvents = Array.isArray(normalized) ? normalized : [];
+        discoveryCache = { events: nextEvents, savedAt: Date.now() };
+        hasDataRef.current = true;
+        setEvents(nextEvents);
+      }
+
+      setLoading(false);
+    })();
+
+    requestRef.current = request;
+    try {
+      await request;
+    } finally {
+      if (requestRef.current === request) requestRef.current = null;
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
-    refresh();
+    refresh({ silent: hasDataRef.current });
   }, [refresh]);
 
   return { events, loading, error, refresh };
@@ -70,113 +100,151 @@ export default function useExpoMode(pets = []) {
     return map;
   }, [pets]);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const hasLoadedRef = useRef(false);
+  const refreshRequestRef = useRef(null);
 
-    const { data: authData, error: authError } = await supabase.auth.getUser();
-    if (authError) {
-      setError(authError);
-      setLoading(false);
-      return;
-    }
+  const applySnapshot = useCallback((snapshot) => {
+    setEvents(snapshot.events || []);
+    setVendors(snapshot.vendors || []);
+    setListings(snapshot.listings || []);
+    setLeads(snapshot.leads || []);
+    setHolds(snapshot.holds || []);
+    setFollows(snapshot.follows || []);
+    setFavorites(snapshot.favorites || []);
+    setScans(snapshot.scans || []);
+    setUpdates(snapshot.updates || []);
+  }, []);
 
-    const currentUser = authData?.user || null;
-    setUser(currentUser);
+  const refresh = useCallback(async ({ force = false } = {}) => {
+    if (refreshRequestRef.current && !force) return refreshRequestRef.current;
 
-    if (!currentUser) {
-      setEvents([]);
-      setVendors([]);
-      setListings([]);
-      setLeads([]);
-      setHolds([]);
-      setFollows([]);
-      setFavorites([]);
-      setScans([]);
-      setUpdates([]);
-      setLoading(false);
-      return;
-    }
+    const request = (async () => {
+      const shouldBlockPage = !hasLoadedRef.current;
+      if (shouldBlockPage) setLoading(true);
+      setError(null);
 
-    try {
-      const [ownedResult, membershipsResult, followsResult, favoritesResult] = await Promise.all([
-        supabase.from("expo_events").select("*").eq("owner_id", currentUser.id).order("starts_at", { ascending: true }),
-        supabase.from("expo_event_vendors").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }),
-        supabase.from("expo_event_follows").select("*").eq("user_id", currentUser.id),
-        supabase.from("expo_listing_favorites").select("*").eq("user_id", currentUser.id),
-      ]);
-
-      [ownedResult, membershipsResult, followsResult, favoritesResult].forEach((result) => {
-        if (result.error) throw result.error;
-      });
-
-      const membershipEventIds = (membershipsResult.data || []).map((item) => item.event_id);
-      let joinedEvents = [];
-
-      if (membershipEventIds.length) {
-        const joinedResult = await supabase
-          .from("expo_events")
-          .select("*")
-          .in("id", membershipEventIds);
-
-        if (joinedResult.error) throw joinedResult.error;
-        joinedEvents = joinedResult.data || [];
+      const { data: sessionData, error: authError } = await supabase.auth.getSession();
+      if (authError) {
+        setError(authError);
+        setLoading(false);
+        return;
       }
 
-      const mergedEvents = uniqueById([...(ownedResult.data || []), ...joinedEvents]);
-      const eventIds = mergedEvents.map((event) => event.id);
+      const currentUser = sessionData?.session?.user || null;
+      setUser(currentUser);
 
-      let vendorRows = membershipsResult.data || [];
-      let listingRows = [];
-      let leadRows = [];
-      let holdRows = [];
-      let scanRows = [];
-      let updateRows = [];
+      if (!currentUser) {
+        const emptySnapshot = {
+          events: [], vendors: [], listings: [], leads: [], holds: [],
+          follows: [], favorites: [], scans: [], updates: [],
+        };
+        applySnapshot(emptySnapshot);
+        hasLoadedRef.current = true;
+        setLoading(false);
+        return;
+      }
 
-      if (eventIds.length) {
-        await Promise.all(
-          eventIds.map((eventId) =>
-            supabase.rpc("release_expired_expo_holds", { p_event_id: eventId })
-          )
-        );
+      const cached = expoSessionCache.get(currentUser.id);
+      if (!hasLoadedRef.current && cacheIsFresh(cached, EXPO_CACHE_TTL_MS)) {
+        applySnapshot(cached.snapshot);
+        hasLoadedRef.current = true;
+        setLoading(false);
+      }
 
-        const [vendorsResult, listingsResult, leadsResult, holdsResult, scansResult, updatesResult] = await Promise.all([
-          supabase.from("expo_event_vendors").select("*").in("event_id", eventIds).order("display_name"),
-          supabase.from("expo_event_animals").select("*").in("event_id", eventIds).order("featured", { ascending: false }).order("sort_order").order("created_at"),
-          supabase.from("expo_leads").select("*").in("event_id", eventIds).order("created_at", { ascending: false }),
-          supabase.from("expo_holds").select("*").in("event_id", eventIds).order("created_at", { ascending: false }),
-          supabase.from("expo_scans").select("id,event_id,listing_id,scan_type,created_at").in("event_id", eventIds).order("created_at", { ascending: false }).limit(5000),
-          supabase.from("expo_updates").select("*").in("event_id", eventIds).order("created_at", { ascending: false }),
+      try {
+        const [ownedResult, membershipsResult, followsResult, favoritesResult] = await Promise.all([
+          supabase.from("expo_events").select("*").eq("owner_id", currentUser.id).order("starts_at", { ascending: true }),
+          supabase.from("expo_event_vendors").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }),
+          supabase.from("expo_event_follows").select("id,event_id,user_id,notifications_enabled,last_viewed_at,created_at").eq("user_id", currentUser.id),
+          supabase.from("expo_listing_favorites").select("id,event_id,listing_id,user_id,created_at").eq("user_id", currentUser.id),
         ]);
 
-        [vendorsResult, listingsResult, leadsResult, holdsResult, scansResult, updatesResult].forEach((result) => {
+        [ownedResult, membershipsResult, followsResult, favoritesResult].forEach((result) => {
           if (result.error) throw result.error;
         });
 
-        vendorRows = vendorsResult.data || [];
-        listingRows = listingsResult.data || [];
-        leadRows = leadsResult.data || [];
-        holdRows = holdsResult.data || [];
-        scanRows = scansResult.data || [];
-        updateRows = updatesResult.data || [];
+        const membershipEventIds = (membershipsResult.data || []).map((item) => item.event_id);
+        let joinedEvents = [];
+
+        if (membershipEventIds.length) {
+          const joinedResult = await supabase
+            .from("expo_events")
+            .select("*")
+            .in("id", membershipEventIds);
+
+          if (joinedResult.error) throw joinedResult.error;
+          joinedEvents = joinedResult.data || [];
+        }
+
+        const mergedEvents = uniqueById([...(ownedResult.data || []), ...joinedEvents]);
+        const eventIds = mergedEvents.map((event) => event.id);
+
+        let vendorRows = membershipsResult.data || [];
+        let listingRows = [];
+        let leadRows = [];
+        let holdRows = [];
+        let scanRows = [];
+        let updateRows = [];
+
+        if (eventIds.length) {
+          // Hold cleanup is useful, but it should not delay the visible dashboard.
+          Promise.allSettled(
+            eventIds.map((eventId) =>
+              supabase.rpc("release_expired_expo_holds", { p_event_id: eventId })
+            )
+          ).catch(() => {});
+
+          const [vendorsResult, listingsResult, leadsResult, holdsResult, scansResult, updatesResult] = await Promise.all([
+            supabase.from("expo_event_vendors").select("*").in("event_id", eventIds).order("display_name"),
+            supabase.from("expo_event_animals").select("*").in("event_id", eventIds).order("featured", { ascending: false }).order("sort_order").order("created_at"),
+            supabase.from("expo_leads").select("*").in("event_id", eventIds).order("created_at", { ascending: false }),
+            supabase.from("expo_holds").select("*").in("event_id", eventIds).order("created_at", { ascending: false }),
+            supabase.from("expo_scans").select("id,event_id,listing_id,scan_type,created_at").in("event_id", eventIds).order("created_at", { ascending: false }).limit(500),
+            supabase.from("expo_updates").select("*").in("event_id", eventIds).order("created_at", { ascending: false }).limit(500),
+          ]);
+
+          [vendorsResult, listingsResult, leadsResult, holdsResult, scansResult, updatesResult].forEach((result) => {
+            if (result.error) throw result.error;
+          });
+
+          vendorRows = vendorsResult.data || [];
+          listingRows = listingsResult.data || [];
+          leadRows = leadsResult.data || [];
+          holdRows = holdsResult.data || [];
+          scanRows = scansResult.data || [];
+          updateRows = updatesResult.data || [];
+        }
+
+        const snapshot = {
+          events: mergedEvents,
+          vendors: vendorRows,
+          listings: listingRows,
+          leads: leadRows,
+          holds: holdRows,
+          follows: followsResult.data || [],
+          favorites: favoritesResult.data || [],
+          scans: scanRows,
+          updates: updateRows,
+        };
+
+        applySnapshot(snapshot);
+        expoSessionCache.set(currentUser.id, { snapshot, savedAt: Date.now() });
+        hasLoadedRef.current = true;
+      } catch (loadError) {
+        console.error("Unable to load Expo Mode:", loadError);
+        if (!hasLoadedRef.current) setError(loadError);
+      } finally {
+        setLoading(false);
       }
+    })();
 
-      setEvents(mergedEvents);
-      setVendors(vendorRows);
-      setListings(listingRows);
-      setLeads(leadRows);
-      setHolds(holdRows);
-      setFollows(followsResult.data || []);
-      setFavorites(favoritesResult.data || []);
-      setScans(scanRows);
-      setUpdates(updateRows);
-    } catch (loadError) {
-      console.error("Unable to load Expo Mode:", loadError);
-      setError(loadError);
+    refreshRequestRef.current = request;
+    try {
+      await request;
+    } finally {
+      if (refreshRequestRef.current === request) refreshRequestRef.current = null;
     }
-
-    setLoading(false);
-  }, []);
+  }, [applySnapshot]);
 
   useEffect(() => {
     refresh();

@@ -24,6 +24,14 @@ import "../styles/expo.css";
 const ANONYMOUS_FAVORITES_KEY = "petpassport-expo-favorites";
 const ANONYMOUS_FOLLOWS_KEY = "petpassport-expo-follows";
 const KIOSK_RESET_MS = 90_000;
+const PUBLIC_EXPO_CACHE_MS = 2 * 60_000;
+const publicExpoMemoryCache = new Map();
+
+function readCachedExpo(slug) {
+  const entry = publicExpoMemoryCache.get(slug);
+  if (!entry || Date.now() - entry.savedAt > PUBLIC_EXPO_CACHE_MS) return null;
+  return entry.payload;
+}
 
 function createInterestForm(email = "") {
   return {
@@ -153,8 +161,9 @@ function PublicListingCard({ listing, event, favorite, comparing, onFavorite, on
 
 export default function PublicExpoView({ slug, listingToken = "", kiosk = false, session }) {
   const { showToast } = useToast();
-  const [payload, setPayload] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const cachedPayload = readCachedExpo(slug);
+  const [payload, setPayload] = useState(() => cachedPayload);
+  const [loading, setLoading] = useState(() => !cachedPayload);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [species, setSpecies] = useState("All");
@@ -208,6 +217,7 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
       return;
     }
 
+    publicExpoMemoryCache.set(slug, { payload: normalized, savedAt: Date.now() });
     setPayload(normalized);
 
     if (listingToken) {
@@ -219,12 +229,21 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
   };
 
   useEffect(() => {
-    loadExpo();
+    loadExpo(Boolean(readCachedExpo(slug)));
   }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const interval = window.setInterval(() => loadExpo(true), kiosk ? 15_000 : 30_000);
-    return () => window.clearInterval(interval);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") loadExpo(true);
+    };
+
+    const interval = window.setInterval(refreshWhenVisible, kiosk ? 15_000 : 30_000);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, [kiosk, slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
