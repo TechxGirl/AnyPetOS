@@ -1,3 +1,4 @@
+import { getPetInitials, getPetPhotoUrl } from "../utils/images";
 import { Button, Card, CardHeader, Icon, IconButton } from "./ui";
 
 export default function PetProfile({
@@ -15,21 +16,37 @@ export default function PetProfile({
   const meds = pet.meds || [];
   const foods = pet.foodList || [];
   const status = pet.status || "Healthy";
+  const photoUrl = getPetPhotoUrl(pet);
 
   return (
     <div className="modalOverlay" onMouseDown={(event) => {
       if (event.target === event.currentTarget) close();
     }}>
       <section className="modal petProfileModal" role="dialog" aria-modal="true" aria-labelledby="pet-profile-title">
-        <div className="profileHeader">
-          <div>
+        <div className="petProfileHero">
+          <div className="petProfilePhoto">
+            {photoUrl ? (
+              <img src={photoUrl} alt={pet.photo?.alt || `${pet.name} profile`} />
+            ) : (
+              <div className="petProfilePhotoFallback">
+                <span>{getPetInitials(pet)}</span>
+                <small>{pet.species || "No photo"}</small>
+              </div>
+            )}
+          </div>
+
+          <div className="petProfileHeroText">
             <p className="passportId">Passport ID: {pet.passportId || "Not assigned"}</p>
             <h2 id="pet-profile-title">{pet.name}</h2>
-            <span className={`statusBadge status-${status.toLowerCase().replace(/\s+/g, "-")}`}>
-              {status}
-            </span>
-            <p>{pet.species || "Unknown species"}</p>
+            <div className="petProfileHeroMeta">
+              <span className={`statusBadge status-${status.toLowerCase().replace(/\s+/g, "-")}`}>
+                {status}
+              </span>
+              <span>{pet.species || "Unknown species"}</span>
+              {pet.morph && <span>{pet.morph}</span>}
+            </div>
           </div>
+
           <IconButton variant="ghost" icon={<Icon name="close" size={19} />} label="Close pet profile" onClick={close} />
         </div>
 

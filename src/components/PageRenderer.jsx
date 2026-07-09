@@ -15,8 +15,12 @@ import Calendar from "../pages/Calendar";
 import CareGuide from "../pages/CareGuide";
 import AI from "../pages/AI";
 import Settings from "../pages/Settings";
+import Workspaces from "../pages/Workspaces";
+import DataCenter from "../pages/DataCenter";
+import WorkspaceModulePage from "../pages/WorkspaceModulePage";
 
 import { ANIMALS } from "../data/animals";
+import { WORKSPACE_PAGE_SET } from "../data/workspaces";
 
 export default function PageRenderer({
   page,
@@ -130,6 +134,18 @@ export default function PageRenderer({
     return <AI pets={pets} />;
   }
 
+  if (page === "Workspaces") {
+    return <Workspaces pets={pets} setPage={setPage} />;
+  }
+
+  if (page === "Data Center") {
+    return <DataCenter pets={pets} addPet={addPet} setPage={setPage} />;
+  }
+
+  if (WORKSPACE_PAGE_SET.has(page)) {
+    return <WorkspaceModulePage page={page} pets={pets} setPage={setPage} />;
+  }
+
   if (page === "Settings") {
     return <Settings user={currentUser} setUser={handleLogout} />;
   }
@@ -138,5 +154,5 @@ export default function PageRenderer({
   // 🟢 Fallback
   // =====================================================
 
-  return null;
+  return <WorkspaceModulePage page={page} pets={pets} setPage={setPage} />;
 }

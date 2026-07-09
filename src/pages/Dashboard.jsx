@@ -1,6 +1,64 @@
 import Feed from "../components/Feed";
-import StatCard from "../components/StatCard";
+import { useWorkspace } from "../context/WorkspaceContext";
 import { Button, Card, CardHeader, EmptyState, Icon } from "../components/ui";
+import { getPetInitials, getPetPhotoUrl } from "../utils/images";
+
+function getMetricValue(metric, { pets, dueMeds, overdueFeedings, attentionPets, favoritePets, transferPets }) {
+  const values = {
+    adoption: pets.filter((pet) => ["Adoption Ready", "Available"].includes(pet.status)).length,
+    attention: attentionPets.length,
+    intake: pets.filter((pet) => ["Intake", "New"].includes(pet.status)).length,
+    logs: pets.reduce((total, pet) => total + (pet.logs?.length || 0), 0),
+    meds: dueMeds.length,
+    modules: "Ready",
+    pipeline: pets.length,
+    ready: pets.filter((pet) => ["Healthy", "Ambassador", "Available", "Sale Ready"].includes(pet.status)).length,
+    tasks: dueMeds.length + overdueFeedings.length,
+    transfers: transferPets.length,
+    favorites: favoritePets.length,
+  };
+
+  return values[metric] ?? pets.length;
+}
+
+function countPipelinePets(pets, pipeline) {
+  return pets.filter((pet) =>
+    pipeline.statuses.some((status) => String(pet.status || "").toLowerCase() === status.toLowerCase())
+  ).length;
+}
+
+function formatShortDate(value) {
+  if (!value) return "Not scheduled";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not scheduled";
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function DashboardAnimalTile({ pet, openProfile }) {
+  const photoUrl = getPetPhotoUrl(pet);
+
+  return (
+    <button type="button" className="premiumAnimalTile" onClick={() => openProfile(pet.id)}>
+      <span className="premiumAnimalPhoto" aria-hidden="true">
+        {photoUrl ? (
+          <img src={photoUrl} alt="" />
+        ) : (
+          <span className="premiumAnimalFallback">
+            <strong>{getPetInitials(pet)}</strong>
+            <small>{pet.species || "Pet"}</small>
+          </span>
+        )}
+      </span>
+      <span className="premiumAnimalCopy">
+        <strong>{pet.name || "Unnamed animal"}</strong>
+        <small>{pet.species || "Unknown species"}</small>
+      </span>
+      <span className={`premiumMiniBadge status-${String(pet.status || "healthy").toLowerCase().replace(/\s+/g, "-")}`}>
+        {pet.status || "Healthy"}
+      </span>
+    </button>
+  );
+}
 
 export default function Dashboard({
   profile,
@@ -14,23 +72,16 @@ export default function Dashboard({
   toggleFavorite,
   setPage,
 }) {
+  const { workspace } = useWorkspace();
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const displayName = profile?.display_name || "Morgan";
 
-  const workspaceNames = {
-    owner: "Owner workspace",
-    breeder: "Breeder workspace",
-    rescue: "Rescue workspace",
-    veterinarian: "Veterinary workspace",
-    education: "Education workspace",
-    petsitter: "Pet sitter workspace",
-  };
-
-  const workspace = workspaceNames[profile?.role] || "PetPassport workspace";
   const now = Date.now();
   const overdueFeedings = pets.filter((pet) => pet.nextFeed && now > pet.nextFeed);
   const favoritePets = pets.filter((pet) => pet.favorite);
-  const attentionPets = pets.filter((pet) => ["Sick", "Monitoring", "Quarantine"].includes(pet.status));
+  const attentionPets = pets.filter((pet) => ["Sick", "Monitoring", "Quarantine", "Watch", "Vet Needed", "Recovering"].includes(pet.status));
+  const transferPets = pets.filter((pet) => pet.transfer?.status === "pending" || pet.share?.enabled);
 
   const medReminders = pets.flatMap((pet) =>
     (pet.meds || []).map((med) => {
@@ -50,10 +101,18 @@ export default function Dashboard({
   );
 
   const dueMeds = medReminders.filter((med) => med.isDue);
-  const upcomingMeds = medReminders
-    .filter((med) => !med.isDue)
-    .sort((a, b) => a.nextDose - b.nextDose)
-    .slice(0, 3);
+  const upcomingMeds = medReminders.filter((med) => !med.isDue).sort((a, b) => a.nextDose - b.nextDose).slice(0, 3);
+
+  const metricContext = { pets, dueMeds, overdueFeedings, attentionPets, favoritePets, transferPets };
+  const statCards = [
+    { label: workspace.terminology.collection, value: pets.length, icon: workspace.icon, hint: `${favoritePets.length} favorites` },
+    ...workspace.dashboardCards.slice(0, 4).map((card) => ({
+      label: card.title,
+      value: getMetricValue(card.metric, metricContext),
+      icon: card.icon,
+      hint: card.description,
+    })),
+  ].slice(0, 5);
 
   const todayFocus = [
     ...dueMeds.map((med) => ({
@@ -77,21 +136,36 @@ export default function Dashboard({
       subtitle: `${pet.status} status`,
       status: "Monitor",
     })),
+    ...upcomingMeds.map((med, index) => ({
+      id: `upcoming-${index}`,
+      icon: "clock",
+      title: med.petName,
+      subtitle: med.medName,
+      status: formatShortDate(med.nextDose),
+    })),
   ].slice(0, 5);
 
   if (pets.length === 0) {
     return (
-      <div className="feed">
+      <div className="feed premiumDashboardPage">
+        <section className="premiumDashboardHero" style={{ "--workspace-card-accent": workspace.accent }}>
+          <div>
+            <p className="section-eyebrow">{workspace.label}</p>
+            <h1>{greeting}, {displayName} 👋</h1>
+            <p>{workspace.description}</p>
+          </div>
+          <div className="premiumHeroActions">
+            <Button leftIcon={<Icon name="plus" size={18} />} onClick={() => setPage("Add Pet")}>Add animal</Button>
+            <Button variant="outline" leftIcon={<Icon name="upload" size={18} />} onClick={() => setPage("Data Center")}>Import collection</Button>
+          </div>
+        </section>
+
         <Card padding="none">
           <EmptyState
-            icon={<Icon name="paw" size={24} />}
-            title="Create your first passport"
-            description="Track care, feeding, medications, weights, sheds, and health history in one organized profile."
-            action={
-              <Button leftIcon={<Icon name="plus" size={18} />} onClick={() => setPage("Add Pet")}>
-                Create first passport
-              </Button>
-            }
+            icon={<Icon name={workspace.icon} size={24} />}
+            title={`Create your first ${workspace.terminology.record}`}
+            description={`Start your ${workspace.shortLabel.toLowerCase()} workflow with one animal, or use the Data Center to import a full collection.`}
+            action={<Button leftIcon={<Icon name="plus" size={18} />} onClick={() => setPage("Add Pet")}>Create first Passport</Button>}
           />
         </Card>
       </div>
@@ -99,99 +173,109 @@ export default function Dashboard({
   }
 
   return (
-    <div className="feed">
-      <section className="dashboardHero">
+    <div className="feed premiumDashboardPage">
+      <section className="premiumDashboardHero" style={{ "--workspace-card-accent": workspace.accent }}>
         <div>
-          <h1>{greeting}, {profile?.display_name || "Pet Keeper"}</h1>
-          <p>Welcome back to your {workspace}.</p>
+          <p className="section-eyebrow">{workspace.label}</p>
+          <h1>{greeting}, {displayName} 👋</h1>
+          <p>{workspace.focusTitle}: {workspace.description}</p>
         </div>
-        <div className="heroStats" aria-label="Workspace summary">
-          <span>{pets.length} passports</span>
-          <span>{dueMeds.length} medications due</span>
-          <span>{attentionPets.length} need attention</span>
+        <div className="premiumHeroActions">
+          <Button leftIcon={<Icon name="plus" size={18} />} onClick={() => setPage("Add Pet")}>Add animal</Button>
+          <Button variant="outline" leftIcon={<Icon name="upload" size={18} />} onClick={() => setPage("Data Center")}>Import</Button>
         </div>
       </section>
 
-      <Card className="focusCard">
-        <CardHeader
-          icon={<Icon name="clipboard" size={19} />}
-          title="Today's focus"
-          description="The most important care items across your collection."
-        />
-        {todayFocus.length === 0 ? (
-          <p>Everything looks calm today. No urgent care tasks right now.</p>
-        ) : (
-          <div className="focusList">
-            {todayFocus.map((item) => (
-              <div key={item.id} className="focusItem">
-                <span className="focusIcon"><Icon name={item.icon} size={19} /></span>
-                <div>
-                  <strong>{item.title}</strong>
-                  <p>{item.subtitle}</p>
-                </div>
-                <small>{item.status}</small>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-
-      <div className="statGrid">
-        <StatCard icon={<Icon name="paw" size={20} />} value={pets.length} label="Passports" color="#34d399" />
-        <StatCard icon={<Icon name="star" size={20} />} value={favoritePets.length} label="Favorites" color="#fbbf24" />
-        <StatCard icon={<Icon name="utensils" size={20} />} value={overdueFeedings.length} label="Feedings due" color="#fb923c" />
-        <StatCard icon={<Icon name="pill" size={20} />} value={dueMeds.length} label="Medications due" color="#60a5fa" />
-        <StatCard icon={<Icon name="alert" size={20} />} value={attentionPets.length} label="Need attention" color="#fb7185" />
+      <div className="premiumStatStrip">
+        {statCards.map((card) => (
+          <Card key={card.label} className="premiumStatCard" style={{ "--workspace-card-accent": workspace.accent }}>
+            <span className="premiumStatIcon"><Icon name={card.icon} size={19} /></span>
+            <strong>{card.value}</strong>
+            <span>{card.label}</span>
+            <small>{card.hint}</small>
+          </Card>
+        ))}
       </div>
 
-      <Card>
+      <div className="premiumDashboardTwoColumn">
+        <Card className="premiumCollectionCard">
+          <CardHeader
+            icon={<Icon name="paw" size={19} />}
+            title={`Your ${workspace.terminology.collection}`}
+            description="Real pet photos only, clean placeholders when no photo has been uploaded."
+            action={<Button size="sm" variant="ghost" onClick={() => setPage("Pets")}>View all</Button>}
+          />
+          <div className="premiumAnimalGrid">
+            {pets.slice(0, 4).map((pet) => <DashboardAnimalTile key={pet.id} pet={pet} openProfile={openProfile} />)}
+          </div>
+        </Card>
+
+        <Card className="premiumReminderCard">
+          <CardHeader
+            icon={<Icon name="calendar" size={19} />}
+            title="Upcoming reminders"
+            description="Care, medical, and status items that need attention."
+          />
+          {todayFocus.length === 0 ? (
+            <p className="premiumCalmText">Everything looks calm today. No urgent care tasks right now.</p>
+          ) : (
+            <div className="premiumReminderList">
+              {todayFocus.map((item) => (
+                <button key={item.id} type="button" className="premiumReminderItem" onClick={() => setPage("Calendar")}>
+                  <span><Icon name={item.icon} size={17} /></span>
+                  <strong>{item.title}</strong>
+                  <small>{item.subtitle}</small>
+                  <em>{item.status}</em>
+                </button>
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
+
+      <Card className="premiumPipelineCard">
         <CardHeader
-          icon={<Icon name="pill" size={19} />}
-          title="Medication reminders"
-          description="Active medication schedules across all pets."
+          icon={<Icon name="activity" size={19} />}
+          title={`${workspace.shortLabel} pipeline`}
+          description="Status lanes change by workspace so each role gets a useful operational snapshot."
         />
-        {medReminders.length === 0 ? (
-          <p>No active medications yet.</p>
-        ) : (
-          <>
-            {dueMeds.length > 0 && (
-              <>
-                <h4>Due now or overdue</h4>
-                {dueMeds.map((med, index) => (
-                  <div key={`due-${index}`} className="reminderLine overdueLine">
-                    <strong>{med.petName}</strong>
-                    <span>{med.medName}{med.dose ? ` • ${med.dose}` : ""}</span>
-                    <small>Due now</small>
-                  </div>
-                ))}
-              </>
-            )}
-            {upcomingMeds.length > 0 && (
-              <>
-                <h4>Upcoming</h4>
-                {upcomingMeds.map((med, index) => (
-                  <div key={`upcoming-${index}`} className="reminderLine">
-                    <strong>{med.petName}</strong>
-                    <span>{med.medName}{med.dose ? ` • ${med.dose}` : ""}</span>
-                    <small>{new Date(med.nextDose).toLocaleString()}</small>
-                  </div>
-                ))}
-              </>
-            )}
-          </>
-        )}
+        <div className="premiumPipelineGrid">
+          {workspace.pipelines.map((pipeline) => (
+            <button className="premiumPipelineLane" type="button" key={pipeline.label} onClick={() => setPage("Pets")}>
+              <strong>{countPipelinePets(pets, pipeline)}</strong>
+              <span>{pipeline.label}</span>
+            </button>
+          ))}
+        </div>
       </Card>
 
-      <Feed
-        pets={pets}
-        feedPet={feedPet}
-        addLog={addLog}
-        startEdit={startEdit}
-        openProfile={openProfile}
-        openQuickMeds={openQuickMeds}
-        openShedModal={openShedModal}
-        toggleFavorite={toggleFavorite}
-      />
+      <Card className="premiumQuickActionsCard">
+        <CardHeader
+          icon={<Icon name="sparkles" size={19} />}
+          title="Workspace quick actions"
+          description={`Fast paths for the ${workspace.shortLabel.toLowerCase()} interface.`}
+        />
+        <div className="workspaceQuickActions premiumQuickActions">
+          {workspace.quickActions.map((action) => (
+            <Button key={action.label} variant="outline" leftIcon={<Icon name={action.icon} size={16} />} onClick={() => setPage(action.page)}>
+              {action.label}
+            </Button>
+          ))}
+        </div>
+      </Card>
+
+      <section className="premiumFeedSection">
+        <Feed
+          pets={pets}
+          feedPet={feedPet}
+          addLog={addLog}
+          startEdit={startEdit}
+          openProfile={openProfile}
+          openQuickMeds={openQuickMeds}
+          openShedModal={openShedModal}
+          toggleFavorite={toggleFavorite}
+        />
+      </section>
     </div>
   );
 }

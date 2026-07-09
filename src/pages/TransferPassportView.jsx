@@ -148,6 +148,20 @@ export default function TransferPassportView({ token, session }) {
         <Card>
           <CardHeader icon={<Icon name="paw" size={18} />} title="Passport preview" />
 
+          <div className="transferPassportPhotoStrip">
+            {passport.photo?.dataUrl ? (
+              <img src={passport.photo.dataUrl} alt={passport.photo.alt || `${passport.name} profile`} />
+            ) : (
+              <div className="transferPassportPhotoFallback">
+                {(passport.name || passport.species || "PP").slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <div>
+              <strong>{passport.name || "Unnamed animal"}</strong>
+              <small>{passport.species || "Unknown species"}{passport.morph ? ` • ${passport.morph}` : ""}</small>
+            </div>
+          </div>
+
           <div className="profileGrid">
             <div className="profileStat">
               <p>Name</p>
@@ -208,6 +222,20 @@ export default function TransferPassportView({ token, session }) {
         <>
           <Card>
             <CardHeader icon={<Icon name="paw" size={18} />} title="Passport preview" />
+
+            <div className="transferPassportPhotoStrip">
+              {passport.photo?.dataUrl ? (
+                <img src={passport.photo.dataUrl} alt={passport.photo.alt || `${passport.name} profile`} />
+              ) : (
+                <div className="transferPassportPhotoFallback">
+                  {(passport.name || passport.species || "PP").slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              <div>
+                <strong>{passport.name || "Unnamed animal"}</strong>
+                <small>{passport.species || "Unknown species"}{passport.morph ? ` • ${passport.morph}` : ""}</small>
+              </div>
+            </div>
 
             <div className="profileGrid">
               <div className="profileStat">

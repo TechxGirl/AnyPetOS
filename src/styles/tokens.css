@@ -165,3 +165,61 @@
   --pp-shadow-navigation: 24px 0 60px rgba(25, 42, 38, 0.18);
   --pp-focus-ring: 0 0 0 3px rgba(13, 148, 136, 0.2);
 }
+
+/* =====================================================
+   🟢 Premium UI Concept Alignment
+   Dark SaaS shell + role color system
+===================================================== */
+:root,
+:root[data-theme="dark"] {
+  --pp-color-canvas: #050913;
+  --pp-color-sidebar: #080f1d;
+  --pp-color-sidebar-raised: #10182b;
+  --pp-color-surface: #0d1626;
+  --pp-color-surface-raised: #121e33;
+  --pp-color-surface-hover: #17243b;
+  --pp-color-surface-muted: #091222;
+  --pp-color-border: rgba(148, 163, 184, 0.16);
+  --pp-color-border-strong: rgba(148, 163, 184, 0.28);
+  --pp-color-divider: rgba(148, 163, 184, 0.12);
+  --pp-color-text: #f8fbff;
+  --pp-color-text-muted: #b7c5df;
+  --pp-color-text-subtle: #7f8ca7;
+  --pp-color-primary: var(--pp-workspace-accent, #32d4c4);
+  --pp-color-primary-hover: color-mix(in srgb, var(--pp-workspace-accent, #32d4c4) 72%, white 28%);
+  --pp-color-primary-soft: color-mix(in srgb, var(--pp-workspace-accent, #32d4c4) 16%, transparent);
+  --pp-color-primary-border: color-mix(in srgb, var(--pp-workspace-accent, #32d4c4) 42%, transparent);
+  --pp-shadow-card: 0 1px 0 rgba(255, 255, 255, 0.025), 0 20px 60px rgba(0, 0, 0, 0.26);
+  --pp-shadow-card-hover: 0 1px 0 rgba(255, 255, 255, 0.035), 0 28px 72px rgba(0, 0, 0, 0.34);
+  --pp-radius-md: 0.9rem;
+  --pp-radius-lg: 1.15rem;
+  --pp-radius-xl: 1.5rem;
+  --pp-sidebar-width: 300px;
+  --pp-content-max-width: 1480px;
+}
+
+:root[data-theme="light"] {
+  --pp-color-canvas: #f5f7fb;
+  --pp-color-sidebar: #ffffff;
+  --pp-color-sidebar-raised: #f3f5fb;
+  --pp-color-surface: #ffffff;
+  --pp-color-surface-raised: #f8faff;
+  --pp-color-surface-hover: #f0f4fb;
+  --pp-color-surface-muted: #f5f7fb;
+  --pp-color-primary: var(--pp-workspace-accent, #0f766e);
+  --pp-color-primary-hover: color-mix(in srgb, var(--pp-workspace-accent, #0f766e) 72%, black 18%);
+  --pp-color-primary-soft: color-mix(in srgb, var(--pp-workspace-accent, #0f766e) 12%, transparent);
+  --pp-color-primary-border: color-mix(in srgb, var(--pp-workspace-accent, #0f766e) 28%, transparent);
+  --pp-color-border: rgba(44, 58, 82, 0.12);
+  --pp-color-border-strong: rgba(44, 58, 82, 0.22);
+  --pp-shadow-card: 0 1px 2px rgba(38, 49, 70, 0.06), 0 18px 48px rgba(38, 49, 70, 0.09);
+  --pp-shadow-card-hover: 0 2px 4px rgba(38, 49, 70, 0.08), 0 24px 60px rgba(38, 49, 70, 0.12);
+}
+
+:root[data-workspace="owner"] { --pp-workspace-accent: #35d399; }
+:root[data-workspace="breeder"] { --pp-workspace-accent: #8b5cf6; }
+:root[data-workspace="rescue"] { --pp-workspace-accent: #f59e0b; }
+:root[data-workspace="vet"] { --pp-workspace-accent: #60a5fa; }
+:root[data-workspace="education"] { --pp-workspace-accent: #22d3ee; }
+:root[data-workspace="sitter"] { --pp-workspace-accent: #fb7185; }
+:root[data-workspace="retail"] { --pp-workspace-accent: #eab308; }

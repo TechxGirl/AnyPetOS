@@ -3,6 +3,8 @@ import { resolveCareProfile } from "../utils/careProfileResolver";
 import { ANIMAL_TAXONOMY } from "../data/animalTaxonomy";
 import { PET_STATUSES } from "../data/statuses";
 import { Button, Icon, useToast } from "./ui";
+import PetPhotoUploader from "./PetPhotoUploader";
+import MorphSelector from "./MorphSelector";
 
 // =====================================================
 // 🟢 AddPet.jsx
@@ -30,6 +32,8 @@ export default function AddPet({ addPet }) {
     ageNote: "",
     temperament: "",
     status: "Healthy",
+    photo: null,
+    includePhotoInPassport: true,
     diet: "",
     foodList: [],
     frequency: 0,
@@ -223,6 +227,36 @@ export default function AddPet({ addPet }) {
           </div>
         </div>
 
+        {/* 🟢 Real Pet Photo */}
+        <PetPhotoUploader
+          value={form.photo}
+          petName={form.name || "New animal"}
+          species={form.species || "Animal"}
+          onChange={(photo) =>
+            setForm({
+              ...form,
+              photo,
+              includePhotoInPassport: photo ? form.includePhotoInPassport : true,
+            })
+          }
+        />
+
+        {form.photo && (
+          <label className="checkboxLine photoPrivacyToggle">
+            <input
+              type="checkbox"
+              checked={form.includePhotoInPassport !== false}
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  includePhotoInPassport: event.target.checked,
+                })
+              }
+            />
+            Include this profile photo when sharing or transferring the Passport
+          </label>
+        )}
+
         {/* 🟢 Quick Species Search */}
         <div className="formGroup full">
           <label>Quick Species Search</label>
@@ -352,14 +386,13 @@ export default function AddPet({ addPet }) {
             />
           </div>
 
-          <div className="formGroup">
-            <label>Morph / Breed</label>
-            <input
-              placeholder="Example: Banana, Tabby, Mixed Breed"
+          <div className="formGroup full morphFormGroup">
+            <MorphSelector
               value={form.morph}
-              onChange={(e) =>
-                setForm({ ...form, morph: e.target.value })
-              }
+              species={form.species}
+              category={form.category}
+              animalGroup={form.animalGroup}
+              onChange={(morph) => setForm({ ...form, morph })}
             />
           </div>
 

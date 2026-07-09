@@ -32,3 +32,8 @@ dist-ssr
 # PetPassport generated archives
 petpassport-current.zip
 petpassport-beta-*.zip
+
+# Local build/install archives
+*.zip
+archive/packs/
+

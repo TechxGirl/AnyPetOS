@@ -1,3 +1,5 @@
+import { useWorkspace } from "../context/WorkspaceContext";
+import { WorkspaceSwitcher } from "../components/workspace";
 import {
   Button,
   Card,
@@ -8,6 +10,7 @@ import {
 } from "../components/ui";
 
 export default function Settings({ user, setUser }) {
+  const { workspace, enabledWorkspaceIds } = useWorkspace();
   const displayName =
     user?.displayName || user?.username || user?.email || user?.phone || "Guest";
   const logout = () => setUser(null);
@@ -17,7 +20,7 @@ export default function Settings({ user, setUser }) {
       <PageHeader
         eyebrow="Workspace"
         title="Settings"
-        description="Manage your account, appearance, and planned workspace options."
+        description="Manage your account, appearance, and active PetPassport interface."
         icon={<Icon name="settings" size={22} />}
       />
 
@@ -35,11 +38,12 @@ export default function Settings({ user, setUser }) {
             <strong>Username:</strong> @{user.username}
           </p>
         )}
-        {user?.primaryRole && (
-          <p>
-            <strong>Current mode:</strong> {user.primaryRole}
-          </p>
-        )}
+        <p>
+          <strong>Active workspace:</strong> {workspace.label}
+        </p>
+        <p>
+          <strong>Enabled workspaces:</strong> {enabledWorkspaceIds.length}
+        </p>
         <div className="buttonRow">
           <Button
             variant="outline"
@@ -49,6 +53,13 @@ export default function Settings({ user, setUser }) {
             Log out
           </Button>
         </div>
+      </Card>
+
+      <Card>
+        <WorkspaceSwitcher />
+        <p className="settingsHelperText">
+          Workspace changes are saved on this device for beta. A later backend pass will sync enabled workspaces, staff permissions, and default roles to Supabase profiles.
+        </p>
       </Card>
 
       <Card>
@@ -67,32 +78,30 @@ export default function Settings({ user, setUser }) {
       <Card>
         <CardHeader
           icon={<Icon name="shield" size={18} />}
-          title="User mode"
-          description="Role-specific workspaces are planned for a later development phase."
+          title="Security and role permissions"
+          description="The next permission layer will control what each person can view, edit, log, or transfer."
         />
         <ul>
-          <li>Pet Owner</li>
-          <li>Breeder</li>
-          <li>Rescue</li>
-          <li>Veterinarian</li>
-          <li>Education / Zoo</li>
-          <li>Pet Sitter</li>
+          <li>View-only Passport sharing</li>
+          <li>Care logging access for sitters and fosters</li>
+          <li>Medical record access for veterinary review</li>
+          <li>Temporary access with expiration dates</li>
+          <li>Team roles for rescues, stores, clinics, and education programs</li>
         </ul>
       </Card>
 
       <Card>
         <CardHeader
-          icon={<Icon name="sparkles" size={18} />}
-          title="Planned settings"
-          description="Upcoming personalization, privacy, and data-management tools."
+          icon={<Icon name="database" size={18} />}
+          title="Data and import roadmap"
+          description="The Data Center will become the home for MorphMarket exports, spreadsheets, backups, and bulk migration."
         />
         <ul>
-          <li>Reminder notifications</li>
-          <li>Cloud sync controls</li>
-          <li>Backup and restore</li>
-          <li>Data export</li>
-          <li>Privacy settings</li>
-          <li>Expo mode</li>
+          <li>MorphMarket CSV/export import with column mapping</li>
+          <li>Generic spreadsheet import preview</li>
+          <li>Duplicate detection by IDs, names, species, morphs, and dates</li>
+          <li>Backup JSON export and restore preview</li>
+          <li>Saved import templates for breeders, rescues, vets, and stores</li>
         </ul>
       </Card>
     </div>

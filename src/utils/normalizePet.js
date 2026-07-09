@@ -70,6 +70,41 @@ function normalizeTransferSettings(transfer) {
   };
 }
 
+
+// =====================================================
+// 🟢 Normalize Pet Photo
+// =====================================================
+
+function normalizePetPhoto(photo) {
+  if (!photo) return null;
+
+  if (typeof photo === "string") {
+    return {
+      dataUrl: photo,
+      alt: "Pet photo",
+      source: "legacy",
+      uploadedAt: null,
+    };
+  }
+
+  if (typeof photo !== "object") return null;
+
+  const dataUrl = photo.dataUrl || photo.url || photo.src || "";
+
+  if (!dataUrl) return null;
+
+  return {
+    dataUrl,
+    alt: photo.alt || photo.fileName || "Pet photo",
+    fileName: photo.fileName || "",
+    mimeType: photo.mimeType || "image/jpeg",
+    width: photo.width || null,
+    height: photo.height || null,
+    uploadedAt: photo.uploadedAt || null,
+    source: photo.source || "user-upload",
+  };
+}
+
 // =====================================================
 // 🟢 Normalize Pet
 // =====================================================
@@ -118,6 +153,13 @@ export function normalizePet(pet = {}) {
     favorite: Boolean(pet.favorite),
 
     // =====================================================
+    // 🟢 Real Pet Photo
+    // =====================================================
+
+    photo: normalizePetPhoto(pet.photo || pet.profilePhoto || pet.photoUrl),
+    includePhotoInPassport: pet.includePhotoInPassport !== false,
+
+    // =====================================================
     // 🟢 Care Basics
     // =====================================================
 
@@ -140,6 +182,9 @@ export function normalizePet(pet = {}) {
     // =====================================================
 
     foodOptions: Array.isArray(pet.foodOptions) ? pet.foodOptions : [],
+    customFoodOptions: Array.isArray(pet.customFoodOptions)
+      ? pet.customFoodOptions
+      : [],
 
     substrateOptions: Array.isArray(pet.substrateOptions)
       ? pet.substrateOptions
@@ -160,6 +205,7 @@ export function normalizePet(pet = {}) {
     // =====================================================
 
     logs: Array.isArray(pet.logs) ? pet.logs : [],
+    feedingLogs: Array.isArray(pet.feedingLogs) ? pet.feedingLogs : [],
     weightLogs: Array.isArray(pet.weightLogs) ? pet.weightLogs : [],
     meds: Array.isArray(pet.meds) ? pet.meds : [],
 

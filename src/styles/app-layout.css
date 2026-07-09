@@ -128,3 +128,31 @@
     transition: none;
   }
 }
+
+/* =====================================================
+   🟢 Premium App Shell
+===================================================== */
+.pp-app-shell {
+  background:
+    radial-gradient(circle at 18% -12%, color-mix(in srgb, var(--pp-workspace-accent, #32d4c4) 16%, transparent), transparent 34rem),
+    radial-gradient(circle at 90% 0%, rgba(124, 92, 255, 0.12), transparent 30rem),
+    var(--pp-color-canvas);
+}
+
+.pp-app-shell__content {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.018), transparent 18rem),
+    radial-gradient(circle at 80% -6%, color-mix(in srgb, var(--pp-workspace-accent, #32d4c4) 10%, transparent), transparent 32rem),
+    var(--pp-color-canvas);
+}
+
+.pp-app-shell__main {
+  padding: clamp(1.25rem, 2vw, 2.15rem);
+}
+
+@media (min-width: 1180px) {
+  .pp-app-shell__main {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}

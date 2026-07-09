@@ -1,5 +1,7 @@
 import { PET_STATUSES } from "../data/statuses";
 import { Button, Icon, IconButton } from "./ui";
+import PetPhotoUploader from "./PetPhotoUploader";
+import MorphSelector from "./MorphSelector";
 
 export default function EditPetModal({ editForm, setEditForm, saveEdit, cancelEdit, saving = false }) {
   return (
@@ -10,12 +12,46 @@ export default function EditPetModal({ editForm, setEditForm, saveEdit, cancelEd
           <IconButton variant="ghost" icon={<Icon name="close" size={19} />} label="Close edit form" onClick={cancelEdit} disabled={saving} />
         </div>
 
+        <PetPhotoUploader
+          value={editForm.photo}
+          petName={editForm.name || "Animal"}
+          species={editForm.species || "Animal"}
+          onChange={(photo) =>
+            setEditForm({
+              ...editForm,
+              photo,
+              includePhotoInPassport: photo ? editForm.includePhotoInPassport : true,
+            })
+          }
+        />
+
+        {editForm.photo && (
+          <label className="checkboxLine photoPrivacyToggle">
+            <input
+              type="checkbox"
+              checked={editForm.includePhotoInPassport !== false}
+              onChange={(event) =>
+                setEditForm({
+                  ...editForm,
+                  includePhotoInPassport: event.target.checked,
+                })
+              }
+            />
+            Include this profile photo when sharing or transferring the Passport
+          </label>
+        )}
+
         <label>Name</label>
         <input placeholder="Name" value={editForm.name} onChange={(event) => setEditForm({ ...editForm, name: event.target.value })} />
         <label>Species</label>
         <input placeholder="Species" value={editForm.species} onChange={(event) => setEditForm({ ...editForm, species: event.target.value })} />
-        <label>Morph / breed</label>
-        <input placeholder="Morph or breed" value={editForm.morph} onChange={(event) => setEditForm({ ...editForm, morph: event.target.value })} />
+        <MorphSelector
+          value={editForm.morph}
+          species={editForm.species}
+          category={editForm.category}
+          animalGroup={editForm.animalGroup}
+          onChange={(morph) => setEditForm({ ...editForm, morph })}
+        />
         <label>Sex</label>
         <select value={editForm.sex} onChange={(event) => setEditForm({ ...editForm, sex: event.target.value })}>
           <option value="">Unknown sex</option><option value="Female">Female</option><option value="Male">Male</option><option value="Unsexed">Unsexed</option>

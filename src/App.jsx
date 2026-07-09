@@ -24,6 +24,7 @@ import useAsyncAction from "./hooks/useAsyncAction";
 import { PetProvider, usePetContext } from "./context/PetContext";
 import { ModalProvider, useModal } from "./context/ModalContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { WorkspaceProvider } from "./context/WorkspaceContext";
 
 // =====================================================
 // 🟢 Shared UI
@@ -70,6 +71,8 @@ const EMPTY_EDIT_FORM = {
   ageNote: "",
   temperament: "",
   status: "Healthy",
+  photo: null,
+  includePhotoInPassport: true,
   diet: "",
   foodList: [],
   frequency: 0,
@@ -254,9 +257,11 @@ function AppContent() {
   // =====================================================
 
   return (
-    <PetProvider session={session}>
-      <AuthenticatedApp profile={profile} />
-    </PetProvider>
+    <WorkspaceProvider profileRole={profile.role}>
+      <PetProvider session={session}>
+        <AuthenticatedApp profile={profile} />
+      </PetProvider>
+    </WorkspaceProvider>
   );
 }
 
@@ -423,6 +428,8 @@ function AuthenticatedApp({ profile }) {
       ageNote: pet.ageNote || "",
       temperament: pet.temperament || "",
       status: pet.status || "Healthy",
+      photo: pet.photo || null,
+      includePhotoInPassport: pet.includePhotoInPassport !== false,
       diet: pet.diet || "",
       foodList: Array.isArray(pet.foodList) ? pet.foodList : [],
       frequency: pet.frequency || 0,
@@ -540,33 +547,95 @@ function AuthenticatedApp({ profile }) {
       return;
     }
 
+    const mealItems = Array.isArray(meal?.items) ? meal.items : [];
+    const mealFoods = Array.isArray(meal?.foods) ? meal.foods : [];
+
     const foodText =
-      Array.isArray(meal?.foods) && meal.foods.length > 0
-        ? meal.foods.join(", ")
+      mealItems.length > 0
+        ? mealItems
+            .map((item) =>
+              [item.food, item.size, item.quantity ? `x${item.quantity}` : "", item.unit]
+                .filter(Boolean)
+                .join(" • ")
+            )
+            .join(", ")
+        : mealFoods.length > 0
+        ? mealFoods.join(", ")
         : meal?.food || pet.diet || "Meal";
 
-    const amountText = meal?.amount ? ` - ${meal.amount}` : "";
-    const acceptedText = meal?.accepted ? ` - ${meal.accepted}` : "";
-    const notesText = meal?.notes ? ` - ${meal.notes}` : "";
+    const resultText = meal?.result || meal?.accepted || "Ate";
+    const contextParts = [
+      resultText,
+      meal?.refusalReason ? `Reason: ${meal.refusalReason}` : "",
+      meal?.gutLoaded ? "Gut-loaded" : "",
+      meal?.calciumDusted ? "Calcium dusted" : "",
+      meal?.vitaminDusted ? "Vitamin dusted" : "",
+      meal?.petWeight ? `Weight: ${meal.petWeight}` : "",
+      meal?.notes || "",
+    ].filter(Boolean);
+
+    const feedingLog = {
+      id: createId("feeding"),
+      time: feedingTime,
+      date: meal?.date || new Date(feedingTime).toISOString().slice(0, 10),
+      items: mealItems,
+      foods: mealFoods,
+      result: resultText,
+      refusalReason: meal?.refusalReason || "",
+      gutLoaded: Boolean(meal?.gutLoaded),
+      calciumDusted: Boolean(meal?.calciumDusted),
+      vitaminDusted: Boolean(meal?.vitaminDusted),
+      petWeight: meal?.petWeight || "",
+      notes: meal?.notes || "",
+    };
+
+    const customFoodsToSave = Array.isArray(meal?.customFoodsToSave)
+      ? meal.customFoodsToSave.map((food) => String(food).trim()).filter(Boolean)
+      : [];
+
+    const updatedFoodOptions = [
+      ...(pet.foodOptions || []),
+      ...customFoodsToSave,
+    ].filter((food, index, list) => food && list.indexOf(food) === index);
+
+    const updatedFoodList = [
+      ...(pet.foodList || []),
+      ...mealFoods,
+      ...customFoodsToSave,
+    ].filter((food, index, list) => food && list.indexOf(food) === index);
+
+    const updatedCustomFoodOptions = [
+      ...(pet.customFoodOptions || []),
+      ...customFoodsToSave,
+    ].filter((food, index, list) => food && list.indexOf(food) === index);
+
+    const shouldUpdateLastFed = !["Refused", "Skipped intentionally"].includes(resultText);
 
     return runAction({
       key: `feed-${pet.id}`,
       action: () =>
         updatePetInCloud(pet.id, {
-          lastFed: feedingTime,
-          nextFeed: calculateNextFeed(feedingTime, pet.frequency),
+          lastFed: shouldUpdateLastFed ? feedingTime : pet.lastFed,
+          nextFeed: shouldUpdateLastFed
+            ? calculateNextFeed(feedingTime, pet.frequency)
+            : pet.nextFeed,
+          foodOptions: updatedFoodOptions,
+          foodList: updatedFoodList,
+          diet: updatedFoodList.join(", "),
+          customFoodOptions: updatedCustomFoodOptions,
+          feedingLogs: [feedingLog, ...(pet.feedingLogs || [])],
           logs: [
             {
               id: createId("event"),
-              type: "Fed",
-              note: `Fed ${foodText}${amountText}${acceptedText}${notesText}`,
+              type: resultText === "Refused" ? "Feeding Refused" : "Fed",
+              note: `Fed ${foodText}${contextParts.length ? ` - ${contextParts.join(" - ")}` : ""}`,
               time: feedingTime,
             },
             ...(pet.logs || []),
           ],
         }),
-      successTitle: "Feeding logged",
-      successMessage: `${pet.name}'s feeding was saved.`,
+      successTitle: resultText === "Refused" ? "Refusal logged" : "Feeding logged",
+      successMessage: `${pet.name}'s feeding record was saved.`,
       errorMessage: `${pet.name}'s feeding could not be saved.`,
     });
   };

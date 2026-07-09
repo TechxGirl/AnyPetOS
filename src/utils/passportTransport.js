@@ -136,6 +136,7 @@ export function buildPublicPassportSnapshot(pet, view = "buyer") {
       estimatedAge: pet.estimatedAge || "",
       temperament: pet.temperament || "",
       status: pet.status || "Healthy",
+      photo: pet.includePhotoInPassport === false ? null : pet.photo || null,
     },
 
     care: {

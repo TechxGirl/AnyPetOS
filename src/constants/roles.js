@@ -2,7 +2,7 @@ export const USER_ROLES = [
   {
     id: "owner",
     label: "Pet Owner",
-    icon: "paw",
+    icon: "home",
     description: "Track daily care, reminders, records, and pet history.",
     features: [
       "Daily care reminders",
@@ -14,7 +14,7 @@ export const USER_ROLES = [
   {
     id: "breeder",
     label: "Breeder",
-    icon: "activity",
+    icon: "dna",
     description: "Manage animals, collections, breeding records, sales, and expo tools.",
     features: [
       "Collection and inventory management",
@@ -38,7 +38,7 @@ export const USER_ROLES = [
   {
     id: "vet",
     label: "Veterinary Professional",
-    icon: "activity",
+    icon: "stethoscope",
     description: "Review medical history, medications, weights, and care timelines.",
     features: [
       "Quick access to animal history",
@@ -48,9 +48,21 @@ export const USER_ROLES = [
     ],
   },
   {
+    id: "education",
+    label: "Education / Zoo",
+    icon: "graduationCap",
+    description: "Manage ambassador animals, care records, exhibits, and educational collections.",
+    features: [
+      "Ambassador animal records",
+      "Program and exhibit planning",
+      "Educational collection organization",
+      "Future public profile tools",
+    ],
+  },
+  {
     id: "sitter",
     label: "Pet Sitter",
-    icon: "user",
+    icon: "users",
     description: "View care instructions, feeding, medications, and emergency notes.",
     features: [
       "Simple daily care instructions",
@@ -60,15 +72,15 @@ export const USER_ROLES = [
     ],
   },
   {
-    id: "education",
-    label: "Education / Zoo",
-    icon: "book",
-    description: "Manage ambassador animals, care records, and educational collections.",
+    id: "retail",
+    label: "Retail / Pet Shop",
+    icon: "store",
+    description: "Manage animal inventory, quarantine, sale-ready Passports, and customer transfers.",
     features: [
-      "Ambassador animal records",
-      "Care history and notes",
-      "Educational collection organization",
-      "Future staff workspace tools",
+      "Store inventory and supplier notes",
+      "Quarantine and health checks",
+      "Customer-ready care cards",
+      "Transfer-ready QR Passports",
     ],
   },
 ];

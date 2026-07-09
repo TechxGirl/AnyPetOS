@@ -112,6 +112,27 @@ export default function PublicPassportView({ token }) {
         icon={<Icon name="scan" size={22} />}
       />
 
+      <Card className="publicPassportHeroCard">
+        <div className="publicPassportHero">
+          <div className="publicPassportPhoto">
+            {passport.photo?.dataUrl ? (
+              <img src={passport.photo.dataUrl} alt={passport.photo.alt || `${passport.name} profile`} />
+            ) : (
+              <div className="publicPassportPhotoFallback">
+                <span>{(passport.name || passport.species || "PP").slice(0, 2).toUpperCase()}</span>
+                <small>{passport.species || "Shared Passport"}</small>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <p className="passportId">Passport ID: {passport.passportId || "Not assigned"}</p>
+            <h2>{passport.name || "Animal Passport"}</h2>
+            <p>{passport.species || "Unknown species"}{passport.morph ? ` • ${passport.morph}` : ""}</p>
+          </div>
+        </div>
+      </Card>
+
       <Card>
         <CardHeader icon={<Icon name="paw" size={18} />} title="Identity" />
 
