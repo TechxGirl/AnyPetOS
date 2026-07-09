@@ -10,6 +10,7 @@ import { createId, createRandomString } from "./id";
 
 const SHARE_PATH = "/passport/share";
 const TRANSFER_PATH = "/passport/transfer";
+const ACCESS_PATH = "/passport/access";
 
 // =====================================================
 // 🟢 Route Helpers
@@ -29,6 +30,13 @@ export function getPassportTransportRoute() {
     return {
       type: "transfer",
       token: decodeURIComponent(path.replace(`${TRANSFER_PATH}/`, "")),
+    };
+  }
+
+  if (path.startsWith(`${ACCESS_PATH}/`)) {
+    return {
+      type: "access",
+      token: decodeURIComponent(path.replace(`${ACCESS_PATH}/`, "")),
     };
   }
 
@@ -60,6 +68,10 @@ export function buildShareUrl(token) {
 
 export function buildTransferUrl(token) {
   return `${getAppOrigin()}${TRANSFER_PATH}/${encodeURIComponent(token)}`;
+}
+
+export function buildAccessUrl(token) {
+  return `${getAppOrigin()}${ACCESS_PATH}/${encodeURIComponent(token)}`;
 }
 
 // =====================================================

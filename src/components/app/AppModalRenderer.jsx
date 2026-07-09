@@ -106,6 +106,7 @@ export default function AppModalRenderer({
             openModal("sharePassport", petId)
           }
           openShedModal={(petId) => openModal("shed", petId)}
+          setPage={setPage}
         />
       ) : null;
 

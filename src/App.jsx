@@ -51,6 +51,7 @@ import AppErrorState from "./components/app/AppErrorState";
 import AppModalRenderer from "./components/app/AppModalRenderer";
 import PublicPassportView from "./pages/PublicPassportView";
 import TransferPassportView from "./pages/TransferPassportView";
+import AccessInviteView from "./pages/AccessInviteView";
 import { getPassportTransportRoute } from "./utils/passportTransport";
 
 // =====================================================
@@ -192,6 +193,19 @@ function AppContent() {
 
   if (transportRoute?.type === "share") {
     return <PublicPassportView token={transportRoute.token} />;
+  }
+
+  // =====================================================
+  // 🟢 Access Invite Route
+  // =====================================================
+
+  if (transportRoute?.type === "access") {
+    return (
+      <AccessInviteView
+        token={transportRoute.token}
+        session={session}
+      />
+    );
   }
 
   // =====================================================

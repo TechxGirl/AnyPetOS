@@ -18,6 +18,7 @@ import Settings from "../pages/Settings";
 import Workspaces from "../pages/Workspaces";
 import DataCenter from "../pages/DataCenter";
 import WorkspaceModulePage from "../pages/WorkspaceModulePage";
+import CareInfrastructure from "../pages/CareInfrastructure";
 
 import { ANIMALS } from "../data/animals";
 import { WORKSPACE_PAGE_SET } from "../data/workspaces";
@@ -140,6 +141,19 @@ export default function PageRenderer({
 
   if (page === "Data Center") {
     return <DataCenter pets={pets} addPet={addPet} setPage={setPage} />;
+  }
+
+  if (["Care Infrastructure", "Enclosures", "Equipment", "Smart Reminders", "Files", "Access Center"].includes(page)) {
+    const tabMap = {
+      "Care Infrastructure": "enclosures",
+      Enclosures: "enclosures",
+      Equipment: "equipment",
+      "Smart Reminders": "reminders",
+      Files: "files",
+      "Access Center": "access",
+    };
+
+    return <CareInfrastructure pets={pets} initialTab={tabMap[page] || "enclosures"} setPage={setPage} />;
   }
 
   if (WORKSPACE_PAGE_SET.has(page)) {
