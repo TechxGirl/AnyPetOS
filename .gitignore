@@ -37,3 +37,6 @@ petpassport-beta-*.zip
 *.zip
 archive/packs/
 
+.env
+.env.*
+!.env.example
