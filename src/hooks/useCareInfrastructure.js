@@ -292,31 +292,53 @@ export function useCareInfrastructure(pets = []) {
   const createAccessInvite = useCallback(async (form) => {
     if (!user) throw new Error("You must be signed in to create an access invite.");
 
-    const petId = normalizeOptionalId(form.pet_id);
-    if (!petId) throw new Error("Choose an animal for this access invite.");
+    const selectedPetId = normalizeOptionalId(form.pet_id);
+    if (!selectedPetId) throw new Error("Choose an animal for this access invite.");
 
-    const pet = petsById.get(String(petId));
+    const pet = petsById.get(String(selectedPetId));
+    if (!pet) {
+      throw new Error("PetPassport could not find that animal. Refresh the page and choose it again.");
+    }
+
+    const databasePetId = pet.cloudId || pet.id;
+
+    if (!/^\d+$/.test(String(databasePetId))) {
+      throw new Error("This animal has not finished cloud syncing yet. Refresh the page, then try again.");
+    }
+
     const token = createTransportToken();
     const now = Date.now();
     const expiresDays = Number(form.expires_in_days) || 0;
-    const expiresAt = expiresDays > 0 ? new Date(now + expiresDays * 24 * 60 * 60 * 1000).toISOString() : null;
+    const expiresAt = expiresDays > 0
+      ? new Date(now + expiresDays * 24 * 60 * 60 * 1000).toISOString()
+      : null;
 
     const payload = {
       owner_id: user.id,
-      pet_id: petId,
-      recipient_email: form.recipient_email?.trim() || "",
+      pet_id: databasePetId,
+      recipient_email: form.recipient_email?.trim().toLowerCase() || "",
       access_level: form.access_level || "view_only",
       status: "pending",
       token,
-      public_snapshot: pet ? buildPublicPassportSnapshot(pet, "access") : {},
+      public_snapshot: buildPublicPassportSnapshot(pet, "access"),
       expires_at: expiresAt,
-      notes: form.notes || "",
+      notes: form.notes?.trim() || "",
     };
 
-    const { data, error: insertError } = await supabase.from("access_permissions").insert(payload).select().single();
+    const { data, error: insertError } = await supabase
+      .from("access_permissions")
+      .insert(payload)
+      .select()
+      .single();
+
     if (insertError) throw insertError;
+
     setPermissions((previous) => [data, ...previous]);
-    return { ...data, inviteUrl: buildAccessUrl(token) };
+
+    return {
+      ...data,
+      inviteUrl: buildAccessUrl(token),
+    };
   }, [user, petsById]);
 
   const revokeAccessInvite = useCallback(async (id) => {

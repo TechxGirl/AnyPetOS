@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ACCESS_EXPIRY_OPTIONS,
   ACCESS_LEVELS,
@@ -64,9 +64,13 @@ function Field({ label, children }) {
 function PetSelect({ pets, value, onChange, includeNone = true }) {
   return (
     <Select value={value || "none"} onChange={(event) => onChange(event.target.value)}>
-      {includeNone && <option value="none">No animal assigned</option>}
+      {includeNone ? (
+        <option value="none">No animal assigned</option>
+      ) : (
+        <option value="none" disabled>Choose an animal</option>
+      )}
       {pets.map((pet) => (
-        <option key={pet.cloudId || pet.id} value={pet.cloudId || pet.id}>
+        <option key={pet.cloudId || pet.id} value={String(pet.cloudId || pet.id)}>
           {pet.name} {pet.species ? `• ${pet.species}` : ""}
         </option>
       ))}
@@ -443,18 +447,58 @@ function FilesPanel({ infrastructure, pets, run }) {
 }
 
 function AccessPanel({ infrastructure, pets, run }) {
-  const [form, setForm] = useState({ pet_id: "none", recipient_email: "", access_level: "view_only", expires_in_days: "7", notes: "" });
+  const getFirstPetId = () => {
+    const firstPet = pets[0];
+    return firstPet ? String(firstPet.cloudId || firstPet.id) : "none";
+  };
+
+  const [form, setForm] = useState({
+    pet_id: getFirstPetId(),
+    recipient_email: "",
+    access_level: "view_only",
+    expires_in_days: "7",
+    notes: "",
+  });
   const [lastInviteUrl, setLastInviteUrl] = useState("");
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
+  useEffect(() => {
+    if (form.pet_id === "none" && pets.length > 0) {
+      setForm((current) => ({
+        ...current,
+        pet_id: String(pets[0].cloudId || pets[0].id),
+      }));
+    }
+  }, [form.pet_id, pets]);
+
   const submit = async (event) => {
     event.preventDefault();
-    const result = await run({ action: () => infrastructure.createAccessInvite(form), successTitle: "Access invite created", successMessage: "The temporary access link is ready." });
+
+    const result = await run({
+      action: () => infrastructure.createAccessInvite(form),
+      successTitle: "Access invite created",
+      successMessage: "The temporary access link is ready.",
+    });
+
     if (result?.inviteUrl) {
       setLastInviteUrl(result.inviteUrl);
-      await copyTextToClipboard(result.inviteUrl);
+
+      try {
+        await copyTextToClipboard(result.inviteUrl);
+      } catch (clipboardError) {
+        console.warn("Invite created, but the browser could not copy it automatically:", clipboardError);
+      }
     }
-    if (result) setForm({ pet_id: "none", recipient_email: "", access_level: "view_only", expires_in_days: "7", notes: "" });
+
+    if (result) {
+      setForm({
+        pet_id: getFirstPetId(),
+        recipient_email: "",
+        access_level: "view_only",
+        expires_in_days: "7",
+        notes: "",
+      });
+    }
   };
 
   return (
@@ -462,19 +506,63 @@ function AccessPanel({ infrastructure, pets, run }) {
       <Card className="careInfraFormCard">
         <CardHeader icon={<Icon name="users" size={18} />} title="Create access invite" />
         <form className="careInfraForm" onSubmit={submit}>
-          <Field label="Animal"><PetSelect pets={pets} value={form.pet_id} onChange={(value) => update("pet_id", value)} includeNone={false} /></Field>
+          <Field label="Animal">
+            <PetSelect
+              pets={pets}
+              value={form.pet_id}
+              onChange={(value) => update("pet_id", value)}
+              includeNone={false}
+            />
+          </Field>
+          {pets.length === 0 && (
+            <p className="careInfraFormHint">
+              Add or cloud-sync an animal before creating temporary access.
+            </p>
+          )}
           <Field label="Recipient email"><Input type="email" value={form.recipient_email} onChange={(event) => update("recipient_email", event.target.value)} placeholder="sitter@example.com" /></Field>
           <Field label="Access level"><Select value={form.access_level} onChange={(event) => update("access_level", event.target.value)}>{ACCESS_LEVELS.map((level) => <option key={level.id} value={level.id}>{level.label}</option>)}</Select></Field>
           <Field label="Expires"><Select value={form.expires_in_days} onChange={(event) => update("expires_in_days", event.target.value)}>{ACCESS_EXPIRY_OPTIONS.map((option) => <option key={option.label} value={option.days}>{option.label}</option>)}</Select></Field>
           <Field label="Notes"><Textarea value={form.notes} onChange={(event) => update("notes", event.target.value)} placeholder="Care instructions, visit dates, clinic reason..." /></Field>
-          <Button type="submit" leftIcon={<Icon name="share" size={16} />}>Create and copy invite</Button>
+          <Button
+            type="submit"
+            disabled={pets.length === 0 || form.pet_id === "none"}
+            leftIcon={<Icon name="share" size={16} />}
+          >
+            Create and copy invite
+          </Button>
         </form>
 
         {lastInviteUrl && (
           <div className="careInfraInviteBox">
             <span>Last invite link</span>
-            <code>{lastInviteUrl}</code>
-            <Button variant="outline" size="sm" onClick={() => copyTextToClipboard(lastInviteUrl)}>Copy again</Button>
+
+            <input
+              className="careInfraInviteUrl"
+              type="text"
+              value={lastInviteUrl}
+              readOnly
+              aria-label="Temporary access invite link"
+              onFocus={(event) => event.currentTarget.select()}
+              onClick={(event) => event.currentTarget.select()}
+            />
+
+            <div className="careInfraInviteActions">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copyTextToClipboard(lastInviteUrl)}
+              >
+                Copy again
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(lastInviteUrl, "_blank", "noopener,noreferrer")}
+              >
+                Open invite
+              </Button>
+            </div>
           </div>
         )}
       </Card>
