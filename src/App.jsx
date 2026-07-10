@@ -40,6 +40,7 @@ import Sidebar from "./components/Sidebar";
 import CreateProfile from "./components/CreateProfile";
 import Auth from "./components/Auth";
 import PageRenderer from "./components/PageRenderer";
+import BetaBanner from "./components/BetaBanner";
 import AppLayout from "./layouts/AppLayout";
 
 // =====================================================
@@ -1051,6 +1052,8 @@ function AuthenticatedApp({ profile }) {
         />
       }
     >
+      <BetaBanner setPage={navigateToPage} />
+
       <PageRenderer
         page={page}
         profile={profile}
