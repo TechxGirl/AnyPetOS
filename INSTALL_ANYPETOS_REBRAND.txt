@@ -1,0 +1,22 @@
+AnyPetOS Rebrand Package
+
+Changed:
+- Replaced visible PetPassport branding with AnyPetOS
+- Added a custom vector AnyPetOS brand mark and lockup
+- Updated login, profile setup, sidebar, mobile header, and loading experience
+- Added premium indigo/blue/cyan dark and light palettes
+- Added email confirmation redirectTo using the current live origin
+- Added clearer email callback error messaging
+- Preserved legacy localStorage keys so existing local preferences are not lost
+
+Install:
+1. Back up your current src folder.
+2. Drag the included src folder into the project root.
+3. Choose Replace files in destination when Windows asks.
+4. Run npm run dev.
+5. Test login, signup, email verification, theme switching, navigation, pets, and modals.
+
+Important:
+- This package only contains src because that is what was uploaded.
+- Browser tab title and favicon in index.html still need a separate project-root update.
+- Keep Supabase Site URL and Redirect URLs set to your AnyPetOS domains.
