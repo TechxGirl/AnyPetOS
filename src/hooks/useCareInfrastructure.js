@@ -297,7 +297,7 @@ export function useCareInfrastructure(pets = []) {
 
     const pet = petsById.get(String(selectedPetId));
     if (!pet) {
-      throw new Error("PetPassport could not find that animal. Refresh the page and choose it again.");
+      throw new Error("AnyPetOS could not find that animal. Refresh the page and choose it again.");
     }
 
     const databasePetId = pet.cloudId || pet.id;

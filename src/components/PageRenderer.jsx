@@ -156,7 +156,7 @@ export default function PageRenderer({
         fallback={
           <PageLoadingFallback
             title="Opening Expo Command Center"
-            message="Loading event operations without slowing the rest of PetPassport."
+            message="Loading event operations without slowing the rest of AnyPetOS."
           />
         }
       >

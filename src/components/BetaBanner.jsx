@@ -9,7 +9,7 @@ export default function BetaBanner({ setPage }) {
       <div className="betaBanner__copy">
         <strong>Private beta</strong>
         <span>
-          PetPassport is actively evolving. Use it for testing and care organization, not as a replacement for veterinary care or emergency records.
+          AnyPetOS is actively evolving. Use it for testing and care organization, not as a replacement for veterinary care or emergency records.
         </span>
       </div>
       <div className="betaBanner__actions">

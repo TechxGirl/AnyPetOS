@@ -223,7 +223,7 @@ export default function AddPet({ addPet }) {
         <div className="addPetHeader">
           <div>
             <h1>Create passport</h1>
-            <p>Add a new animal to your PetPassport collection.</p>
+            <p>Add a new animal to your AnyPetOS collection.</p>
           </div>
         </div>
 

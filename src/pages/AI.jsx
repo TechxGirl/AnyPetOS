@@ -50,7 +50,7 @@ export default function AI({ pets }) {
           `Medications due: ${medsDue.length}`,
           `Animals needing attention: ${sickOrMonitoring.length}`,
           "",
-          "This preview uses the records already stored in PetPassport.",
+          "This preview uses the records already stored in AnyPetOS.",
         ].join("\n")
       );
       return;
@@ -82,7 +82,7 @@ export default function AI({ pets }) {
 
     setAnswer(
       [
-        "PetPassport Assistant preview",
+        "AnyPetOS Assistant preview",
         "",
         "Try asking:",
         "• Who is due today?",
@@ -123,7 +123,7 @@ export default function AI({ pets }) {
     <div className="page-shell assistant-page">
       <PageHeader
         eyebrow="Collection intelligence"
-        title="PetPassport Assistant"
+        title="AnyPetOS Assistant"
         description="Review priorities and ask simple questions about the records in your workspace."
         icon={<Icon name="bot" size={23} />}
         actions={<Badge variant="primary">Preview mode</Badge>}
@@ -177,7 +177,7 @@ export default function AI({ pets }) {
 
           <form className="assistant-question-form" onSubmit={askLocalAI}>
             <Input
-              aria-label="Ask PetPassport"
+              aria-label="Ask AnyPetOS"
               placeholder="Try: Who is due today?"
               value={question}
               onChange={(event) => setQuestion(event.target.value)}

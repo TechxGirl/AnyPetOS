@@ -223,3 +223,43 @@
 :root[data-workspace="education"] { --pp-workspace-accent: #22d3ee; }
 :root[data-workspace="sitter"] { --pp-workspace-accent: #fb7185; }
 :root[data-workspace="retail"] { --pp-workspace-accent: #eab308; }
+
+/* AnyPetOS brand palette */
+:root,
+:root[data-theme="dark"] {
+  --pp-color-canvas: #050815;
+  --pp-color-sidebar: #080d1a;
+  --pp-color-sidebar-raised: #10182a;
+  --pp-color-surface: #0d1422;
+  --pp-color-surface-raised: #121c2d;
+  --pp-color-surface-hover: #17243a;
+  --pp-color-surface-muted: #090f1d;
+  --pp-color-primary: #2f7dff;
+  --pp-color-primary-hover: #5ca2ff;
+  --pp-color-primary-active: #2469db;
+  --pp-color-primary-soft: rgba(47,125,255,.13);
+  --pp-color-primary-border: rgba(47,125,255,.34);
+  --pp-color-sidebar-active-start: rgba(47,125,255,.2);
+  --pp-color-sidebar-active-end: rgba(34,211,238,.06);
+  --pp-color-sidebar-glow: rgba(47,125,255,.12);
+  --pp-color-content-glow: rgba(34,211,238,.05);
+  --pp-color-hero-start: rgba(91,92,255,.16);
+  --pp-color-hero-end: rgba(13,20,34,.98);
+  --pp-color-hero-glow: rgba(34,211,238,.08);
+  --pp-focus-ring: 0 0 0 3px rgba(47,125,255,.26);
+}
+:root[data-theme="light"] {
+  --pp-color-canvas: #f4f7fc;
+  --pp-color-sidebar: #ffffff;
+  --pp-color-sidebar-raised: #f1f5fb;
+  --pp-color-surface: #ffffff;
+  --pp-color-surface-raised: #f8faff;
+  --pp-color-surface-hover: #eef4fc;
+  --pp-color-surface-muted: #f4f7fc;
+  --pp-color-primary: #246de8;
+  --pp-color-primary-hover: #1859c4;
+  --pp-color-primary-active: #144ba5;
+  --pp-color-primary-soft: rgba(36,109,232,.1);
+  --pp-color-primary-border: rgba(36,109,232,.25);
+  --pp-focus-ring: 0 0 0 3px rgba(36,109,232,.18);
+}

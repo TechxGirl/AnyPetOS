@@ -36,7 +36,7 @@ export default function Workspaces({ pets = [], setPage }) {
     <div className="feed workspacePage workspacePagePremium">
       <PageHeader
         eyebrow="Workspaces"
-        title="Choose how PetPassport works for you"
+        title="Choose how AnyPetOS works for you"
         description="One account can shift between owner, breeder, rescue, veterinary, education, sitter, and retail interfaces. Each workspace changes the navigation, dashboard, actions, and language."
         icon={<Icon name="briefcase" size={22} />}
       />
@@ -96,7 +96,7 @@ export default function Workspaces({ pets = [], setPage }) {
             <p className="section-eyebrow">What changes when you switch?</p>
             <h2>Different jobs deserve different interfaces.</h2>
             <p>
-              PetPassport keeps the same animal records underneath, but the workspace changes the way each role manages care, records, and transfers.
+              AnyPetOS keeps the same animal records underneath, but the workspace changes the way each role manages care, records, and transfers.
             </p>
           </div>
         </div>

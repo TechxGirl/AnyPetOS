@@ -4,7 +4,7 @@ import { usePets } from "../hooks/usePets";
 // =====================================================
 // 🟢 PetContext.jsx
 //
-// Global PetPassport animal state.
+// Global AnyPetOS animal state.
 //
 // =====================================================
 

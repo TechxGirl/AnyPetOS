@@ -161,7 +161,7 @@ function AppContent() {
 
         showToast({
           title: "Sign-in check failed",
-          message: "PetPassport could not verify your session.",
+          message: "AnyPetOS could not verify your session.",
           variant: "error",
         });
       }
@@ -232,7 +232,7 @@ function AppContent() {
   // =====================================================
 
   if (authLoading) {
-    return <AppLoadingScreen message="Opening PetPassport..." />;
+    return <AppLoadingScreen message="Opening AnyPetOS..." />;
   }
 
   // =====================================================
@@ -272,7 +272,7 @@ function AppContent() {
     return (
       <AppErrorState
         title="Your profile could not be loaded"
-        message="PetPassport could not reach the profile database. Your data has not been changed."
+        message="AnyPetOS could not reach the profile database. Your data has not been changed."
       />
     );
   }
@@ -367,7 +367,7 @@ function AuthenticatedApp({ profile }) {
       >
         <AppErrorState
           title="Your pet records could not be loaded"
-          message="PetPassport could not reach the pet database. No records were deleted or overwritten."
+          message="AnyPetOS could not reach the pet database. No records were deleted or overwritten."
         />
       </AppLayout>
     );
@@ -409,7 +409,7 @@ function AuthenticatedApp({ profile }) {
       },
       successTitle: "Signed out",
       successMessage: "You have been safely signed out.",
-      errorMessage: "PetPassport could not sign you out.",
+      errorMessage: "AnyPetOS could not sign you out.",
     });
 
     if (result.ok) {

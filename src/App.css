@@ -1,4 +1,4 @@
-/* PetPassport legacy component alignment.
+/* AnyPetOS legacy component alignment.
    New reusable components use the namespaced ui-* classes in styles/ui.css. */
 
 body {
@@ -4140,4 +4140,104 @@ body {
 @keyframes pp-feature-pulse {
   0%, 100% { transform: scale(1); opacity: 0.75; }
   50% { transform: scale(1.06); opacity: 1; }
+}
+
+/* =====================================================
+   AnyPetOS brand system
+   Hand-built vector mark + premium product surfaces
+===================================================== */
+.anypetos-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: .72rem;
+  min-width: 0;
+}
+.anypetos-lockup__mark { flex: 0 0 auto; filter: drop-shadow(0 8px 18px rgba(30,143,255,.2)); }
+.anypetos-lockup__copy { display: grid; min-width: 0; gap: 2px; text-align: left; }
+.anypetos-lockup__name {
+  color: var(--pp-color-text);
+  font-size: 1.12rem;
+  font-weight: 850;
+  letter-spacing: -.045em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.anypetos-lockup__name span {
+  background: linear-gradient(115deg, #6670ff 0%, #238cff 52%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.anypetos-lockup__tagline {
+  overflow: hidden;
+  color: var(--pp-color-text-subtle);
+  font-size: .68rem;
+  font-weight: 620;
+  letter-spacing: .015em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.anypetos-lockup.is-compact { gap: .58rem; }
+.anypetos-lockup.is-compact .anypetos-lockup__name { font-size: 1rem; }
+
+.loginScreen,
+.onboardingScreen {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 15%, rgba(91,92,255,.18), transparent 30rem),
+    radial-gradient(circle at 88% 82%, rgba(34,211,238,.11), transparent 32rem),
+    linear-gradient(145deg, #050815 0%, var(--pp-color-canvas) 52%, #081323 100%);
+}
+:root[data-theme="light"] .loginScreen,
+:root[data-theme="light"] .onboardingScreen {
+  background:
+    radial-gradient(circle at 12% 15%, rgba(91,92,255,.11), transparent 30rem),
+    radial-gradient(circle at 88% 82%, rgba(34,211,238,.09), transparent 32rem),
+    linear-gradient(145deg, #f7f8ff 0%, #f5f8fc 52%, #edf9fc 100%);
+}
+.loginScreen::before,
+.onboardingScreen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .18;
+  background-image:
+    linear-gradient(rgba(148,163,184,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148,163,184,.08) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+.authCard,
+.createProfileCard {
+  position: relative;
+  z-index: 1;
+  border-color: rgba(96,165,250,.2) !important;
+  background: color-mix(in srgb, var(--pp-color-surface) 90%, transparent) !important;
+  box-shadow: 0 32px 90px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.04) !important;
+  backdrop-filter: blur(24px);
+}
+.authBrand { align-items: center; }
+.authIntro .section-eyebrow { color: #67c8ff; }
+.authIntro h1 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -.055em; }
+.authIntro h1::after {
+  content: "";
+  display: block;
+  width: 54px;
+  height: 3px;
+  margin-top: .85rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6670ff, #238cff, #22d3ee);
+}
+.ui-loading-screen {
+  background:
+    radial-gradient(circle at 50% 34%, rgba(35,140,255,.16), transparent 24rem),
+    var(--pp-color-canvas) !important;
+}
+.ui-loading-screen__mark {
+  width: 72px !important;
+  height: 72px !important;
+  border: 0 !important;
+  background: transparent !important;
 }

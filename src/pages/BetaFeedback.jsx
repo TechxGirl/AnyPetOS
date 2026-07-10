@@ -27,10 +27,10 @@ export default function BetaFeedback() {
         <CardHeader
           icon={<Icon name="alert" size={18} />}
           title="Beta reminder"
-          description="PetPassport is in active development. Data, features, and workflows may change during beta."
+          description="AnyPetOS is in active development. Data, features, and workflows may change during beta."
         />
         <p>
-          Test with real-ish sample records first. Do not use PetPassport as the only copy of emergency veterinary records yet.
+          Test with real-ish sample records first. Do not use AnyPetOS as the only copy of emergency veterinary records yet.
         </p>
       </Card>
 

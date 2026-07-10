@@ -406,7 +406,7 @@ export default function useExpoMode(pets = []) {
             user_id: user.id,
             status: "pending",
             vendor_type: form.vendor_type || "Breeder",
-            display_name: form.display_name?.trim() || "PetPassport exhibitor",
+            display_name: form.display_name?.trim() || "AnyPetOS exhibitor",
             booth_number: form.booth_number?.trim() || "",
             bio: form.bio?.trim() || "",
             contact_email: form.contact_email?.trim().toLowerCase() || "",
@@ -448,7 +448,7 @@ export default function useExpoMode(pets = []) {
       if (!user) throw new Error("You must be signed in to add expo inventory.");
 
       const pet = petsById.get(String(form.pet_id));
-      if (!pet) throw new Error("Choose an animal from your PetPassport collection.");
+      if (!pet) throw new Error("Choose an animal from your AnyPetOS collection.");
 
       const petId = numericId(pet.cloudId || pet.id);
       if (!petId) throw new Error("This animal has not finished cloud syncing yet.");

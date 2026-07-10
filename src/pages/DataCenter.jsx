@@ -22,7 +22,7 @@ function readFileAsText(file) {
 
 function createBackupPayload(pets) {
   return {
-    app: "PetPassport",
+    app: "AnyPetOS",
     version: "beta-data-center-v1",
     exportedAt: new Date().toISOString(),
     count: pets.length,
@@ -137,7 +137,7 @@ export default function DataCenter({ pets = [], addPet, setPage }) {
       showToast({
         variant: "success",
         title: "Collection imported",
-        message: `${imported} animals were added to PetPassport.`,
+        message: `${imported} animals were added to AnyPetOS.`,
       });
       setHeaders([]);
       setRows([]);
@@ -182,12 +182,12 @@ export default function DataCenter({ pets = [], addPet, setPage }) {
 
   function downloadBackup() {
     const payload = createBackupPayload(pets);
-    downloadTextFile("petpassport-backup.json", JSON.stringify(payload, null, 2), "application/json");
+    downloadTextFile("anypetos-backup.json", JSON.stringify(payload, null, 2), "application/json");
     showToast({ variant: "success", title: "Backup downloaded", message: "Your collection JSON backup was created." });
   }
 
   function downloadCsv() {
-    downloadTextFile("petpassport-collection.csv", petsToCsv(pets), "text/csv");
+    downloadTextFile("anypetos-collection.csv", petsToCsv(pets), "text/csv");
     showToast({ variant: "success", title: "CSV exported", message: "Your collection CSV was created." });
   }
 
@@ -207,7 +207,7 @@ export default function DataCenter({ pets = [], addPet, setPage }) {
       <section className="moduleHero dataCenterHero" style={{ "--workspace-card-accent": workspace.accent }}>
         <div>
           <p className="section-eyebrow">Import and migration hub</p>
-          <h1>Bring your collection into PetPassport</h1>
+          <h1>Bring your collection into AnyPetOS</h1>
           <p>{selectedTemplate.description}</p>
         </div>
         <div className="moduleHeroActions">
@@ -261,7 +261,7 @@ export default function DataCenter({ pets = [], addPet, setPage }) {
         <CardHeader
           icon={<Icon name="settings" size={18} />}
           title="Import source and mapping"
-          description="Choose the kind of file, then confirm which spreadsheet columns become PetPassport fields."
+          description="Choose the kind of file, then confirm which spreadsheet columns become AnyPetOS fields."
         />
         <div className="dataCenterToolbar">
           <label>

@@ -1,6 +1,7 @@
 import { useTheme } from "../context/ThemeContext";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { Icon } from "./ui";
+import BrandLockup from "./brand/BrandLockup";
 import "../styles/sidebar.css";
 
 export default function Sidebar({ page, setPage, user }) {
@@ -24,13 +25,7 @@ export default function Sidebar({ page, setPage, user }) {
           onClick={() => setPage("Dashboard")}
           aria-label="Open dashboard"
         >
-          <span className="pp-sidebar__brand-mark" aria-hidden="true">
-            <Icon name="shield" size={19} />
-          </span>
-          <span className="pp-sidebar__brand-copy">
-            <span className="pp-sidebar__brand-name">PetPassport</span>
-            <span className="pp-sidebar__brand-subtitle">Animal care OS</span>
-          </span>
+<BrandLockup compact />
         </button>
 
         <button

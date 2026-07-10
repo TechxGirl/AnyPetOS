@@ -181,8 +181,8 @@ export default function SharePassportModal({
 
   const handleNativeShare = async () => {
     const didShare = await nativeSharePassport({
-      title: `${pet.name}'s PetPassport`,
-      text: `Here is ${pet.name}'s PetPassport.`,
+      title: `${pet.name}'s AnyPetOS`,
+      text: `Here is ${pet.name}'s AnyPetOS.`,
       url: shareUrl,
     });
 
@@ -362,7 +362,7 @@ export default function SharePassportModal({
 
             {qrCodeUrl && (
               <div className="passportQrBox">
-                <img src={qrCodeUrl} alt={`QR code for ${pet.name}'s PetPassport`} />
+                <img src={qrCodeUrl} alt={`QR code for ${pet.name}'s AnyPetOS`} />
                 <p className="helperText">
                   Scan this QR code to open the read-only Passport.
                 </p>
