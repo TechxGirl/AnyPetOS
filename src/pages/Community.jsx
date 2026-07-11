@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Badge, Button, Card, CardHeader, Icon, Input, PageHeader, Select, Textarea, useToast } from "../components/ui";
+import { FoundingBadgeGallery } from "../components/founding";
+import { useFoundingBadges } from "../context/FoundingBadgeContext";
 import { useExpoDiscovery } from "../hooks/useExpoMode";
 import { buildExpoListingUrl, formatExpoDate, formatExpoMoney } from "../data/expoMode";
 import { supabase } from "../services/supabaseClient";
@@ -10,13 +12,13 @@ const FOLLOW_KEY = "petpassport-expo-follows";
 function getInitialProfile(profile) {
   try {
     return JSON.parse(localStorage.getItem("petpassport-public-profile") || "null") || {
-      displayName: profile?.display_name || "AnyPetOS Keeper",
+      displayName: profile?.display_name || "PetPassport Keeper",
       handle: profile?.username || "petpassport",
       bio: "Building a better way to preserve every animal's story.",
       pageType: "Keeper / Rescue / Breeder",
     };
   } catch {
-    return { displayName: "AnyPetOS Keeper", handle: "petpassport", bio: "", pageType: "Keeper" };
+    return { displayName: "PetPassport Keeper", handle: "petpassport", bio: "", pageType: "Keeper" };
   }
 }
 
@@ -40,6 +42,7 @@ function ExpoPreviewPhoto({ animal }) {
 
 export default function Community({ pets, profile }) {
   const { showToast } = useToast();
+  const { badges: foundingBadges } = useFoundingBadges();
   const [user, setUser] = useState(null);
   const [publicProfile, setPublicProfile] = useState(() => getInitialProfile(profile));
   const [search, setSearch] = useState("");
@@ -134,7 +137,7 @@ export default function Community({ pets, profile }) {
       <PageHeader
         eyebrow="Community Expo Discovery"
         title="Follow the show before the doors open"
-        description="See what AnyPetOS breeders, rescues, educators, and retailers plan to bring, compare prices, save animals, find booth numbers, and arrive with the exact listing code."
+        description="See what PetPassport breeders, rescues, educators, and retailers plan to bring, compare prices, save animals, find booth numbers, and arrive with the exact listing code."
         icon={<Icon name="users" size={22} />}
         actions={<Badge variant="primary">Public pre-show inventory</Badge>}
       />
@@ -166,7 +169,7 @@ export default function Community({ pets, profile }) {
       </section>
 
       {discovery.loading ? (
-        <Card className="community-expo-loading"><Icon name="scan" size={26} /><h3>Finding public AnyPetOS expos...</h3></Card>
+        <Card className="community-expo-loading"><Icon name="scan" size={26} /><h3>Finding public PetPassport expos...</h3></Card>
       ) : discovery.error ? (
         <Card className="community-expo-loading"><Icon name="alert" size={26} /><h3>Expo Discovery is waiting for its database update</h3><p>{discovery.error.message}</p><Button onClick={discovery.refresh}>Try again</Button></Card>
       ) : filteredEvents.length ? (
@@ -187,7 +190,7 @@ export default function Community({ pets, profile }) {
                   <p>{formatExpoDate(event.starts_at)} {event.public_hours ? `• ${event.public_hours}` : ""}</p>
                   <h2>{event.name}</h2>
                   <span><Icon name="map" size={15} />{[event.venue, event.city, event.region].filter(Boolean).join(" • ") || "Location coming soon"}</span>
-                  <p>{event.description || "Browse the public pre-show inventory from AnyPetOS exhibitors."}</p>
+                  <p>{event.description || "Browse the public pre-show inventory from PetPassport exhibitors."}</p>
                 </div>
                 <div className="community-featured-animals">
                   {featured.length ? featured.slice(0, 4).map((animal) => (
@@ -260,8 +263,9 @@ export default function Community({ pets, profile }) {
             <h2>{publicProfile.displayName}</h2>
             <p>@{publicProfile.handle}</p>
             <Badge variant="success">{publicProfile.pageType}</Badge>
+            <FoundingBadgeGallery compact />
             <p>{publicProfile.bio}</p>
-            <div className="mini-stat-row"><span>{pets.length} passports</span><span>{achievements.filter((item) => item.unlocked).length} achievements</span><span>Expo ready</span></div>
+            <div className="mini-stat-row"><span>{pets.length} passports</span><span>{achievements.filter((item) => item.unlocked).length} achievements</span><span>{foundingBadges.length ? `${foundingBadges.length} founding badge${foundingBadges.length === 1 ? "" : "s"}` : "Expo ready"}</span></div>
           </div>
         </Card>
       </div>

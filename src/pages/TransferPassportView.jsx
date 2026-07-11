@@ -92,7 +92,7 @@ export default function TransferPassportView({ token, session }) {
     if (acceptError) {
       setError(
         acceptError.message ||
-          "AnyPetOS could not accept this transfer invite."
+          "PetPassport could not accept this transfer invite."
       );
     } else {
       setAccepted(true);
@@ -139,7 +139,7 @@ export default function TransferPassportView({ token, session }) {
     return (
       <main className="pageContent publicPassportPage">
         <PageHeader
-          eyebrow="AnyPetOS transfer"
+          eyebrow="PetPassport transfer"
           title={`Accept ${passport.name || "this animal"}'s Passport`}
           description="You can preview the Passport now. Sign in or create an account to accept ownership."
           icon={<Icon name="share" size={22} />}
@@ -200,9 +200,9 @@ export default function TransferPassportView({ token, session }) {
   return (
     <main className="pageContent publicPassportPage">
       <PageHeader
-        eyebrow="AnyPetOS transfer"
+        eyebrow="PetPassport transfer"
         title={`Accept ${passport.name || "this animal"}'s Passport`}
-        description="Review the animal record, then accept ownership into your AnyPetOS account."
+        description="Review the animal record, then accept ownership into your PetPassport account."
         icon={<Icon name="share" size={22} />}
       />
 

@@ -1,12 +1,14 @@
 import { useTheme } from "../context/ThemeContext";
 import { useWorkspace } from "../context/WorkspaceContext";
+import { useFoundingBadges } from "../context/FoundingBadgeContext";
 import { Icon } from "./ui";
-import BrandLockup from "./brand/BrandLockup";
 import "../styles/sidebar.css";
 
 export default function Sidebar({ page, setPage, user }) {
   const { isDark, toggleTheme } = useTheme();
   const { workspace, enabledWorkspaceIds } = useWorkspace();
+  const { getBadgeForRole } = useFoundingBadges();
+  const activeFoundingBadge = getBadgeForRole(workspace.id);
   const displayName = user?.displayName || user?.username || "Morgan";
   const nextThemeLabel = isDark ? "Light" : "Dark";
   const enabledCount = enabledWorkspaceIds.length;
@@ -25,7 +27,13 @@ export default function Sidebar({ page, setPage, user }) {
           onClick={() => setPage("Dashboard")}
           aria-label="Open dashboard"
         >
-<BrandLockup compact />
+          <span className="pp-sidebar__brand-mark" aria-hidden="true">
+            <Icon name="shield" size={19} />
+          </span>
+          <span className="pp-sidebar__brand-copy">
+            <span className="pp-sidebar__brand-name">PetPassport</span>
+            <span className="pp-sidebar__brand-subtitle">Animal care OS</span>
+          </span>
         </button>
 
         <button
@@ -101,7 +109,11 @@ export default function Sidebar({ page, setPage, user }) {
           </span>
           <span className="pp-sidebar__user-copy">
             <strong>{displayName}</strong>
-            <small>{workspace.shortLabel} workspace</small>
+            <small>
+              {activeFoundingBadge
+                ? `Founding #${String(activeFoundingBadge.badgeNumber).padStart(3, "0")}`
+                : `${workspace.shortLabel} workspace`}
+            </small>
           </span>
         </div>
       </footer>

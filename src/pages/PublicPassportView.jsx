@@ -106,7 +106,7 @@ export default function PublicPassportView({ token }) {
   return (
     <main className="pageContent publicPassportPage">
       <PageHeader
-        eyebrow="Shared AnyPetOS"
+        eyebrow="Shared PetPassport"
         title={passport.name || "Animal Passport"}
         description="This is a read-only Passport shared by the current owner."
         icon={<Icon name="scan" size={22} />}
@@ -244,7 +244,7 @@ export default function PublicPassportView({ token }) {
       </Card>
 
       <p className="helperText">
-        AnyPetOS is not veterinary advice. Always contact a licensed veterinarian for medical concerns.
+        PetPassport is not veterinary advice. Always contact a licensed veterinarian for medical concerns.
       </p>
     </main>
   );

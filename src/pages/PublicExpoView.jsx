@@ -115,7 +115,7 @@ function PublicListingCard({ listing, event, favorite, comparing, onFavorite, on
         <div className="expo-public-card-copy">
           <div className="expo-public-card-heading">
             <div>
-              <p>{listing.vendor_name || "AnyPetOS exhibitor"}</p>
+              <p>{listing.vendor_name || "PetPassport exhibitor"}</p>
               <h3>{listing.display_name}</h3>
             </div>
             <strong>{event.show_prices === false ? "Ask at booth" : formatExpoMoney(listing.price, listing.currency, listing.price_label || "Ask for price")}</strong>
@@ -543,7 +543,7 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
           icon={<Icon name="alert" size={28} />}
           title="This expo is unavailable"
           description={error?.message || "The event may still be private, archived, or unpublished."}
-          action={<Button onClick={() => window.location.assign("/")}>Open AnyPetOS</Button>}
+          action={<Button onClick={() => window.location.assign("/")}>Open PetPassport</Button>}
         />
       </main>
     );
@@ -557,7 +557,7 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
       >
         <div className="expo-public-brand">
           <div className="expo-brand-mark">{event.logo_url ? <img src={event.logo_url} alt="" /> : <Icon name="paw" size={24} />}</div>
-          <div><strong>AnyPetOS</strong><span>Expo Discovery</span></div>
+          <div><strong>PetPassport</strong><span>Expo Discovery</span></div>
         </div>
 
         <div className="expo-public-hero-copy">
@@ -567,7 +567,7 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
             {event.is_inventory_live && <span>Inventory live</span>}
           </div>
           <h1>{event.name}</h1>
-          <p>{event.description || "See what AnyPetOS exhibitors are planning to bring before the doors open."}</p>
+          <p>{event.description || "See what PetPassport exhibitors are planning to bring before the doors open."}</p>
           <div className="expo-public-meta">
             <span><Icon name="calendar" size={16} />{formatExpoDate(event.starts_at)}{event.ends_at ? ` to ${formatExpoDate(event.ends_at)}` : ""}</span>
             <span><Icon name="map" size={16} />{[event.venue, event.city, event.region].filter(Boolean).join(" • ") || "Location coming soon"}</span>
@@ -598,7 +598,7 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
 
       <section className="expo-public-stats">
         <div><strong>{listings.length}</strong><span>Planned animals</span></div>
-        <div><strong>{vendors.length}</strong><span>AnyPetOS exhibitors</span></div>
+        <div><strong>{vendors.length}</strong><span>PetPassport exhibitors</span></div>
         <div><strong>{listings.filter((listing) => listing.status === "Available").length}</strong><span>Available now</span></div>
         <div><strong>{currentEventFavoriteCount}</strong><span>Your saved picks</span></div>
       </section>
@@ -711,7 +711,7 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
       {vendors.length > 0 && (
         <section className="expo-public-vendors">
           <div className="expo-public-section-heading">
-            <div><p>Find the booth</p><h2>AnyPetOS exhibitors</h2></div>
+            <div><p>Find the booth</p><h2>PetPassport exhibitors</h2></div>
             <span>Vendor plans can change, so check the public updates before event day.</span>
           </div>
           <div className="expo-vendor-public-grid">
@@ -721,7 +721,7 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
                 <div>
                   <Badge variant="primary">{vendor.vendor_type}</Badge>
                   <h3>{vendor.display_name}</h3>
-                  <p>{vendor.bio || "Animal care exhibitor using AnyPetOS."}</p>
+                  <p>{vendor.bio || "Animal care exhibitor using PetPassport."}</p>
                   <strong>{vendor.booth_number ? `Booth ${vendor.booth_number}` : "Booth number coming soon"}</strong>
                   {vendor.show_contact && (
                     <small>{[vendor.contact_email, vendor.contact_phone, vendor.social_handle].filter(Boolean).join(" • ")}</small>
@@ -751,7 +751,7 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
       )}
 
       <footer className="expo-public-footer">
-        <div><Icon name="paw" size={20} /><strong>AnyPetOS Expo Discovery</strong></div>
+        <div><Icon name="paw" size={20} /><strong>PetPassport Expo Discovery</strong></div>
         <p>Inventory, pricing, booth assignments, and availability can change before or during an event. Confirm final details directly with the exhibitor.</p>
       </footer>
 
@@ -831,7 +831,7 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
           <label>Name<Input required value={interestForm.name} onChange={(changeEvent) => setInterestForm({ ...interestForm, name: changeEvent.target.value })} /></label>
           <label>Email<Input type="email" value={interestForm.email} onChange={(changeEvent) => setInterestForm({ ...interestForm, email: changeEvent.target.value })} /></label>
           <label>Phone, optional<Input value={interestForm.phone} onChange={(changeEvent) => setInterestForm({ ...interestForm, phone: changeEvent.target.value })} /></label>
-          <label>Preferred contact<Select value={interestForm.preferred_contact} onChange={(changeEvent) => setInterestForm({ ...interestForm, preferred_contact: changeEvent.target.value })}><option>Email</option><option>Text</option><option>Phone</option><option>AnyPetOS</option></Select></label>
+          <label>Preferred contact<Select value={interestForm.preferred_contact} onChange={(changeEvent) => setInterestForm({ ...interestForm, preferred_contact: changeEvent.target.value })}><option>Email</option><option>Text</option><option>Phone</option><option>PetPassport</option></Select></label>
           <label>Interest level<Select value={interestForm.interest_level} onChange={(changeEvent) => setInterestForm({ ...interestForm, interest_level: changeEvent.target.value })}><option>Very interested</option><option>Considering</option><option>Need more information</option><option>Ready to purchase/adopt</option></Select></label>
           <label>Timeframe<Select value={interestForm.timeframe} onChange={(changeEvent) => setInterestForm({ ...interestForm, timeframe: changeEvent.target.value })}><option>At this expo</option><option>Before the expo</option><option>After the expo</option><option>Just researching</option></Select></label>
           <label className="expo-form-full">Questions or message<Textarea rows={4} value={interestForm.message} onChange={(changeEvent) => setInterestForm({ ...interestForm, message: changeEvent.target.value })} /></label>

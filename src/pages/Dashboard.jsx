@@ -1,6 +1,8 @@
 import Feed from "../components/Feed";
 import { useWorkspace } from "../context/WorkspaceContext";
+import { useFoundingBadges } from "../context/FoundingBadgeContext";
 import { Button, Card, CardHeader, EmptyState, Icon } from "../components/ui";
+import { FoundingBadge } from "../components/founding";
 import { getPetInitials, getPetPhotoUrl } from "../utils/images";
 
 function getMetricValue(metric, { pets, dueMeds, overdueFeedings, attentionPets, favoritePets, transferPets }) {
@@ -73,6 +75,8 @@ export default function Dashboard({
   setPage,
 }) {
   const { workspace } = useWorkspace();
+  const { getBadgeForRole } = useFoundingBadges();
+  const activeFoundingBadge = getBadgeForRole(workspace.id);
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
   const displayName = profile?.display_name || "Morgan";
@@ -152,13 +156,19 @@ export default function Dashboard({
           <div>
             <p className="section-eyebrow">{workspace.label}</p>
             <h1>{greeting}, {displayName} 👋</h1>
-            <p className="anypetosHeroSlogan">Any time. Any place. Any Pet.</p>
             <p>{workspace.description}</p>
+            {activeFoundingBadge && (
+              <FoundingBadge
+                role={workspace.id}
+                number={activeFoundingBadge.badgeNumber}
+                awardedAt={activeFoundingBadge.awardedAt}
+                compact
+              />
+            )}
           </div>
           <div className="premiumHeroActions">
             <Button leftIcon={<Icon name="plus" size={18} />} onClick={() => setPage("Add Pet")}>Add animal</Button>
             <Button variant="outline" leftIcon={<Icon name="upload" size={18} />} onClick={() => setPage("Data Center")}>Import collection</Button>
-            <Button variant="ghost" leftIcon={<Icon name="message" size={18} />} onClick={() => setPage("Beta Feedback")}>Beta feedback</Button>
           </div>
         </section>
 
@@ -180,13 +190,19 @@ export default function Dashboard({
         <div>
           <p className="section-eyebrow">{workspace.label}</p>
           <h1>{greeting}, {displayName} 👋</h1>
-          <p className="anypetosHeroSlogan">Any time. Any place. Any Pet.</p>
           <p>{workspace.focusTitle}: {workspace.description}</p>
+          {activeFoundingBadge && (
+            <FoundingBadge
+              role={workspace.id}
+              number={activeFoundingBadge.badgeNumber}
+              awardedAt={activeFoundingBadge.awardedAt}
+              compact
+            />
+          )}
         </div>
         <div className="premiumHeroActions">
           <Button leftIcon={<Icon name="plus" size={18} />} onClick={() => setPage("Add Pet")}>Add animal</Button>
           <Button variant="outline" leftIcon={<Icon name="upload" size={18} />} onClick={() => setPage("Data Center")}>Import</Button>
-          <Button variant="ghost" leftIcon={<Icon name="message" size={18} />} onClick={() => setPage("Beta Feedback")}>Beta feedback</Button>
         </div>
       </section>
 

@@ -1,12 +1,11 @@
-import { Skeleton } from "../ui";
-import BrandMark from "../brand/BrandMark";
+import { Icon, Skeleton } from "../ui";
 
-export default function AppLoadingScreen({ message = "Loading AnyPetOS..." }) {
+export default function AppLoadingScreen({ message = "Loading PetPassport..." }) {
   return (
     <div className="ui-loading-screen" role="status" aria-live="polite">
       <div className="ui-loading-screen__panel">
         <div className="ui-loading-screen__mark" aria-hidden="true">
-          <BrandMark size={42} />
+          <Icon name="scan" size={27} />
         </div>
         <Skeleton width="72%" height="1.1rem" />
         <Skeleton width="48%" height="0.8rem" />

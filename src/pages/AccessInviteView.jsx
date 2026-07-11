@@ -52,7 +52,7 @@ export default function AccessInviteView({ token, session }) {
     });
 
     if (acceptError) {
-      setError(acceptError.message || "AnyPetOS could not accept this access invite.");
+      setError(acceptError.message || "PetPassport could not accept this access invite.");
     } else {
       setAccepted(true);
     }
@@ -65,7 +65,7 @@ export default function AccessInviteView({ token, session }) {
       <div className="loginScreen">
         <div className="card onboardingCard">
           <h2>Loading access invite...</h2>
-          <p>Opening the temporary AnyPetOS access link.</p>
+          <p>Opening the temporary PetPassport access link.</p>
         </div>
       </div>
     );
@@ -88,7 +88,7 @@ export default function AccessInviteView({ token, session }) {
   return (
     <main className="pageContent publicPassportPage accessInvitePage">
       <PageHeader
-        eyebrow="Temporary AnyPetOS access"
+        eyebrow="Temporary PetPassport access"
         title={`${getAccessLevelLabel(invite?.access_level)} for ${passport.name || "this animal"}`}
         description="This link lets a trusted person preview the Passport and accept the temporary access invite into their account."
         icon={<Icon name="users" size={22} />}
@@ -107,7 +107,7 @@ export default function AccessInviteView({ token, session }) {
           <p>
             This invite has been accepted. In this beta, the access record is tracked in the owner's Access Center. Full shared-workspace editing will be added in the next permissions phase.
           </p>
-          <Button onClick={() => (window.location.href = "/")}>Open AnyPetOS</Button>
+          <Button onClick={() => (window.location.href = "/")}>Open PetPassport</Button>
         </Card>
       )}
 
@@ -145,7 +145,7 @@ export default function AccessInviteView({ token, session }) {
       {session && !accepted && (
         <Card>
           <CardHeader icon={<Icon name="shield" size={18} />} title="Accept invite" />
-          <p>Accepting records this temporary access permission in AnyPetOS.</p>
+          <p>Accepting records this temporary access permission in PetPassport.</p>
           <Button loading={accepting} onClick={acceptInvite}>Accept access invite</Button>
         </Card>
       )}

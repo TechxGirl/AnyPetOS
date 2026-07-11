@@ -24,7 +24,8 @@ import useAsyncAction from "./hooks/useAsyncAction";
 import { PetProvider, usePetContext } from "./context/PetContext";
 import { ModalProvider, useModal } from "./context/ModalContext";
 import { ThemeProvider } from "./context/ThemeContext";
-import { WorkspaceProvider } from "./context/WorkspaceContext";
+import { WorkspaceProvider, useWorkspace } from "./context/WorkspaceContext";
+import { FoundingBadgeProvider } from "./context/FoundingBadgeContext";
 
 // =====================================================
 // 🟢 Shared UI
@@ -40,7 +41,6 @@ import Sidebar from "./components/Sidebar";
 import CreateProfile from "./components/CreateProfile";
 import Auth from "./components/Auth";
 import PageRenderer from "./components/PageRenderer";
-import BetaBanner from "./components/BetaBanner";
 import AppLayout from "./layouts/AppLayout";
 
 // =====================================================
@@ -54,6 +54,13 @@ import PublicPassportView from "./pages/PublicPassportView";
 import TransferPassportView from "./pages/TransferPassportView";
 import AccessInviteView from "./pages/AccessInviteView";
 import { getPassportTransportRoute } from "./utils/passportTransport";
+import {
+  DEFAULT_APP_PAGE,
+  isAccessiblePage,
+  persistPage,
+  readInitialPage,
+  readPageFromLocation,
+} from "./utils/navigationState";
 
 const PublicExpoView = lazy(() => import("./pages/PublicExpoView"));
 
@@ -162,7 +169,7 @@ function AppContent() {
 
         showToast({
           title: "Sign-in check failed",
-          message: "AnyPetOS could not verify your session.",
+          message: "PetPassport could not verify your session.",
           variant: "error",
         });
       }
@@ -233,7 +240,7 @@ function AppContent() {
   // =====================================================
 
   if (authLoading) {
-    return <AppLoadingScreen message="Opening AnyPetOS..." />;
+    return <AppLoadingScreen message="Opening PetPassport..." />;
   }
 
   // =====================================================
@@ -273,7 +280,7 @@ function AppContent() {
     return (
       <AppErrorState
         title="Your profile could not be loaded"
-        message="AnyPetOS could not reach the profile database. Your data has not been changed."
+        message="PetPassport could not reach the profile database. Your data has not been changed."
       />
     );
   }
@@ -292,9 +299,11 @@ function AppContent() {
 
   return (
     <WorkspaceProvider profileRole={profile.role}>
-      <PetProvider session={session}>
-        <AuthenticatedApp profile={profile} />
-      </PetProvider>
+      <FoundingBadgeProvider profile={profile}>
+        <PetProvider session={session}>
+          <AuthenticatedApp profile={profile} />
+        </PetProvider>
+      </FoundingBadgeProvider>
     </WorkspaceProvider>
   );
 }
@@ -331,11 +340,47 @@ function AuthenticatedApp({ profile }) {
   const { runAction, isPending, isPendingPrefix } = useAsyncAction();
 
   // =====================================================
-  // 🟢 Local State
+  // 🟢 Workspace and Persistent Navigation State
   // =====================================================
 
-  const [page, setPage] = useState("Dashboard");
+  const { workspace } = useWorkspace();
+  const [page, setPage] = useState(() =>
+    readInitialPage({ profile, workspace })
+  );
   const [editForm, setEditForm] = useState(EMPTY_EDIT_FORM);
+
+  useEffect(() => {
+    if (!isAccessiblePage(page, workspace)) {
+      setPage(DEFAULT_APP_PAGE);
+      return;
+    }
+
+    persistPage({
+      page,
+      profile,
+      workspace,
+      historyMode: "replace",
+    });
+  }, [page, profile, workspace]);
+
+  useEffect(() => {
+    const restorePageFromLocation = () => {
+      const nextPage = readPageFromLocation(workspace);
+
+      if (nextPage !== page) {
+        closeModal();
+        setPage(nextPage);
+      }
+    };
+
+    window.addEventListener("popstate", restorePageFromLocation);
+    window.addEventListener("hashchange", restorePageFromLocation);
+
+    return () => {
+      window.removeEventListener("popstate", restorePageFromLocation);
+      window.removeEventListener("hashchange", restorePageFromLocation);
+    };
+  }, [closeModal, page, workspace]);
 
   // =====================================================
   // 🟢 Pet Loading State
@@ -368,7 +413,7 @@ function AuthenticatedApp({ profile }) {
       >
         <AppErrorState
           title="Your pet records could not be loaded"
-          message="AnyPetOS could not reach the pet database. No records were deleted or overwritten."
+          message="PetPassport could not reach the pet database. No records were deleted or overwritten."
         />
       </AppLayout>
     );
@@ -390,8 +435,20 @@ function AuthenticatedApp({ profile }) {
   // =====================================================
 
   const navigateToPage = (nextPage) => {
+    const safePage = isAccessiblePage(nextPage, workspace)
+      ? nextPage
+      : DEFAULT_APP_PAGE;
+
     closeModal();
-    setPage(nextPage);
+
+    persistPage({
+      page: safePage,
+      profile,
+      workspace,
+      historyMode: safePage === page ? "replace" : "push",
+    });
+
+    setPage(safePage);
   };
 
     // =====================================================
@@ -410,12 +467,18 @@ function AuthenticatedApp({ profile }) {
       },
       successTitle: "Signed out",
       successMessage: "You have been safely signed out.",
-      errorMessage: "AnyPetOS could not sign you out.",
+      errorMessage: "PetPassport could not sign you out.",
     });
 
     if (result.ok) {
       closeModal();
-      setPage("Dashboard");
+      persistPage({
+        page: DEFAULT_APP_PAGE,
+        profile,
+        workspace,
+        historyMode: "replace",
+      });
+      setPage(DEFAULT_APP_PAGE);
     }
   };
 
@@ -1052,8 +1115,6 @@ function AuthenticatedApp({ profile }) {
         />
       }
     >
-      <BetaBanner setPage={navigateToPage} />
-
       <PageRenderer
         page={page}
         profile={profile}

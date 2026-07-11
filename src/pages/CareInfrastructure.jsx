@@ -128,7 +128,7 @@ export default function CareInfrastructure({ pets = [], initialTab = "enclosures
       return result;
     } catch (error) {
       console.error(errorTitle, error);
-      showToast({ title: errorTitle, message: error.message || "AnyPetOS could not save that record.", variant: "error" });
+      showToast({ title: errorTitle, message: error.message || "PetPassport could not save that record.", variant: "error" });
       return null;
     }
   };

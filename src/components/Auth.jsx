@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "../services/supabaseClient";
-import BrandLockup from "./brand/BrandLockup";
 import {
   Button,
   Card,
@@ -17,19 +16,6 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const { showToast } = useToast();
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const errorDescription = params.get("error_description");
-    if (errorDescription) {
-      showToast({
-        title: "Email link could not be completed",
-        message: errorDescription,
-        variant: "error",
-        duration: 8000,
-      });
-    }
-  }, [showToast]);
 
   const handleAuth = async (event) => {
     event.preventDefault();
@@ -48,11 +34,7 @@ export default function Auth() {
       setLoading(true);
       const authAction =
         mode === "signup"
-          ? supabase.auth.signUp({
-              email: email.trim(),
-              password,
-              options: { emailRedirectTo: `${window.location.origin}/` },
-            })
+          ? supabase.auth.signUp({ email: email.trim(), password })
           : supabase.auth.signInWithPassword({ email: email.trim(), password });
 
       const { error } = await authAction;
@@ -61,7 +43,7 @@ export default function Auth() {
       if (mode === "signup") {
         showToast({
           title: "Account created",
-          message: "Check your email to confirm your AnyPetOS account.",
+          message: "Check your email to confirm your PetPassport account.",
           variant: "success",
           duration: 7000,
         });
@@ -87,7 +69,13 @@ export default function Auth() {
     <div className="loginScreen onboardingScreen">
       <Card className="onboardingCard authCard">
         <div className="authBrand">
-          <BrandLockup />
+          <span className="authBrandMark" aria-hidden="true">
+            <Icon name="scan" size={25} />
+          </span>
+          <div>
+            <p className="authBrandName">PetPassport</p>
+            <p className="authBrandTagline">Professional animal care records</p>
+          </div>
         </div>
 
         <div className="authIntro">
@@ -97,8 +85,8 @@ export default function Auth() {
           <h1>{mode === "signup" ? "Create your account" : "Welcome back"}</h1>
           <p>
             {mode === "signup"
-              ? "Create one lifelong care record that stays ready wherever your animal goes."
-              : "Return to your animals, care plans, records, and trusted workspaces."}
+              ? "Start organizing care, health, schedules, and passport records."
+              : "Sign in to continue managing your animals and care records."}
           </p>
         </div>
 
@@ -150,7 +138,7 @@ export default function Auth() {
           <Button type="button" variant="ghost" fullWidth onClick={toggleMode}>
             {mode === "signup"
               ? "Already have an account? Sign in"
-              : "New to AnyPetOS? Create an account"}
+              : "New to PetPassport? Create an account"}
           </Button>
         </form>
       </Card>

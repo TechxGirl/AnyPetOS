@@ -25,7 +25,7 @@ export function getStoredTheme() {
     const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
     return isTheme(storedTheme) ? storedTheme : null;
   } catch (error) {
-    console.warn("AnyPetOS could not read the saved theme preference.", error);
+    console.warn("PetPassport could not read the saved theme preference.", error);
     return null;
   }
 }
@@ -51,6 +51,6 @@ export function saveTheme(theme) {
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch (error) {
-    console.warn("AnyPetOS could not save the theme preference.", error);
+    console.warn("PetPassport could not save the theme preference.", error);
   }
 }

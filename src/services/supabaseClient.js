@@ -1,7 +1,7 @@
 // =====================================================
 // 🟢 supabaseClient.js
 //
-// Supabase client connection for AnyPetOS.
+// Supabase client connection for PetPassport.
 //
 // Current Responsibilities:
 // • Connect React app to Supabase

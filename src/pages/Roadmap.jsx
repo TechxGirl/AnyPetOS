@@ -13,8 +13,8 @@ export default function Roadmap() {
     <div className="feed roadmapPage">
       <PageHeader
         eyebrow="Product roadmap"
-        title="AnyPetOS 2.0"
-        description="The long-range build plan for turning AnyPetOS into the operating system for animal care."
+        title="PetPassport 2.0"
+        description="The long-range build plan for turning PetPassport into the operating system for animal care."
         icon={<Icon name="clipboard" size={22} />}
       />
 
@@ -23,7 +23,7 @@ export default function Roadmap() {
           <p className="section-eyebrow">Vision</p>
           <h2>Every animal has a story. Every record can travel.</h2>
           <p>
-            AnyPetOS starts with care tracking and transportable Passports, then expands into workspaces, professional modules, community, AI, launch, and growth.
+            PetPassport starts with care tracking and transportable Passports, then expands into workspaces, professional modules, community, AI, launch, and growth.
           </p>
         </div>
         <div className="roadmapHeroStats">
@@ -70,10 +70,10 @@ export default function Roadmap() {
         <CardHeader
           icon={<Icon name="sparkles" size={18} />}
           title="Success metric"
-          description="People do not just use AnyPetOS. They rely on it."
+          description="People do not just use PetPassport. They rely on it."
         />
         <blockquote className="roadmapQuote">
-          I honestly don't know how I managed my animals before AnyPetOS.
+          I honestly don't know how I managed my animals before PetPassport.
         </blockquote>
       </Card>
     </div>

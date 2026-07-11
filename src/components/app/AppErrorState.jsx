@@ -1,7 +1,7 @@
 import { Button, Card, Icon } from "../ui";
 
 export default function AppErrorState({
-  title = "AnyPetOS could not load this area",
+  title = "PetPassport could not load this area",
   message = "Please check your connection and try again.",
   onRetry = () => window.location.reload(),
 }) {

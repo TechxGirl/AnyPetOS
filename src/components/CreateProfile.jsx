@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { supabase } from "../services/supabaseClient";
-import BrandLockup from "./brand/BrandLockup";
 import { USER_ROLES } from "../constants/roles";
 import {
   Button,
@@ -45,10 +44,29 @@ export default function CreateProfile({ session }) {
       });
       if (error) throw error;
 
+      const { data: foundingResult, error: foundingError } = await supabase.rpc(
+        "claim_founding_beta_badge",
+        {
+          requested_role: form.role,
+          claim_source: "profile_setup",
+        }
+      );
+
+      if (foundingError) {
+        console.warn("Profile created, but founding status could not be confirmed:", foundingError);
+      }
+
+      const foundingNumber = foundingResult?.badge_number
+        ? String(foundingResult.badge_number).padStart(3, "0")
+        : "";
+
       showToast({
-        title: "Workspace created",
-        message: "Your AnyPetOS profile is ready.",
+        title: foundingNumber ? "Welcome, founding member" : "Workspace created",
+        message: foundingNumber
+          ? `Your profile is ready and Founding Beta Tester #${foundingNumber} is secured.`
+          : "Your PetPassport profile is ready.",
         variant: "success",
+        duration: 6500,
       });
       window.location.reload();
     } catch (error) {
@@ -66,7 +84,15 @@ export default function CreateProfile({ session }) {
   return (
     <div className="loginScreen onboardingScreen">
       <Card className="onboardingCard createProfileCard">
-<div className="authBrand"><BrandLockup /></div>
+        <div className="authBrand">
+          <span className="authBrandMark" aria-hidden="true">
+            <Icon name="scan" size={25} />
+          </span>
+          <div>
+            <p className="authBrandName">PetPassport</p>
+            <p className="authBrandTagline">Set up your care workspace</p>
+          </div>
+        </div>
 
         <div className="authIntro">
           <p className="section-eyebrow">Profile setup</p>

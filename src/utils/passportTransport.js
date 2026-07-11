@@ -218,12 +218,12 @@ export function buildPublicPassportSnapshot(pet, view = "buyer") {
 // =====================================================
 
 export function buildSmsHref(url, petName = "this animal") {
-  return `sms:?&body=${encodeURIComponent(`Here is ${petName}'s AnyPetOS: ${url}`)}`;
+  return `sms:?&body=${encodeURIComponent(`Here is ${petName}'s PetPassport: ${url}`)}`;
 }
 
 export function buildEmailHref(url, petName = "this animal") {
-  const subject = `${petName}'s AnyPetOS`;
-  const body = `Here is ${petName}'s AnyPetOS:\n\n${url}`;
+  const subject = `${petName}'s PetPassport`;
+  const body = `Here is ${petName}'s PetPassport:\n\n${url}`;
 
   return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }

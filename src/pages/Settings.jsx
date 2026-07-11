@@ -1,5 +1,6 @@
 import { useWorkspace } from "../context/WorkspaceContext";
 import { WorkspaceSwitcher } from "../components/workspace";
+import { FoundingBadgePanel } from "../components/founding";
 import {
   Button,
   Card,
@@ -9,7 +10,7 @@ import {
   ThemeSelector,
 } from "../components/ui";
 
-export default function Settings({ user, setUser }) {
+export default function Settings({ user, profile, setUser }) {
   const { workspace, enabledWorkspaceIds } = useWorkspace();
   const displayName =
     user?.displayName || user?.username || user?.email || user?.phone || "Guest";
@@ -20,7 +21,7 @@ export default function Settings({ user, setUser }) {
       <PageHeader
         eyebrow="Workspace"
         title="Settings"
-        description="Manage your account, appearance, and active AnyPetOS interface."
+        description="Manage your account, appearance, and active PetPassport interface."
         icon={<Icon name="settings" size={22} />}
       />
 
@@ -55,6 +56,8 @@ export default function Settings({ user, setUser }) {
         </div>
       </Card>
 
+      <FoundingBadgePanel primaryRole={profile?.role || user?.primaryRole} />
+
       <Card>
         <WorkspaceSwitcher />
         <p className="settingsHelperText">
@@ -70,7 +73,7 @@ export default function Settings({ user, setUser }) {
         />
         <ThemeSelector />
         <p className="settingsHelperText">
-          Your selection is saved on this device and applied before AnyPetOS
+          Your selection is saved on this device and applied before PetPassport
           opens, preventing a bright or dark flash during startup.
         </p>
       </Card>

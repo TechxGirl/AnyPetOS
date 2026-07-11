@@ -6,7 +6,6 @@ import {
   normalizeWorkspaceId,
 } from "../data/workspaces";
 
-// Legacy key retained so existing users keep their selected workspace after the rebrand.
 const STORAGE_KEY = "petpassport-active-workspace";
 const ENABLED_STORAGE_KEY = "petpassport-enabled-workspaces";
 

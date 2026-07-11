@@ -114,7 +114,7 @@ const progress = STEP_PROGRESS[step] || 0;
 
       {step === "welcome" && (
         <div className="card onboardingCard">
-          <h1 className="onboardingTitle"><Icon name="scan" size={30} /> Welcome to AnyPetOS</h1>
+          <h1 className="onboardingTitle"><Icon name="scan" size={30} /> Welcome to PetPassport</h1>
 
           <p>
             Build digital passports, track care, manage records,
@@ -318,7 +318,7 @@ const progress = STEP_PROGRESS[step] || 0;
   </button>
 
   <button onClick={finishOnboarding}>
-    Enter AnyPetOS →
+    Enter PetPassport →
   </button>
 </div>
         </div>

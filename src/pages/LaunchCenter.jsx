@@ -47,7 +47,7 @@ export default function LaunchCenter({ pets }) {
 
   const completed = CHECKLIST.filter((item) => checked[item]).length;
   const percent = Math.round((completed / CHECKLIST.length) * 100);
-  const betaInvite = `AnyPetOS private beta is open for testing. Please create a test account, add a test animal, try sharing a read-only Passport, and test ownership transfer. This is beta software, not veterinary advice or emergency record storage.`;
+  const betaInvite = `PetPassport private beta is open for testing. Please create a test account, add a test animal, try sharing a read-only Passport, and test ownership transfer. This is beta software, not veterinary advice or emergency record storage.`;
 
   return (
     <div className="page-shell roadmap-feature-page">
