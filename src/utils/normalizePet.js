@@ -1,5 +1,5 @@
 // ==========================================
-// PetPassport
+// AnyPetOS
 // Normalize Pet Utility
 // ==========================================
 
@@ -30,6 +30,11 @@ const defaultTransferSettings = {
   expiresAt: null,
   cancelledAt: null,
   acceptedAt: null,
+  documentIds: [],
+  documents: [],
+  signatureRequired: false,
+  signatureRequiredDocumentIds: [],
+  signatureStatus: "",
 };
 
 // =====================================================
@@ -67,6 +72,13 @@ function normalizeTransferSettings(transfer) {
     expiresAt: transfer.expiresAt || null,
     cancelledAt: transfer.cancelledAt || null,
     acceptedAt: transfer.acceptedAt || null,
+    documentIds: Array.isArray(transfer.documentIds) ? transfer.documentIds : [],
+    documents: Array.isArray(transfer.documents) ? transfer.documents : [],
+    signatureRequired: Boolean(transfer.signatureRequired),
+    signatureRequiredDocumentIds: Array.isArray(transfer.signatureRequiredDocumentIds)
+      ? transfer.signatureRequiredDocumentIds
+      : [],
+    signatureStatus: transfer.signatureStatus || "",
   };
 }
 

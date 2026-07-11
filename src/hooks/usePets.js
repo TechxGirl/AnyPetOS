@@ -424,17 +424,97 @@ export function usePets(session) {
   // =====================================================
 
   const createTransferInvite = useCallback(
-    async (petId, expiresInDays = 14) => {
+    async (petId, options = {}) => {
       if (!session) throw new Error("You must be signed in to transfer a Passport.");
 
       const pet = findPetById(petId);
 
       if (!pet) throw new Error("Could not find the selected pet.");
 
+      const normalizedOptions = typeof options === "number"
+        ? { expiresInDays: options }
+        : (options || {});
+      const expiresInDays = Math.max(1, Number(normalizedOptions.expiresInDays || 14));
+      const requestedDocumentIds = Array.isArray(normalizedOptions.documentIds)
+        ? normalizedOptions.documentIds.filter(Boolean)
+        : [];
+      const requestedSignatureDocumentIds = Array.isArray(normalizedOptions.signatureDocumentIds)
+        ? normalizedOptions.signatureDocumentIds.filter(Boolean)
+        : [];
+
       const token = createTransportToken();
       const now = Date.now();
-      const expiresAt = now + Number(expiresInDays || 14) * 24 * 60 * 60 * 1000;
+      const expiresAt = now + expiresInDays * 24 * 60 * 60 * 1000;
       const snapshot = buildPublicPassportSnapshot(pet, "buyer");
+      const databasePetId = pet.cloudId || pet.id;
+      const transferDocuments = [];
+
+      if (requestedDocumentIds.length > 0) {
+        const { data: fileRows, error: fileError } = await supabase
+          .from("pet_files")
+          .select("id, pet_id, bucket, storage_path, file_name, file_type, mime_type, size_bytes, notes, is_public_passport")
+          .eq("user_id", session.user.id)
+          .eq("is_public_passport", true)
+          .in("id", requestedDocumentIds);
+
+        if (fileError) {
+          console.error("Unable to load transfer documents:", fileError);
+          throw fileError;
+        }
+
+        const eligibleFiles = (fileRows || []).filter(
+          (file) => !file.pet_id || String(file.pet_id) === String(databasePetId)
+        );
+        const signedUrlSeconds = Math.ceil(expiresInDays * 24 * 60 * 60);
+
+        const signedDocuments = await Promise.all(
+          eligibleFiles.map(async (file) => {
+            const { data, error: signError } = await supabase.storage
+              .from(file.bucket || "pet-files")
+              .createSignedUrl(file.storage_path, signedUrlSeconds);
+
+            if (signError) throw signError;
+
+            return {
+              id: file.id,
+              fileName: file.file_name,
+              fileType: file.file_type || "Document",
+              mimeType: file.mime_type || "application/octet-stream",
+              sizeBytes: Number(file.size_bytes || 0),
+              notes: file.notes || "",
+              linkedToPet: Boolean(file.pet_id),
+              requiresSignature: requestedSignatureDocumentIds.some(
+                (id) => String(id) === String(file.id)
+              ),
+              url: data.signedUrl,
+              expiresAt,
+            };
+          })
+        );
+
+        transferDocuments.push(...signedDocuments);
+      }
+
+      const signatureDocumentIds = transferDocuments
+        .filter((document) => document.requiresSignature)
+        .map((document) => document.id);
+
+      snapshot.documents = transferDocuments;
+      snapshot.transferMeta = {
+        petId: String(databasePetId),
+        token,
+        expiresAt,
+      };
+      snapshot.signaturePolicy = {
+        required: signatureDocumentIds.length > 0,
+        requiredDocumentIds: signatureDocumentIds,
+        requiredDocumentNames: transferDocuments
+          .filter((document) => document.requiresSignature)
+          .map((document) => document.fileName),
+        consentText:
+          "I confirm that I opened and reviewed every required agreement, agree to their terms, and consent to use my typed legal name as my electronic signature for this ownership transfer.",
+        version: "2026-07-10-v2",
+      };
 
       const { error: cancelOldError } = await supabase
         .from("passport_transfers")
@@ -442,7 +522,7 @@ export function usePets(session) {
           status: "cancelled",
           cancelled_at: new Date().toISOString(),
         })
-        .eq("pet_id", pet.cloudId || pet.id)
+        .eq("pet_id", databasePetId)
         .eq("from_user_id", session.user.id)
         .eq("status", "pending");
 
@@ -454,7 +534,7 @@ export function usePets(session) {
       const { error: transferError } = await supabase
         .from("passport_transfers")
         .insert({
-          pet_id: pet.cloudId || pet.id,
+          pet_id: databasePetId,
           from_user_id: session.user.id,
           token,
           status: "pending",
@@ -476,12 +556,25 @@ export function usePets(session) {
           expiresAt,
           cancelledAt: null,
           acceptedAt: null,
+          documentIds: transferDocuments.map((document) => document.id),
+          documents: transferDocuments.map((document) => ({
+            id: document.id,
+            fileName: document.fileName,
+            fileType: document.fileType,
+            sizeBytes: document.sizeBytes,
+            requiresSignature: Boolean(document.requiresSignature),
+          })),
+          signatureRequired: signatureDocumentIds.length > 0,
+          signatureRequiredDocumentIds: signatureDocumentIds,
+          signatureStatus: signatureDocumentIds.length > 0 ? "awaiting_signature" : "not_required",
         },
         logs: [
           {
             id: createId("event"),
             type: "Transfer Invite Created",
-            note: `Transfer invite created for ${pet.name}`,
+            note: transferDocuments.length > 0
+              ? `Transfer invite created for ${pet.name} with ${transferDocuments.length} document${transferDocuments.length === 1 ? "" : "s"}${signatureDocumentIds.length > 0 ? ` and electronic acceptance required for ${signatureDocumentIds.length} agreement${signatureDocumentIds.length === 1 ? "" : "s"}` : ""}`
+              : `Transfer invite created for ${pet.name}`,
             time: now,
           },
           ...(pet.logs || []),

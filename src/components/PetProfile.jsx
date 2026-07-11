@@ -68,7 +68,7 @@ export default function PetProfile({
           <Button variant="secondary" leftIcon={<Icon name="history" size={16} />} onClick={() => openShedModal(pet.id)}>Log shed</Button>
           <Button variant="secondary" leftIcon={<Icon name="pill" size={16} />} onClick={() => openQuickMeds(pet.id)}>Medications</Button>
           <Button variant="outline" leftIcon={<Icon name="share" size={16} />} onClick={() => openSharePassport(pet.id)}>Share passport</Button>
-          <Button variant="outline" leftIcon={<Icon name="file" size={16} />} onClick={() => { close(); setPage?.("Files"); }}>Files</Button>
+          <Button variant="outline" leftIcon={<Icon name="file" size={16} />} onClick={() => { close(); setPage?.("Files"); }}>Documents</Button>
           <Button variant="outline" leftIcon={<Icon name="users" size={16} />} onClick={() => { close(); setPage?.("Access Center"); }}>Access</Button>
           <Button variant="outline" leftIcon={<Icon name="edit" size={16} />} onClick={() => startEdit(pet)}>Edit profile</Button>
           <Button variant="danger" leftIcon={<Icon name="trash" size={16} />} onClick={() => deletePet?.(pet.id)}>Delete profile</Button>

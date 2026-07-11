@@ -1,4 +1,4 @@
-/* PetPassport legacy component alignment.
+/* AnyPetOS legacy component alignment.
    New reusable components use the namespaced ui-* classes in styles/ui.css. */
 
 body {
@@ -4140,4 +4140,1311 @@ body {
 @keyframes pp-feature-pulse {
   0%, 100% { transform: scale(1); opacity: 0.75; }
   50% { transform: scale(1.06); opacity: 1; }
+}
+
+/* =====================================================
+   AnyPetOS brand system
+   Hand-built vector mark + premium product surfaces
+===================================================== */
+.anypetos-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: .72rem;
+  min-width: 0;
+}
+.anypetos-lockup__mark { flex: 0 0 auto; filter: drop-shadow(0 8px 18px rgba(30,143,255,.2)); }
+.anypetos-lockup__copy { display: grid; min-width: 0; gap: 2px; text-align: left; }
+.anypetos-lockup__name {
+  color: var(--pp-color-text);
+  font-size: 1.12rem;
+  font-weight: 850;
+  letter-spacing: -.045em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.anypetos-lockup__name span {
+  background: linear-gradient(115deg, #6670ff 0%, #238cff 52%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.anypetos-lockup__tagline {
+  overflow: hidden;
+  color: var(--pp-color-text-subtle);
+  font-size: .68rem;
+  font-weight: 620;
+  letter-spacing: .015em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.anypetos-lockup.is-compact { gap: .58rem; }
+.anypetos-lockup.is-compact .anypetos-lockup__name { font-size: 1rem; }
+
+.loginScreen,
+.onboardingScreen {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 15%, rgba(91,92,255,.18), transparent 30rem),
+    radial-gradient(circle at 88% 82%, rgba(34,211,238,.11), transparent 32rem),
+    linear-gradient(145deg, #050815 0%, var(--pp-color-canvas) 52%, #081323 100%);
+}
+:root[data-theme="light"] .loginScreen,
+:root[data-theme="light"] .onboardingScreen {
+  background:
+    radial-gradient(circle at 12% 15%, rgba(91,92,255,.11), transparent 30rem),
+    radial-gradient(circle at 88% 82%, rgba(34,211,238,.09), transparent 32rem),
+    linear-gradient(145deg, #f7f8ff 0%, #f5f8fc 52%, #edf9fc 100%);
+}
+.loginScreen::before,
+.onboardingScreen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .18;
+  background-image:
+    linear-gradient(rgba(148,163,184,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148,163,184,.08) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+.authCard,
+.createProfileCard {
+  position: relative;
+  z-index: 1;
+  border-color: rgba(96,165,250,.2) !important;
+  background: color-mix(in srgb, var(--pp-color-surface) 90%, transparent) !important;
+  box-shadow: 0 32px 90px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.04) !important;
+  backdrop-filter: blur(24px);
+}
+.authBrand { align-items: center; }
+.authIntro .section-eyebrow { color: #67c8ff; }
+.authIntro h1 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -.055em; }
+.authIntro h1::after {
+  content: "";
+  display: block;
+  width: 54px;
+  height: 3px;
+  margin-top: .85rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6670ff, #238cff, #22d3ee);
+}
+.ui-loading-screen {
+  background:
+    radial-gradient(circle at 50% 34%, rgba(35,140,255,.16), transparent 24rem),
+    var(--pp-color-canvas) !important;
+}
+.ui-loading-screen__mark {
+  width: 72px !important;
+  height: 72px !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+/* AnyPetOS beta launch placement */
+.anypetosHeroSlogan {
+  margin: .45rem 0 .2rem !important;
+  color: #67d7ff !important;
+  font-size: clamp(.98rem, 1.6vw, 1.14rem) !important;
+  font-weight: 800;
+  letter-spacing: .025em;
+}
+
+.betaFeedbackPage { max-width: 980px; margin: 0 auto; }
+.betaFeedbackTopbar { margin-bottom: 1rem; }
+.betaFeedbackHero {
+  margin-bottom: 1.25rem;
+  padding: clamp(1.4rem, 3vw, 2.4rem);
+  border: 1px solid color-mix(in srgb, var(--pp-color-accent) 38%, var(--pp-color-border));
+  border-radius: var(--pp-radius-xl);
+  background: linear-gradient(135deg, var(--pp-color-surface), color-mix(in srgb, var(--pp-color-accent) 13%, var(--pp-color-surface)));
+}
+.betaFeedbackHero h1 { margin: .25rem 0 .55rem; font-size: clamp(2rem, 5vw, 3.2rem); letter-spacing: -.045em; }
+.betaFeedbackHero p:last-child { max-width: 720px; margin: 0; color: var(--pp-color-text-muted); line-height: 1.65; }
+.betaFeedbackCard { padding: clamp(1.1rem, 2.8vw, 1.75rem); }
+.betaFeedbackGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
+.betaFeedbackGrid .full { grid-column: 1 / -1; }
+.betaFeedbackTextarea { width: 100%; min-height: 150px; resize: vertical; padding: .9rem 1rem; font: inherit; }
+.betaFeedbackTextarea--small { min-height: 105px; }
+.betaFeedbackActions { display: flex; justify-content: flex-end; gap: .75rem; margin-top: 1.15rem; }
+@media (max-width: 720px) {
+  .premiumHeroActions { align-items: stretch; }
+  .premiumHeroActions .ui-button { width: 100%; }
+  .betaFeedbackGrid { grid-template-columns: 1fr; }
+  .betaFeedbackGrid .full { grid-column: auto; }
+  .betaFeedbackActions { flex-direction: column-reverse; }
+  .betaFeedbackActions .ui-button { width: 100%; }
+}
+
+/* =====================================================
+   Medication schedule v2 and care calendar
+   ===================================================== */
+.medication-duration-grid,
+.medication-dose-date-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--pp-space-3);
+}
+.medication-dose-form,
+.medication-backfill-copy { display: grid; gap: var(--pp-space-4); }
+.medication-form-error { margin: 0; color: var(--pp-color-danger-text); font-size: var(--pp-font-size-sm); font-weight: 700; }
+.medication-schedule-list { display: grid; gap: var(--pp-space-2); padding-top: var(--pp-space-3); border-top: 1px solid var(--pp-color-divider); }
+.medication-schedule-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--pp-space-3); }
+.medication-schedule-heading small { color: var(--pp-color-text-subtle); }
+.medication-schedule-row { display: flex; align-items: center; justify-content: space-between; gap: var(--pp-space-3); padding: var(--pp-space-3); border: 1px solid var(--pp-color-divider); border-radius: var(--pp-radius-md); background: var(--pp-color-surface-muted); }
+.medication-schedule-row > div:first-child { display: grid; gap: 3px; min-width: 0; }
+.medication-schedule-row small { color: var(--pp-color-text-muted); }
+.medication-schedule-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: var(--pp-space-2); }
+
+.careCalendarPage { display: grid; gap: var(--pp-space-5); }
+.calendarFilterCard { padding-block: var(--pp-space-4); }
+.calendarFilters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--pp-space-4); }
+.calendarLegend { display: flex; flex-wrap: wrap; gap: var(--pp-space-2); margin: 0 0 var(--pp-space-4); }
+.calendarEvent { display: grid; gap: 1px; margin-top: var(--pp-space-2); padding: var(--pp-space-1) var(--pp-space-2); border: 1px solid var(--pp-color-border); border-radius: var(--pp-radius-sm); background: var(--pp-color-surface-raised); font-size: var(--pp-font-size-xs); overflow: hidden; }
+.calendarEvent span,
+.calendarEvent small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.calendarEvent small { color: var(--pp-color-text-muted); }
+.calendarEvent--given { border-color: rgba(52,211,153,.32); background: var(--pp-color-success-soft); }
+.calendarEvent--given-late,
+.calendarEvent--missed { border-color: rgba(251,113,133,.32); background: var(--pp-color-danger-soft); }
+.calendarEvent--due-today,
+.calendarEvent--skipped { border-color: rgba(251,191,36,.32); background: var(--pp-color-warning-soft); }
+.calendarEvent--upcoming { border-color: rgba(96,165,250,.32); background: var(--pp-color-info-soft); }
+.calendarEventDetailsList { display: grid; gap: var(--pp-space-3); }
+.calendarEventDetail { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--pp-space-4); padding: var(--pp-space-4); border: 1px solid var(--pp-color-divider); border-radius: var(--pp-radius-md); background: var(--pp-color-surface-muted); }
+.calendarEventDetail > div:first-child { display: grid; gap: var(--pp-space-1); }
+.calendarEventDetail p,
+.calendarEventDetail small { margin: 0; color: var(--pp-color-text-muted); }
+.calendarEventDetailActions { display: grid; justify-items: end; gap: var(--pp-space-2); flex: 0 0 auto; }
+
+@media (max-width: 760px) {
+  .medication-duration-grid,
+  .medication-dose-date-grid,
+  .calendarFilters { grid-template-columns: 1fr; }
+  .medication-schedule-row,
+  .calendarEventDetail { align-items: stretch; flex-direction: column; }
+  .medication-schedule-actions,
+  .calendarEventDetailActions { justify-content: flex-start; justify-items: start; }
+}
+
+/* =====================================================
+   Beta safety pack: authentication and Passport drafts
+===================================================== */
+.authRememberRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pp-space-3);
+  padding: var(--pp-space-3);
+  border: 1px solid var(--pp-color-divider);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-surface-muted);
+  cursor: pointer;
+}
+
+.authRememberRow input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex: 0 0 auto;
+}
+
+.authRememberRow span {
+  display: grid;
+  gap: 2px;
+}
+
+.authRememberRow strong {
+  color: var(--pp-color-text);
+  font-size: var(--pp-font-size-sm);
+}
+
+.authRememberRow small {
+  color: var(--pp-color-text-muted);
+  line-height: 1.45;
+}
+
+.passportDraftActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--pp-space-2);
+  flex-wrap: wrap;
+}
+
+.passportDraftNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pp-space-3);
+  margin: calc(var(--pp-space-3) * -1) 0 var(--pp-space-5);
+  padding: var(--pp-space-4);
+  border: 1px solid var(--pp-color-primary-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-primary-soft);
+  color: var(--pp-color-primary-hover);
+}
+
+.passportDraftNotice > div {
+  display: grid;
+  gap: var(--pp-space-1);
+}
+
+.passportDraftNotice strong {
+  color: var(--pp-color-text);
+}
+
+.passportDraftNotice span {
+  color: var(--pp-color-text-muted);
+  font-size: var(--pp-font-size-sm);
+  line-height: 1.5;
+}
+
+@media (max-width: 680px) {
+  .addPetHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .passportDraftActions {
+    justify-content: space-between;
+  }
+}
+
+/* =====================================================
+   Document Library + Transfer Attachments
+===================================================== */
+.documentLibraryShell {
+  display: grid;
+  gap: 20px;
+}
+
+.documentLibraryIntro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px 24px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-xl);
+  background:
+    radial-gradient(circle at 0 0, var(--pp-color-primary-soft), transparent 42%),
+    var(--pp-color-surface);
+  box-shadow: var(--pp-shadow-card);
+}
+
+.documentLibraryIntro h2 {
+  margin: 2px 0 8px;
+  color: var(--pp-color-text);
+  font-size: clamp(1.35rem, 2.5vw, 1.85rem);
+  letter-spacing: -0.025em;
+}
+
+.documentLibraryIntro p:not(.section-eyebrow) {
+  max-width: 760px;
+  margin: 0;
+  color: var(--pp-color-text-muted);
+  line-height: 1.6;
+}
+
+.documentLibraryStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.documentLibraryStats > div {
+  padding: 16px 18px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-lg);
+  background: var(--pp-color-surface);
+  box-shadow: var(--pp-shadow-card);
+}
+
+.documentLibraryStats strong,
+.documentLibraryStats span {
+  display: block;
+}
+
+.documentLibraryStats strong {
+  margin-bottom: 5px;
+  color: var(--pp-color-primary-hover);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.documentLibraryStats span {
+  color: var(--pp-color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.documentLibraryLayout {
+  display: grid;
+  grid-template-columns: minmax(290px, 360px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.documentUploadCard {
+  position: sticky;
+  top: 18px;
+}
+
+.documentUploadForm {
+  display: grid;
+  gap: 14px;
+}
+
+.documentFormHint {
+  margin: -4px 0 0;
+  color: var(--pp-color-text-subtle);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.documentTransferToggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 13px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-surface-muted);
+  cursor: pointer;
+}
+
+.documentTransferToggle input {
+  margin-top: 3px;
+}
+
+.documentTransferToggle span,
+.documentTransferToggle strong,
+.documentTransferToggle small {
+  display: block;
+}
+
+.documentTransferToggle strong {
+  color: var(--pp-color-text);
+  font-size: 0.88rem;
+}
+
+.documentTransferToggle small {
+  margin-top: 3px;
+  color: var(--pp-color-text-muted);
+  line-height: 1.45;
+}
+
+.documentLibraryMain {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.documentToolbarCard {
+  position: sticky;
+  top: 18px;
+  z-index: 2;
+}
+
+.documentToolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.35fr) minmax(170px, 0.8fr) minmax(160px, 0.75fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.documentSearchBox {
+  position: relative;
+}
+
+.documentSearchBox > svg {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  z-index: 1;
+  color: var(--pp-color-text-subtle);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.documentSearchBox .ui-input {
+  padding-left: 40px;
+}
+
+.documentFilterToggle {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-surface-muted);
+  color: var(--pp-color-text-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.documentFilterToggle.is-active {
+  border-color: var(--pp-color-primary-border);
+  background: var(--pp-color-primary-soft);
+  color: var(--pp-color-primary-hover);
+}
+
+.documentCardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.documentCard {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.documentCardTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.documentTypeIcon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 1px solid var(--pp-color-primary-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-primary-soft);
+  color: var(--pp-color-primary-hover);
+}
+
+.documentCardTitle {
+  min-width: 0;
+}
+
+.documentBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.documentCardTitle h3 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--pp-color-text);
+  font-size: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.documentMetaList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.documentMetaList > div {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-surface-muted);
+}
+
+.documentMetaList span,
+.documentMetaList strong {
+  display: block;
+}
+
+.documentMetaList span {
+  margin-bottom: 4px;
+  color: var(--pp-color-text-subtle);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.documentMetaList strong {
+  overflow: hidden;
+  color: var(--pp-color-text-muted);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.documentCardNote {
+  margin: 0;
+  color: var(--pp-color-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.documentCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: auto;
+  padding-top: 2px;
+}
+
+.transferDocumentPicker {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-lg);
+  background: var(--pp-color-surface-muted);
+}
+
+.transferDocumentPicker__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.transferDocumentPicker__header h4 {
+  margin: 0;
+  color: var(--pp-color-text);
+  font-size: 0.95rem;
+}
+
+.transferDocumentPicker__header p {
+  margin: 4px 0 0;
+  color: var(--pp-color-text-muted);
+  font-size: 0.8rem;
+}
+
+.transferDocumentPicker__list {
+  display: grid;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+.transferDocumentPicker__list label {
+  display: grid;
+  grid-template-columns: auto 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-surface);
+  cursor: pointer;
+}
+
+.transferDocumentPicker__list label.is-selected {
+  border-color: var(--pp-color-primary-border);
+  background: var(--pp-color-primary-soft);
+}
+
+.transferDocumentPicker__icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--pp-color-surface-raised);
+  color: var(--pp-color-primary-hover);
+}
+
+.transferDocumentPicker__copy,
+.transferDocumentPicker__copy strong,
+.transferDocumentPicker__copy small {
+  display: block;
+  min-width: 0;
+}
+
+.transferDocumentPicker__copy strong {
+  overflow: hidden;
+  color: var(--pp-color-text);
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transferDocumentPicker__copy small {
+  margin-top: 3px;
+  color: var(--pp-color-text-muted);
+  font-size: 0.74rem;
+}
+
+.transferDocumentPicker__empty {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px dashed var(--pp-color-border-strong);
+  border-radius: var(--pp-radius-md);
+  color: var(--pp-color-text-muted);
+}
+
+.transferDocumentPicker__empty strong,
+.transferDocumentPicker__empty small {
+  display: block;
+}
+
+.transferDocumentPicker__empty strong {
+  color: var(--pp-color-text);
+  font-size: 0.84rem;
+}
+
+.transferDocumentPicker__empty small {
+  margin-top: 3px;
+  line-height: 1.45;
+}
+
+.transferDocumentsCard {
+  overflow: hidden;
+}
+
+.transferDocumentsList {
+  display: grid;
+  gap: 10px;
+}
+
+.transferDocumentRow {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-surface-muted);
+}
+
+.transferDocumentRow__icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-primary-soft);
+  color: var(--pp-color-primary-hover);
+}
+
+.transferDocumentRow__copy,
+.transferDocumentRow__copy strong,
+.transferDocumentRow__copy small {
+  display: block;
+  min-width: 0;
+}
+
+.transferDocumentRow__copy strong {
+  overflow: hidden;
+  color: var(--pp-color-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transferDocumentRow__copy small {
+  margin-top: 3px;
+  color: var(--pp-color-text-muted);
+}
+
+.transferDocumentRow__copy p {
+  margin: 6px 0 0;
+  color: var(--pp-color-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 1180px) {
+  .documentLibraryLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .documentUploadCard,
+  .documentToolbarCard {
+    position: static;
+  }
+
+  .documentToolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .documentLibraryIntro,
+  .transferDocumentPicker__header {
+    flex-direction: column;
+  }
+
+  .documentLibraryStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .documentToolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .documentCardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .documentMetaList {
+    grid-template-columns: 1fr;
+  }
+
+  .transferDocumentRow {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .transferDocumentRow > .ui-button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .documentLibraryStats {
+    grid-template-columns: 1fr;
+  }
+
+  .documentCardActions .ui-button {
+    flex: 1 1 100%;
+  }
+}
+
+/* =====================================================
+   Signed Transfer + E-Signature V5
+   ===================================================== */
+
+.transferDocumentPicker__item {
+  display: grid;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-surface);
+}
+
+.transferDocumentPicker__item.is-selected {
+  border-color: var(--pp-color-primary-border);
+  background: var(--pp-color-primary-soft);
+}
+
+.transferDocumentPicker__item.requires-signature {
+  box-shadow: inset 3px 0 0 var(--pp-color-primary);
+}
+
+.transferDocumentPicker__list .transferDocumentPicker__select {
+  display: grid;
+  grid-template-columns: auto 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.transferDocumentPicker__list .transferDocumentPicker__signatureToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 54px;
+  padding: 8px 10px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: 10px;
+  background: var(--pp-color-surface-raised);
+  color: var(--pp-color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.transferDocumentPicker__signatureToggle input {
+  margin: 0;
+}
+
+.transferSignaturePolicySummary {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin: 14px 0;
+  padding: 13px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-lg);
+  background: var(--pp-color-surface-muted);
+}
+
+.transferSignaturePolicySummary__icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--pp-color-primary-soft);
+  color: var(--pp-color-primary-hover);
+}
+
+.transferSignaturePolicySummary strong,
+.transferSignaturePolicySummary small {
+  display: block;
+}
+
+.transferSignaturePolicySummary strong {
+  color: var(--pp-color-text);
+}
+
+.transferSignaturePolicySummary small {
+  margin-top: 3px;
+  color: var(--pp-color-text-muted);
+  line-height: 1.45;
+}
+
+.transferDocumentRow.requires-signature {
+  border-color: var(--pp-color-primary-border);
+  background: var(--pp-color-primary-soft);
+}
+
+.transferDocumentRow.is-acknowledged {
+  box-shadow: inset 3px 0 0 var(--pp-color-success, #24b47e);
+}
+
+.transferDocumentRow__titleLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.transferDocumentRow__titleLine strong {
+  flex: 1;
+}
+
+.transferDocumentAcknowledge {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  color: var(--pp-color-text-subtle);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.transferDocumentAcknowledge.is-ready {
+  color: var(--pp-color-text);
+}
+
+.transferDocumentAcknowledge input {
+  margin-top: 2px;
+}
+
+.transferSignatureCard {
+  overflow: hidden;
+}
+
+.transferSignatureProgress {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.transferSignatureProgress > div {
+  padding: 12px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-surface-muted);
+}
+
+.transferSignatureProgress span,
+.transferSignatureProgress strong {
+  display: block;
+}
+
+.transferSignatureProgress span {
+  color: var(--pp-color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.transferSignatureProgress strong {
+  margin-top: 5px;
+  color: var(--pp-color-text);
+}
+
+.transferSignatureField {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.transferSignatureField > span {
+  color: var(--pp-color-text);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.transferSignaturePad {
+  position: relative;
+  margin: 4px 0 16px;
+  overflow: hidden;
+  border: 1px solid var(--pp-color-border-strong);
+  border-radius: var(--pp-radius-lg);
+  background: var(--pp-color-surface);
+}
+
+.transferSignaturePad__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--pp-color-border);
+  background: var(--pp-color-surface-muted);
+}
+
+.transferSignaturePad__header strong,
+.transferSignaturePad__header small {
+  display: block;
+}
+
+.transferSignaturePad__header small {
+  margin-top: 2px;
+  color: var(--pp-color-text-muted);
+  font-size: 0.76rem;
+}
+
+.transferSignaturePad canvas {
+  display: block;
+  width: 100%;
+  height: 180px;
+  background:
+    linear-gradient(to bottom, transparent 82%, var(--pp-color-border) 82%, var(--pp-color-border) 83%, transparent 83%),
+    var(--pp-color-surface);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.transferSignaturePad__placeholder {
+  position: absolute;
+  right: 0;
+  bottom: 32px;
+  left: 0;
+  color: var(--pp-color-text-subtle);
+  font-size: 0.9rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.transferSignatureConsent {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-surface-muted);
+}
+
+.transferSignatureConsent input {
+  margin-top: 3px;
+}
+
+.transferSignatureConsent strong,
+.transferSignatureConsent small {
+  display: block;
+}
+
+.transferSignatureConsent small {
+  margin-top: 4px;
+  color: var(--pp-color-text-muted);
+  line-height: 1.5;
+}
+
+.transferErrorMessage {
+  margin: 12px 0;
+  padding: 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--pp-color-danger) 40%, transparent);
+  border-radius: var(--pp-radius-md);
+  background: color-mix(in srgb, var(--pp-color-danger) 10%, transparent);
+  color: var(--pp-color-danger);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.transferReceiptCard {
+  border-color: var(--pp-color-primary-border);
+}
+
+.transferReceiptMeta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.transferReceiptMeta > div {
+  padding: 12px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-surface-muted);
+}
+
+.transferReceiptMeta span,
+.transferReceiptMeta strong {
+  display: block;
+}
+
+.transferReceiptMeta span {
+  color: var(--pp-color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.transferReceiptMeta strong {
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+
+.signedReceiptLibrary {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--pp-color-primary-border);
+  border-radius: var(--pp-radius-xl);
+  background: var(--pp-color-primary-soft);
+}
+
+.signedReceiptLibrary__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.signedReceiptLibrary__header h3,
+.signedReceiptLibrary__header p {
+  margin: 0;
+}
+
+.signedReceiptLibrary__header > div > p:last-child {
+  margin-top: 5px;
+  color: var(--pp-color-text-muted);
+}
+
+.signedReceiptGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.signedReceiptCard {
+  display: grid;
+  gap: 12px;
+}
+
+.signedReceiptCard__top {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.signedReceiptCard__icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--pp-color-primary-soft);
+  color: var(--pp-color-primary-hover);
+}
+
+.signedReceiptCard__top strong,
+.signedReceiptCard__top small {
+  display: block;
+}
+
+.signedReceiptCard__top small {
+  margin-top: 3px;
+  color: var(--pp-color-text-muted);
+}
+
+.signedReceiptCard__meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.signedReceiptCard__meta > div {
+  padding: 9px;
+  border: 1px solid var(--pp-color-border);
+  border-radius: 10px;
+  background: var(--pp-color-surface-muted);
+}
+
+.signedReceiptCard__meta span,
+.signedReceiptCard__meta strong {
+  display: block;
+}
+
+.signedReceiptCard__meta span {
+  color: var(--pp-color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.signedReceiptCard__meta strong {
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 980px) {
+  .signedReceiptGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .transferSignaturePolicySummary {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .transferSignaturePolicySummary > .ui-badge {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .transferDocumentPicker__list .transferDocumentPicker__signatureToggle {
+    margin-left: 0;
+  }
+
+  .transferSignatureProgress,
+  .transferReceiptMeta {
+    grid-template-columns: 1fr;
+  }
+
+  .signedReceiptLibrary__header {
+    flex-direction: column;
+  }
+
+  .signedReceiptGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .transferSignaturePad__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .transferSignaturePad canvas {
+    height: 150px;
+  }
+}
+
+/* =====================================================
+   Electronic Acceptance Refinement V5.1
+   ===================================================== */
+
+.transferDocumentRow.is-reviewed {
+  box-shadow: inset 3px 0 0 var(--pp-color-success, #24b47e);
+}
+
+.transferDocumentReviewStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 0 0;
+  color: var(--pp-color-text-subtle);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.transferDocumentReviewStatus.is-ready {
+  color: var(--pp-color-success, #24b47e);
+  font-weight: 750;
+}
+
+.transferSignatureConsent.is-disabled {
+  opacity: 0.68;
+}
+
+.transferSignatureConsent.is-disabled input,
+.transferSignatureConsent.is-disabled span {
+  cursor: not-allowed;
+}
+
+.transferSignatureField > small {
+  color: var(--pp-color-text-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.transferOptionalSignature {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px dashed var(--pp-color-border-strong);
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-color-surface-muted);
+}
+
+.transferOptionalSignature strong,
+.transferOptionalSignature small {
+  display: block;
+}
+
+.transferOptionalSignature small {
+  margin-top: 4px;
+  color: var(--pp-color-text-muted);
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .transferOptionalSignature {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+
+.documentLibraryLoadWarning {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.documentLibraryLoadWarning p {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+}
+
+@media (max-width: 720px) {
+  .documentLibraryLoadWarning {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }

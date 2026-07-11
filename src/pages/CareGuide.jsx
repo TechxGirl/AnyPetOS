@@ -83,7 +83,7 @@ export default function CareGuide() {
           <span className="miniEyebrow">Care Guides + Smart Feeding v1</span>
           <h2>Better care data without pretending every animal is identical.</h2>
           <p>
-            PetPassport now separates detailed starter guides from fallback category guides. That gives beta users broad coverage while making it clear which guides need deeper species-specific review later.
+            AnyPetOS now separates detailed starter guides from fallback category guides. That gives beta users broad coverage while making it clear which guides need deeper species-specific review later.
           </p>
         </div>
 

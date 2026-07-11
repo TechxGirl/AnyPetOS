@@ -26,6 +26,8 @@ export function useCareInfrastructure(pets = []) {
   const [reminders, setReminders] = useState([]);
   const [files, setFiles] = useState([]);
   const [permissions, setPermissions] = useState([]);
+  const [signatureReceipts, setSignatureReceipts] = useState([]);
+  const [filesError, setFilesError] = useState(null);
 
   const petsById = useMemo(() => {
     const map = new Map();
@@ -51,29 +53,61 @@ export function useCareInfrastructure(pets = []) {
 
     setUser(userData.user);
 
-    const [enclosureResult, equipmentResult, reminderResult, fileResult, permissionResult] = await Promise.all([
-      supabase.from("enclosures").select("*").order("created_at", { ascending: false }),
-      supabase.from("equipment").select("*").order("created_at", { ascending: false }),
-      supabase.from("care_reminders").select("*").order("due_at", { ascending: true }),
-      supabase.from("pet_files").select("*").order("created_at", { ascending: false }),
-      supabase.from("access_permissions").select("*").order("created_at", { ascending: false }),
+    const [enclosureResult, equipmentResult, reminderResult, fileResult, permissionResult, signatureResult] = await Promise.all([
+      supabase.from("enclosures").select("*").eq("user_id", userData.user.id).order("created_at", { ascending: false }),
+      supabase.from("equipment").select("*").eq("user_id", userData.user.id).order("created_at", { ascending: false }),
+      supabase.from("care_reminders").select("*").eq("user_id", userData.user.id).order("due_at", { ascending: true }),
+      supabase.from("pet_files").select("*").eq("user_id", userData.user.id).order("created_at", { ascending: false }),
+      supabase.from("access_permissions").select("*").eq("owner_id", userData.user.id).order("created_at", { ascending: false }),
+      supabase.from("passport_transfer_signatures").select("*").order("signed_at", { ascending: false }),
     ]);
 
-    const firstError = enclosureResult.error || equipmentResult.error || reminderResult.error || fileResult.error || permissionResult.error;
+    const signatureTableMissing = ["42P01", "PGRST205"].includes(signatureResult.error?.code);
 
-    if (firstError) {
-      setError(firstError);
+    // Load each area independently. A problem in reminders, equipment, or access
+    // must never make a healthy Document Library appear empty.
+    if (enclosureResult.error) {
+      console.error("Unable to load enclosures:", enclosureResult.error);
       setEnclosures([]);
-      setEquipment([]);
-      setReminders([]);
-      setFiles([]);
-      setPermissions([]);
     } else {
       setEnclosures(sortNewest(enclosureResult.data || []));
+    }
+
+    if (equipmentResult.error) {
+      console.error("Unable to load equipment:", equipmentResult.error);
+      setEquipment([]);
+    } else {
       setEquipment(sortNewest(equipmentResult.data || []));
+    }
+
+    if (reminderResult.error) {
+      console.error("Unable to load reminders:", reminderResult.error);
+      setReminders([]);
+    } else {
       setReminders(reminderResult.data || []);
+    }
+
+    if (fileResult.error) {
+      console.error("Unable to load document library:", fileResult.error);
+      setFilesError(fileResult.error);
+      setFiles([]);
+    } else {
+      setFilesError(null);
       setFiles(sortNewest(fileResult.data || []));
+    }
+
+    if (permissionResult.error) {
+      console.error("Unable to load access permissions:", permissionResult.error);
+      setPermissions([]);
+    } else {
       setPermissions(sortNewest(permissionResult.data || []));
+    }
+
+    if (signatureResult.error && !signatureTableMissing) {
+      console.error("Unable to load transfer signature receipts:", signatureResult.error);
+      setSignatureReceipts([]);
+    } else {
+      setSignatureReceipts(signatureTableMissing ? [] : sortNewest(signatureResult.data || []));
     }
 
     setLoading(false);
@@ -268,6 +302,37 @@ export function useCareInfrastructure(pets = []) {
     return data;
   }, [user]);
 
+
+  const updateFile = useCallback(async (fileId, updates) => {
+    if (!user) throw new Error("You must be signed in to update files.");
+
+    const allowedUpdates = {
+      file_type: updates.file_type,
+      pet_id: normalizeOptionalId(updates.pet_id),
+      enclosure_id: normalizeOptionalId(updates.enclosure_id),
+      is_public_passport: Boolean(updates.is_public_passport),
+      notes: updates.notes ?? "",
+    };
+
+    Object.keys(allowedUpdates).forEach((key) => {
+      if (updates[key] === undefined) delete allowedUpdates[key];
+    });
+
+    const { data, error: updateError } = await supabase
+      .from("pet_files")
+      .update(allowedUpdates)
+      .eq("id", fileId)
+      .eq("user_id", user.id)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+    setFiles((previous) =>
+      previous.map((item) => (String(item.id) === String(fileId) ? data : item))
+    );
+    return data;
+  }, [user]);
+
   const openFile = useCallback(async (file) => {
     const { data, error: signError } = await supabase.storage
       .from(file.bucket || "pet-files")
@@ -297,7 +362,7 @@ export function useCareInfrastructure(pets = []) {
 
     const pet = petsById.get(String(selectedPetId));
     if (!pet) {
-      throw new Error("PetPassport could not find that animal. Refresh the page and choose it again.");
+      throw new Error("AnyPetOS could not find that animal. Refresh the page and choose it again.");
     }
 
     const databasePetId = pet.cloudId || pet.id;
@@ -363,6 +428,8 @@ export function useCareInfrastructure(pets = []) {
     reminders,
     files,
     permissions,
+    signatureReceipts,
+    filesError,
     refresh,
     createEnclosure,
     updateEnclosure,
@@ -375,6 +442,7 @@ export function useCareInfrastructure(pets = []) {
     completeReminder,
     deleteReminder,
     uploadPetFile,
+    updateFile,
     openFile,
     deleteFile,
     createAccessInvite,

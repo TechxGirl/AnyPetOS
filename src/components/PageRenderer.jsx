@@ -21,6 +21,7 @@ import Workspaces from "../pages/Workspaces";
 import DataCenter from "../pages/DataCenter";
 import WorkspaceModulePage from "../pages/WorkspaceModulePage";
 import CareInfrastructure from "../pages/CareInfrastructure";
+import BetaFeedback from "../pages/BetaFeedback";
 import PageLoadingFallback from "./app/PageLoadingFallback";
 
 const ExpoMode = lazy(() => import("../pages/ExpoMode"));
@@ -49,6 +50,10 @@ export default function PageRenderer({
   toggleFavorite,
   createPassportTransfer,
 }) {
+  if (page === "Beta Feedback") {
+    return <BetaFeedback currentUser={currentUser} setPage={setPage} />;
+  }
+
   // =====================================================
   // 🟢 Dashboard
   // =====================================================
@@ -104,7 +109,12 @@ export default function PageRenderer({
   }
 
   if (page === "Add Pet") {
-    return <AddPet addPet={addPet} />;
+    return (
+      <AddPet
+        addPet={addPet}
+        draftKey={`anypetos-add-pet-draft-v1-${profile?.id || currentUser?.id || currentUser?.username || "default"}`}
+      />
+    );
   }
 
   // =====================================================
@@ -127,7 +137,7 @@ export default function PageRenderer({
   }
 
   if (page === "Calendar") {
-    return <Calendar pets={pets} />;
+    return <Calendar pets={pets} giveMedication={giveMedication} />;
   }
 
   // =====================================================
@@ -156,7 +166,7 @@ export default function PageRenderer({
         fallback={
           <PageLoadingFallback
             title="Opening Expo Command Center"
-            message="Loading event operations without slowing the rest of PetPassport."
+            message="Loading event operations without slowing the rest of AnyPetOS."
           />
         }
       >

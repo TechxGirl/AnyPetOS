@@ -1,3 +1,10 @@
+import {
+  getNextMedicationDose,
+  isMedicationDue,
+} from "./medicationSchedule";
+
+export { getNextMedicationDose } from "./medicationSchedule";
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function formatDateTime(value) {
@@ -27,13 +34,6 @@ export function getRelativeDay(value) {
   return `Due in ${days} days`;
 }
 
-export function getNextMedicationDose(med) {
-  const frequency = Number(med?.frequencyHours);
-  if (!Number.isFinite(frequency) || frequency <= 0) return null;
-  if (!med?.lastGiven) return Date.now();
-  return Number(med.lastGiven) + frequency * 60 * 60 * 1000;
-}
-
 export function getMedicationReminders(pets = []) {
   return pets.flatMap((pet) =>
     (pet.meds || []).map((med) => {
@@ -46,7 +46,7 @@ export function getMedicationReminders(pets = []) {
         title: med.name || "Medication",
         subtitle: `${med.dose || "No dose"}${med.route ? ` • ${med.route}` : ""}`,
         dueAt: nextDose,
-        isDue: !nextDose || Date.now() >= nextDose,
+        isDue: isMedicationDue(med),
       };
     })
   );

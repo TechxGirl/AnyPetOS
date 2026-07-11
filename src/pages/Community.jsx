@@ -12,13 +12,13 @@ const FOLLOW_KEY = "petpassport-expo-follows";
 function getInitialProfile(profile) {
   try {
     return JSON.parse(localStorage.getItem("petpassport-public-profile") || "null") || {
-      displayName: profile?.display_name || "PetPassport Keeper",
+      displayName: profile?.display_name || "AnyPetOS Keeper",
       handle: profile?.username || "petpassport",
       bio: "Building a better way to preserve every animal's story.",
       pageType: "Keeper / Rescue / Breeder",
     };
   } catch {
-    return { displayName: "PetPassport Keeper", handle: "petpassport", bio: "", pageType: "Keeper" };
+    return { displayName: "AnyPetOS Keeper", handle: "petpassport", bio: "", pageType: "Keeper" };
   }
 }
 
@@ -137,7 +137,7 @@ export default function Community({ pets, profile }) {
       <PageHeader
         eyebrow="Community Expo Discovery"
         title="Follow the show before the doors open"
-        description="See what PetPassport breeders, rescues, educators, and retailers plan to bring, compare prices, save animals, find booth numbers, and arrive with the exact listing code."
+        description="See what AnyPetOS breeders, rescues, educators, and retailers plan to bring, compare prices, save animals, find booth numbers, and arrive with the exact listing code."
         icon={<Icon name="users" size={22} />}
         actions={<Badge variant="primary">Public pre-show inventory</Badge>}
       />
@@ -169,7 +169,7 @@ export default function Community({ pets, profile }) {
       </section>
 
       {discovery.loading ? (
-        <Card className="community-expo-loading"><Icon name="scan" size={26} /><h3>Finding public PetPassport expos...</h3></Card>
+        <Card className="community-expo-loading"><Icon name="scan" size={26} /><h3>Finding public AnyPetOS expos...</h3></Card>
       ) : discovery.error ? (
         <Card className="community-expo-loading"><Icon name="alert" size={26} /><h3>Expo Discovery is waiting for its database update</h3><p>{discovery.error.message}</p><Button onClick={discovery.refresh}>Try again</Button></Card>
       ) : filteredEvents.length ? (
@@ -190,7 +190,7 @@ export default function Community({ pets, profile }) {
                   <p>{formatExpoDate(event.starts_at)} {event.public_hours ? `• ${event.public_hours}` : ""}</p>
                   <h2>{event.name}</h2>
                   <span><Icon name="map" size={15} />{[event.venue, event.city, event.region].filter(Boolean).join(" • ") || "Location coming soon"}</span>
-                  <p>{event.description || "Browse the public pre-show inventory from PetPassport exhibitors."}</p>
+                  <p>{event.description || "Browse the public pre-show inventory from AnyPetOS exhibitors."}</p>
                 </div>
                 <div className="community-featured-animals">
                   {featured.length ? featured.slice(0, 4).map((animal) => (

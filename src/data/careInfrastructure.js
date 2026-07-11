@@ -42,15 +42,21 @@ export const REMINDER_TYPES = [
 ];
 
 export const FILE_TYPES = [
+  "Sales agreement",
+  "Adoption agreement",
+  "Transfer agreement",
+  "Purchase receipt",
+  "Health certificate",
+  "Vet record",
+  "Test result",
+  "Care sheet",
+  "Permit / license",
+  "Microchip record",
   "Profile photo",
   "Gallery photo",
   "Shed / molt photo",
-  "Vet record",
-  "Receipt / invoice",
-  "Test result",
-  "Care sheet",
-  "Transfer document",
   "Enclosure photo",
+  "Receipt / invoice",
   "Other",
 ];
 

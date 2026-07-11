@@ -9,6 +9,7 @@ import "./styles/ui.css";
 import { calculateNextFeed } from "./utils/calculateNextFeed";
 import { supabase } from "./services/supabaseClient";
 import { createId } from "./utils/id";
+import { getMedicationLastGiven, getNextMedicationDose } from "./utils/medicationSchedule";
 
 // =====================================================
 // 🟢 Hooks
@@ -40,7 +41,9 @@ import { ToastProvider, useToast } from "./components/ui";
 import Sidebar from "./components/Sidebar";
 import CreateProfile from "./components/CreateProfile";
 import Auth from "./components/Auth";
+import PasswordRecovery from "./components/PasswordRecovery";
 import PageRenderer from "./components/PageRenderer";
+import BetaBanner from "./components/BetaBanner";
 import AppLayout from "./layouts/AppLayout";
 
 // =====================================================
@@ -110,6 +113,12 @@ function normalizeDateToTimestamp(value, fallback = Date.now()) {
   return timestamp;
 }
 
+function isPasswordRecoveryRoute() {
+  const search = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  return search.get("type") === "recovery" || hash.get("type") === "recovery";
+}
+
 // =====================================================
 // 🟢 App Providers
 // =====================================================
@@ -137,6 +146,7 @@ function AppContent() {
 
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [passwordRecovery, setPasswordRecovery] = useState(isPasswordRecoveryRoute);
 
   // =====================================================
   // 🟢 Profile and Shared Context
@@ -169,7 +179,7 @@ function AppContent() {
 
         showToast({
           title: "Sign-in check failed",
-          message: "PetPassport could not verify your session.",
+          message: "AnyPetOS could not verify your session.",
           variant: "error",
         });
       }
@@ -182,8 +192,9 @@ function AppContent() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
+      if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
       setAuthLoading(false);
 
       if (!nextSession) {
@@ -240,7 +251,15 @@ function AppContent() {
   // =====================================================
 
   if (authLoading) {
-    return <AppLoadingScreen message="Opening PetPassport..." />;
+    return <AppLoadingScreen message="Opening AnyPetOS..." />;
+  }
+
+  // =====================================================
+  // 🟢 Password Recovery State
+  // =====================================================
+
+  if (passwordRecovery && session) {
+    return <PasswordRecovery onComplete={() => setPasswordRecovery(false)} />;
   }
 
   // =====================================================
@@ -280,7 +299,7 @@ function AppContent() {
     return (
       <AppErrorState
         title="Your profile could not be loaded"
-        message="PetPassport could not reach the profile database. Your data has not been changed."
+        message="AnyPetOS could not reach the profile database. Your data has not been changed."
       />
     );
   }
@@ -301,7 +320,7 @@ function AppContent() {
     <WorkspaceProvider profileRole={profile.role}>
       <FoundingBadgeProvider profile={profile}>
         <PetProvider session={session}>
-          <AuthenticatedApp profile={profile} />
+          <AuthenticatedApp profile={profile} session={session} />
         </PetProvider>
       </FoundingBadgeProvider>
     </WorkspaceProvider>
@@ -312,7 +331,7 @@ function AppContent() {
 // 🟢 Authenticated Application
 // =====================================================
 
-function AuthenticatedApp({ profile }) {
+function AuthenticatedApp({ profile, session }) {
   // =====================================================
   // 🟢 Pet Context
   // =====================================================
@@ -395,6 +414,8 @@ function AuthenticatedApp({ profile }) {
   // =====================================================
 
   const currentUser = {
+    id: session?.user?.id || profile.id,
+    email: session?.user?.email || "",
     displayName: profile.display_name,
     username: profile.username,
     primaryRole: profile.role,
@@ -413,7 +434,7 @@ function AuthenticatedApp({ profile }) {
       >
         <AppErrorState
           title="Your pet records could not be loaded"
-          message="PetPassport could not reach the pet database. No records were deleted or overwritten."
+          message="AnyPetOS could not reach the pet database. No records were deleted or overwritten."
         />
       </AppLayout>
     );
@@ -467,7 +488,7 @@ function AuthenticatedApp({ profile }) {
       },
       successTitle: "Signed out",
       successMessage: "You have been safely signed out.",
-      errorMessage: "PetPassport could not sign you out.",
+      errorMessage: "AnyPetOS could not sign you out.",
     });
 
     if (result.ok) {
@@ -867,14 +888,19 @@ function AuthenticatedApp({ profile }) {
     }
 
     const frequencyHours = Number(med.frequencyHours) || 72;
-    const durationDays = Number(med.durationDays) || 10;
+    const durationCount = Number(med.durationCount ?? med.durationDays) || 10;
+    const durationUnit = med.durationUnit === "days" ? "days" : "doses";
 
-    if (frequencyHours <= 0 || durationDays <= 0) {
+    if (
+      frequencyHours <= 0 ||
+      (!med.continueIndefinitely && durationCount <= 0) ||
+      !med.firstDose
+    ) {
       await runAction({
         key: `med-validation-${pet.id}`,
         action: async () => {
           throw new Error(
-            "Medication frequency and duration must be greater than zero."
+            "Medication frequency, first dose, and course length must be valid."
           );
         },
         errorTitle: "Check the medication schedule",
@@ -889,11 +915,14 @@ function AuthenticatedApp({ profile }) {
       dose: med.dose,
       route: med.route || "Oral",
       frequencyHours,
-      durationDays,
+      durationCount,
+      durationUnit,
+      durationDays: durationUnit === "days" ? durationCount : null,
       continueIndefinitely: Boolean(med.continueIndefinitely),
-      startDate: med.firstDose || Date.now(),
-      firstDose: med.firstDose || null,
-      lastGiven: med.lastGiven || med.firstDose || null,
+      startDate: med.firstDose,
+      firstDose: med.firstDose,
+      lastGiven: med.lastGiven || null,
+      doseHistory: Array.isArray(med.doseHistory) ? med.doseHistory : [],
       notes: med.notes || "",
     };
 
@@ -924,27 +953,65 @@ function AuthenticatedApp({ profile }) {
   // 🟢 Give Medication
   // =====================================================
 
-  const giveMedication = async (petId, medId) => {
+  const giveMedication = async (petId, medId, options = {}) => {
     const pet = findPetById(petId);
 
     if (!pet) {
       return;
     }
 
-    const now = Date.now();
+    const medication = (pet.meds || []).find((med) => med.id === medId);
 
-    const medication = (pet.meds || []).find(
-      (med) => med.id === medId
-    );
+    if (!medication) {
+      return;
+    }
 
-    const updatedMeds = (pet.meds || []).map((med) =>
-      med.id === medId
-        ? {
-            ...med,
-            lastGiven: now,
-          }
-        : med
-    );
+    const status = options.status === "skipped" ? "skipped" : "given";
+    const scheduledFor =
+      Number(options.scheduledFor) || getNextMedicationDose(medication) || null;
+    const givenAt = status === "given" ? Number(options.givenAt) || Date.now() : null;
+
+    if (!scheduledFor) {
+      return runAction({
+        key: `give-medication-validation-${pet.id}-${medId}`,
+        action: async () => {
+          throw new Error("Choose the scheduled dose you are recording.");
+        },
+        errorTitle: "Dose not recorded",
+      });
+    }
+
+    const doseRecord = {
+      id: createId("dose"),
+      scheduledFor,
+      givenAt,
+      status,
+      notes: options.notes || "",
+    };
+
+    const updatedMeds = (pet.meds || []).map((med) => {
+      if (med.id !== medId) return med;
+
+      const existingHistory = Array.isArray(med.doseHistory) ? med.doseHistory : [];
+      const withoutSameScheduledDose = existingHistory.filter(
+        (record) => Math.abs(Number(record?.scheduledFor) - scheduledFor) > 5 * 60 * 1000
+      );
+      const doseHistory = [doseRecord, ...withoutSameScheduledDose];
+      const lastGiven = getMedicationLastGiven({
+        ...med,
+        lastGiven: null,
+        doseHistory,
+      });
+
+      return {
+        ...med,
+        lastGiven,
+        doseHistory,
+      };
+    });
+
+    const logType = status === "skipped" ? "Medication Skipped" : "Medication Administered";
+    const logTime = givenAt || Date.now();
 
     return runAction({
       key: `give-medication-${pet.id}-${medId}`,
@@ -954,20 +1021,18 @@ function AuthenticatedApp({ profile }) {
           logs: [
             {
               id: createId("event"),
-              type: "Medication Administered",
-              note: medication
-                ? `${medication.name}${
-                    medication.dose ? ` • ${medication.dose}` : ""
-                  }`
-                : "Medication dose logged",
-              time: now,
+              type: logType,
+              note: `${medication.name}${
+                medication.dose ? ` • ${medication.dose}` : ""
+              }`,
+              time: logTime,
             },
             ...(pet.logs || []),
           ],
         }),
-      successTitle: "Dose logged",
+      successTitle: status === "skipped" ? "Skipped dose saved" : "Dose logged",
       successMessage: `${
-        medication?.name || "Medication"
+        medication.name || "Medication"
       } was recorded for ${pet.name}.`,
       errorMessage: `The medication dose could not be saved for ${pet.name}.`,
     });
@@ -1017,7 +1082,7 @@ function AuthenticatedApp({ profile }) {
   // 🟢 Passport Transfer Actions
   // =====================================================
 
-  const createPassportTransfer = async (petId) => {
+  const createPassportTransfer = async (petId, options = {}) => {
     const pet = findPetById(petId);
 
     if (!pet) {
@@ -1026,7 +1091,7 @@ function AuthenticatedApp({ profile }) {
 
     const result = await runAction({
       key: `create-transfer-${pet.id}`,
-      action: () => createTransferInvite(pet.id),
+      action: () => createTransferInvite(pet.id, options),
       successTitle: "Transfer invite created",
       successMessage: `${pet.name}'s ownership invite is ready.`,
       errorMessage: `${pet.name}'s transfer invite could not be created.`,
@@ -1115,6 +1180,8 @@ function AuthenticatedApp({ profile }) {
         />
       }
     >
+      <BetaBanner setPage={navigateToPage} />
+
       <PageRenderer
         page={page}
         profile={profile}

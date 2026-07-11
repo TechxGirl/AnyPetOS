@@ -866,7 +866,7 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
         <EmptyState
           icon={<Icon name="scan" size={30} />}
           title="Opening your expo"
-          description="PetPassport is connecting the newly created event to its command center."
+          description="AnyPetOS is connecting the newly created event to its command center."
         />
       </div>
     );
@@ -942,7 +942,7 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
 
               <div className="expo-overview-grid">
                 <Card className="expo-public-launch-card">
-                  <CardHeader icon={<Icon name="sparkles" size={18} />} title="Community Expo Discovery" description="The public pre-show feed lets visitors follow the expo and see exactly what PetPassport exhibitors plan to bring." />
+                  <CardHeader icon={<Icon name="sparkles" size={18} />} title="Community Expo Discovery" description="The public pre-show feed lets visitors follow the expo and see exactly what AnyPetOS exhibitors plan to bring." />
                   <div className="expo-public-link-box"><span>Public event catalog</span><code>{buildExpoEventUrl(activeEvent.slug)}</code></div>
                   <div className="expo-action-row">
                     <Button onClick={() => window.open(buildExpoEventUrl(activeEvent.slug), "_blank", "noopener,noreferrer")}>Preview discovery page</Button>
@@ -1017,7 +1017,7 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
               </div>
 
               {currentVendor?.status === "pending" && <div className="expo-inline-notice"><Icon name="clock" size={18} /><span>Your exhibitor request is pending organizer approval. Inventory publishing unlocks after approval.</span></div>}
-              {!pets.length && <div className="expo-inline-notice"><Icon name="paw" size={18} /><span>Add animals to your PetPassport collection before publishing expo inventory.</span></div>}
+              {!pets.length && <div className="expo-inline-notice"><Icon name="paw" size={18} /><span>Add animals to your AnyPetOS collection before publishing expo inventory.</span></div>}
 
               {activeListings.length ? (
                 <div className="expo-manager-animal-grid">
@@ -1065,7 +1065,7 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
               </div>
               <Card className="expo-organizer-explainer">
                 <CardHeader icon={<Icon name="users" size={18} />} title="How exhibitors join" description="Share the public expo link. In Expo Mode, the exhibitor chooses Join an expo, pastes the link or slug, submits their booth profile, then waits for organizer approval." />
-                <div className="expo-feature-checklist"><span><Icon name="check" size={15} />Each approved exhibitor publishes only their own PetPassport animals</span><span><Icon name="check" size={15} />The organizer sees everyone’s inventory and leads</span><span><Icon name="check" size={15} />Visitors see one searchable event catalog grouped by exhibitor and booth</span><span><Icon name="check" size={15} />Public updates show additions and status changes before and during the event</span></div>
+                <div className="expo-feature-checklist"><span><Icon name="check" size={15} />Each approved exhibitor publishes only their own AnyPetOS animals</span><span><Icon name="check" size={15} />The organizer sees everyone’s inventory and leads</span><span><Icon name="check" size={15} />Visitors see one searchable event catalog grouped by exhibitor and booth</span><span><Icon name="check" size={15} />Public updates show additions and status changes before and during the event</span></div>
               </Card>
             </section>
           )}
@@ -1274,7 +1274,7 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
 
       <Modal open={listingModalOpen} onClose={() => setListingModalOpen(false)} title={editingListing ? "Edit expo animal" : "Add planned expo animal"} description="This creates the public pre-show listing visitors can save and show at your booth." size="xl" footer={<><Button variant="outline" onClick={() => setListingModalOpen(false)}>Cancel</Button><Button type="submit" form="expo-listing-form" loading={isPending(editingListing ? `expo-edit-listing-${editingListing.id}` : "expo-create-listing")}>Save expo listing</Button></>}>
         <form id="expo-listing-form" className="expo-form-grid" onSubmit={submitListing}>
-          {!editingListing && <Field label="PetPassport animal" full><Select value={listingForm.pet_id} onChange={(event) => chooseListingPet(event.target.value)}><option value="none" disabled>Choose an animal</option>{pets.map((pet) => <option key={pet.id} value={String(pet.cloudId || pet.id)}>{pet.name} • {pet.species || pet.animalGroup || "Animal"}</option>)}</Select></Field>}
+          {!editingListing && <Field label="AnyPetOS animal" full><Select value={listingForm.pet_id} onChange={(event) => chooseListingPet(event.target.value)}><option value="none" disabled>Choose an animal</option>{pets.map((pet) => <option key={pet.id} value={String(pet.cloudId || pet.id)}>{pet.name} • {pet.species || pet.animalGroup || "Animal"}</option>)}</Select></Field>}
           <Field label="Public display name"><Input required value={listingForm.display_name} onChange={(event) => setListingForm({ ...listingForm, display_name: event.target.value })} /></Field>
           <Field label="Species"><Input required value={listingForm.species} onChange={(event) => setListingForm({ ...listingForm, species: event.target.value })} /></Field>
           <Field label="Morph / breed / variety"><Input value={listingForm.morph} onChange={(event) => setListingForm({ ...listingForm, morph: event.target.value })} /></Field>
@@ -1386,7 +1386,7 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
           {printMode === "staff-checklist" ? (
             <div className="expo-staff-print-list">{selectedPrintListings.map((listing) => <article key={listing.id}><span>□</span><div><strong>{listing.display_name}</strong><p>{listing.listing_code} • {listing.species} • {listing.status}</p></div><span>□ Packed</span><span>□ Display</span><span>□ Paperwork</span><span>□ Return check</span></article>)}</div>
           ) : (
-            <div className="expo-print-grid">{selectedPrintListings.map((listing) => <article key={listing.id} className="expo-print-card">{printMode !== "catalog" && listingQrs[listing.id] && <img src={listingQrs[listing.id]} alt="" />}<div><small>{activeVendors.find((vendor) => vendor.id === listing.vendor_id)?.display_name || "PetPassport exhibitor"}</small><h2>{listing.display_name}</h2><p>{[listing.species, listing.morph, listing.sex].filter(Boolean).join(" • ")}</p>{printMode !== "qr-labels" && <><strong>{formatExpoMoney(listing.price, listing.currency, listing.price_label || "Ask")}</strong><span>{listing.status} • Booth {listing.booth_location || "TBD"}</span><em>{listing.feeding_status}</em></>}<b>{listing.listing_code}</b>{printMode === "care-cards" && <p>{listing.care_level} care • {listing.public_temperament || "Ask exhibitor for care and temperament details."}</p>}</div></article>)}</div>
+            <div className="expo-print-grid">{selectedPrintListings.map((listing) => <article key={listing.id} className="expo-print-card">{printMode !== "catalog" && listingQrs[listing.id] && <img src={listingQrs[listing.id]} alt="" />}<div><small>{activeVendors.find((vendor) => vendor.id === listing.vendor_id)?.display_name || "AnyPetOS exhibitor"}</small><h2>{listing.display_name}</h2><p>{[listing.species, listing.morph, listing.sex].filter(Boolean).join(" • ")}</p>{printMode !== "qr-labels" && <><strong>{formatExpoMoney(listing.price, listing.currency, listing.price_label || "Ask")}</strong><span>{listing.status} • Booth {listing.booth_location || "TBD"}</span><em>{listing.feeding_status}</em></>}<b>{listing.listing_code}</b>{printMode === "care-cards" && <p>{listing.care_level} care • {listing.public_temperament || "Ask exhibitor for care and temperament details."}</p>}</div></article>)}</div>
           )}
         </section>
       )}

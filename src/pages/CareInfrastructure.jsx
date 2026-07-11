@@ -12,9 +12,11 @@ import {
 } from "../data/careInfrastructure";
 import { useCareInfrastructure } from "../hooks/useCareInfrastructure";
 import {
+  Badge,
   Button,
   Card,
   CardHeader,
+  EmptyState,
   Icon,
   Input,
   PageHeader,
@@ -23,12 +25,14 @@ import {
   useToast,
 } from "../components/ui";
 import { copyTextToClipboard } from "../utils/passportTransport";
+import { downloadTransferReceipt, normalizeReceipt } from "../utils/transferReceipt";
+import { useWorkspace } from "../context/WorkspaceContext";
 
 const TAB_OPTIONS = [
   { id: "enclosures", label: "Enclosures", icon: "package" },
   { id: "equipment", label: "Equipment", icon: "settings" },
   { id: "reminders", label: "Smart Reminders", icon: "calendar" },
-  { id: "files", label: "Files", icon: "file" },
+  { id: "files", label: "Documents", icon: "file" },
   { id: "access", label: "Access", icon: "users" },
 ];
 
@@ -103,7 +107,12 @@ function EquipmentSelect({ equipment, value, onChange, includeNone = true }) {
 export default function CareInfrastructure({ pets = [], initialTab = "enclosures", setPage }) {
   const [activeTab, setActiveTab] = useState(initialTab);
   const { showToast } = useToast();
+  const { workspace } = useWorkspace();
   const infrastructure = useCareInfrastructure(pets);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   const stats = useMemo(() => {
     const overdue = infrastructure.reminders.filter((reminder) => getDueStatus(reminder.due_at, reminder.status) === "overdue").length;
@@ -128,7 +137,7 @@ export default function CareInfrastructure({ pets = [], initialTab = "enclosures
       return result;
     } catch (error) {
       console.error(errorTitle, error);
-      showToast({ title: errorTitle, message: error.message || "PetPassport could not save that record.", variant: "error" });
+      showToast({ title: errorTitle, message: error.message || "AnyPetOS could not save that record.", variant: "error" });
       return null;
     }
   };
@@ -153,21 +162,25 @@ export default function CareInfrastructure({ pets = [], initialTab = "enclosures
   return (
     <main className="pageContent careInfraPage">
       <PageHeader
-        eyebrow="Care Infrastructure"
-        title="Enclosures, reminders, files, and access"
-        description="Track the habitat, equipment, files, tasks, and temporary access that sit around every animal Passport."
-        icon={<Icon name="database" size={22} />}
+        eyebrow={activeTab === "files" ? `${workspace.shortLabel} workspace` : "Care Infrastructure"}
+        title={activeTab === "files" ? "Documents and agreements" : "Enclosures, reminders, files, and access"}
+        description={activeTab === "files"
+          ? "Keep reusable records organized, link them to animals, and attach selected documents to secure ownership transfers."
+          : "Track the habitat, equipment, files, tasks, and temporary access that sit around every animal Passport."}
+        icon={<Icon name={activeTab === "files" ? "file" : "database"} size={22} />}
         actions={<Button variant="outline" leftIcon={<Icon name="refresh" size={16} />} onClick={infrastructure.refresh}>Refresh</Button>}
       />
 
-      <section className="careInfraStats">
-        <div><strong>{stats.enclosures}</strong><span>Enclosures</span></div>
-        <div><strong>{stats.equipment}</strong><span>Equipment</span></div>
-        <div><strong>{stats.dueToday}</strong><span>Due today</span></div>
-        <div className={stats.overdue > 0 ? "is-danger" : ""}><strong>{stats.overdue}</strong><span>Overdue</span></div>
-        <div><strong>{stats.files}</strong><span>Files</span></div>
-        <div><strong>{stats.access}</strong><span>Access invites</span></div>
-      </section>
+      {activeTab !== "files" && (
+        <section className="careInfraStats">
+          <div><strong>{stats.enclosures}</strong><span>Enclosures</span></div>
+          <div><strong>{stats.equipment}</strong><span>Equipment</span></div>
+          <div><strong>{stats.dueToday}</strong><span>Due today</span></div>
+          <div className={stats.overdue > 0 ? "is-danger" : ""}><strong>{stats.overdue}</strong><span>Overdue</span></div>
+          <div><strong>{stats.files}</strong><span>Documents</span></div>
+          <div><strong>{stats.access}</strong><span>Access invites</span></div>
+        </section>
+      )}
 
       <section className="careInfraTabs" aria-label="Care infrastructure sections">
         {TAB_OPTIONS.map((tab) => (
@@ -398,49 +411,327 @@ function RemindersPanel({ infrastructure, pets, run }) {
 }
 
 function FilesPanel({ infrastructure, pets, run }) {
-  const [form, setForm] = useState({ file: null, pet_id: "none", enclosure_id: "none", file_type: "Gallery photo", is_public_passport: false, notes: "" });
+  const { workspace } = useWorkspace();
+  const preferredType = workspace.id === "rescue"
+    ? "Adoption agreement"
+    : workspace.id === "breeder"
+      ? "Sales agreement"
+      : "Care sheet";
+
+  const emptyForm = {
+    file: null,
+    pet_id: "none",
+    enclosure_id: "none",
+    file_type: preferredType,
+    is_public_passport: false,
+    notes: "",
+  };
+
+  const [form, setForm] = useState(emptyForm);
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [petFilter, setPetFilter] = useState("all");
+  const [transferOnly, setTransferOnly] = useState(false);
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }));
+
+  useEffect(() => {
+    setForm((current) => ({
+      ...current,
+      file_type: current.file_type || preferredType,
+    }));
+  }, [preferredType]);
+
+  const isAgreement = (file) => /agreement|contract|transfer/i.test(file.file_type || "");
+  const formatSize = (bytes) => {
+    const value = Number(bytes || 0);
+    if (!value) return "Size unavailable";
+    if (value < 1024 * 1024) return `${Math.max(1, Math.round(value / 1024))} KB`;
+    return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const visibleFiles = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return infrastructure.files.filter((file) => {
+      const matchesSearch = !query || [file.file_name, file.file_type, file.notes]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+      const matchesType = typeFilter === "all" || file.file_type === typeFilter;
+      const matchesPet = petFilter === "all"
+        || (petFilter === "reusable" ? !file.pet_id : String(file.pet_id) === String(petFilter));
+      const matchesTransfer = !transferOnly || Boolean(file.is_public_passport);
+      return matchesSearch && matchesType && matchesPet && matchesTransfer;
+    });
+  }, [infrastructure.files, petFilter, search, transferOnly, typeFilter]);
+
+  const libraryStats = useMemo(() => ({
+    total: infrastructure.files.length,
+    reusable: infrastructure.files.filter((file) => !file.pet_id).length,
+    agreements: infrastructure.files.filter(isAgreement).length,
+    transferReady: infrastructure.files.filter((file) => file.is_public_passport).length,
+  }), [infrastructure.files]);
+
+  const signedReceipts = useMemo(
+    () => (infrastructure.signatureReceipts || []).map(normalizeReceipt),
+    [infrastructure.signatureReceipts]
+  );
 
   const submit = async (event) => {
     event.preventDefault();
-    const result = await run({ action: () => infrastructure.uploadPetFile(form), successTitle: "File uploaded", successMessage: `${form.file?.name || "File"} was attached.` });
-    if (result) setForm({ file: null, pet_id: "none", enclosure_id: "none", file_type: "Gallery photo", is_public_passport: false, notes: "" });
+    const result = await run({
+      action: () => infrastructure.uploadPetFile(form),
+      successTitle: "Document saved",
+      successMessage: `${form.file?.name || "File"} is now in your library.`,
+    });
+    if (result) setForm({ ...emptyForm, file_type: preferredType });
   };
 
-  return (
-    <section className="careInfraLayout">
-      <Card className="careInfraFormCard">
-        <CardHeader icon={<Icon name="file" size={18} />} title="Upload file or photo" />
-        <form className="careInfraForm" onSubmit={submit}>
-          <Field label="File"><Input type="file" onChange={(event) => update("file", event.target.files?.[0] || null)} /></Field>
-          <Field label="File type"><Select value={form.file_type} onChange={(event) => update("file_type", event.target.value)}>{FILE_TYPES.map((type) => <option key={type}>{type}</option>)}</Select></Field>
-          <Field label="Animal"><PetSelect pets={pets} value={form.pet_id} onChange={(value) => update("pet_id", value)} /></Field>
-          <Field label="Enclosure"><EnclosureSelect enclosures={infrastructure.enclosures} value={form.enclosure_id} onChange={(value) => update("enclosure_id", value)} /></Field>
-          <label className="careInfraCheck"><input type="checkbox" checked={form.is_public_passport} onChange={(event) => update("is_public_passport", event.target.checked)} /> Include in shared Passport files later</label>
-          <Field label="Notes"><Textarea value={form.notes} onChange={(event) => update("notes", event.target.value)} placeholder="Vet record, shed photo, receipt, care sheet..." /></Field>
-          <Button type="submit" leftIcon={<Icon name="upload" size={16} />}>Upload file</Button>
-        </form>
-      </Card>
+  const toggleTransferReady = async (file) => {
+    const nextValue = !file.is_public_passport;
+    await run({
+      action: () => infrastructure.updateFile(file.id, { is_public_passport: nextValue }),
+      successTitle: nextValue ? "Ready for transfers" : "Kept private",
+      successMessage: nextValue
+        ? `${file.file_name} can now be selected during a transfer.`
+        : `${file.file_name} will stay private in the library.`,
+    });
+  };
 
-      <div className="careInfraList">
-        {infrastructure.files.length === 0 ? <Card><p>No files uploaded yet. Add photos, vet records, receipts, test results, and transfer documents here.</p></Card> : infrastructure.files.map((file) => (
-          <Card key={file.id} className="careInfraRecordCard">
-            <div className="careInfraRecordHeader">
-              <div><span>{file.file_type}</span><h3>{file.file_name}</h3></div>
-              <div className="careInfraButtonCluster">
-                <Button variant="outline" size="sm" onClick={() => run({ action: () => infrastructure.openFile(file), successTitle: "Opening file", successMessage: "A temporary secure link was created." })}>Open</Button>
-                <Button variant="ghost" size="sm" onClick={() => run({ action: () => infrastructure.deleteFile(file), successTitle: "File deleted", successMessage: `${file.file_name} was removed.` })}>Delete</Button>
+  const workspaceCopy = workspace.id === "rescue"
+    ? "Keep adoption agreements, surrender forms, medical records, and reusable rescue documents organized in one secure library."
+    : workspace.id === "breeder"
+      ? "Keep sales agreements, receipts, health records, care sheets, and reusable breeder documents organized in one secure library."
+      : "Store records once, link them to the right animal, and choose which documents may be included in a future share or ownership transfer.";
+
+  return (
+    <section className="documentLibraryShell">
+      <div className="documentLibraryIntro">
+        <div>
+          <p className="section-eyebrow">Workspace records</p>
+          <h2>Document Library</h2>
+          <p>{workspaceCopy}</p>
+        </div>
+        <Badge variant="info" icon={<Icon name="shield" size={14} />}>
+          Private by default
+        </Badge>
+      </div>
+
+      <div className="documentLibraryStats" aria-label="Document library summary">
+        <div><strong>{libraryStats.total}</strong><span>Total documents</span></div>
+        <div><strong>{libraryStats.reusable}</strong><span>Reusable files</span></div>
+        <div><strong>{libraryStats.agreements}</strong><span>Agreements</span></div>
+        <div><strong>{libraryStats.transferReady}</strong><span>Transfer-ready</span></div>
+      </div>
+
+      {signedReceipts.length > 0 && (
+        <section className="signedReceiptLibrary" aria-labelledby="signed-receipts-heading">
+          <div className="signedReceiptLibrary__header">
+            <div>
+              <p className="section-eyebrow">Permanent transfer records</p>
+              <h3 id="signed-receipts-heading">Electronic transfer receipts</h3>
+              <p>Both the sender and recipient can keep and download these document-review and electronic-consent records.</p>
+            </div>
+            <Badge variant="success" dot>{signedReceipts.length} completed</Badge>
+          </div>
+          <div className="signedReceiptGrid">
+            {signedReceipts.map((receipt) => (
+              <Card key={receipt.id || `${receipt.transferToken}-${receipt.signedAt}`} className="signedReceiptCard" padding="sm">
+                <div className="signedReceiptCard__top">
+                  <span className="signedReceiptCard__icon"><Icon name="check" size={18} /></span>
+                  <div>
+                    <strong>{receipt.petName} ownership transfer</strong>
+                    <small>Accepted {formatInfrastructureDate(receipt.signedAt, "Recently")}</small>
+                  </div>
+                </div>
+                <div className="signedReceiptCard__meta">
+                  <div><span>Signed by</span><strong>{receipt.signerName}</strong></div>
+                  <div><span>Documents</span><strong>{receipt.documents.length}</strong></div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Icon name="file" size={15} />}
+                  onClick={() => downloadTransferReceipt(receipt)}
+                >
+                  Download receipt
+                </Button>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {infrastructure.filesError && (
+        <Card className="documentLibraryLoadWarning" padding="sm">
+          <div>
+            <strong>Your saved documents could not be loaded.</strong>
+            <p>{infrastructure.filesError.message || "AnyPetOS could not reach the document library."}</p>
+          </div>
+          <Button variant="outline" size="sm" leftIcon={<Icon name="refresh" size={15} />} onClick={infrastructure.refresh}>
+            Try again
+          </Button>
+        </Card>
+      )}
+
+      <div className="documentLibraryLayout">
+        <Card className="documentUploadCard">
+          <CardHeader
+            icon={<Icon name="upload" size={18} />}
+            title="Add to library"
+            description="Upload once, then reuse the document wherever it belongs."
+          />
+          <form className="documentUploadForm" onSubmit={submit}>
+            <Field label="Choose file">
+              <Input
+                type="file"
+                required
+                onChange={(event) => update("file", event.target.files?.[0] || null)}
+              />
+            </Field>
+            <Field label="Document type">
+              <Select value={form.file_type} onChange={(event) => update("file_type", event.target.value)}>
+                {FILE_TYPES.map((type) => <option key={type}>{type}</option>)}
+              </Select>
+            </Field>
+            <Field label="Animal association">
+              <PetSelect pets={pets} value={form.pet_id} onChange={(value) => update("pet_id", value)} />
+            </Field>
+            <p className="documentFormHint">
+              Leave the animal unassigned for reusable agreements and organization-wide forms.
+            </p>
+            <label className="documentTransferToggle">
+              <input
+                type="checkbox"
+                checked={form.is_public_passport}
+                onChange={(event) => update("is_public_passport", event.target.checked)}
+              />
+              <span>
+                <strong>Available during shares and transfers</strong>
+                <small>You still choose whether to attach it each time.</small>
+              </span>
+            </label>
+            <Field label="Notes">
+              <Textarea
+                rows={3}
+                value={form.notes}
+                onChange={(event) => update("notes", event.target.value)}
+                placeholder="Version, expiration, signing instructions, or anything your team should know."
+              />
+            </Field>
+            <Button type="submit" fullWidth leftIcon={<Icon name="upload" size={16} />}>
+              Save document
+            </Button>
+          </form>
+        </Card>
+
+        <div className="documentLibraryMain">
+          <Card className="documentToolbarCard" padding="sm">
+            <div className="documentToolbar">
+              <div className="documentSearchBox">
+                <Icon name="search" size={17} />
+                <Input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search documents"
+                  aria-label="Search documents"
+                />
               </div>
+              <Select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} aria-label="Filter by document type">
+                <option value="all">All document types</option>
+                {FILE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+              </Select>
+              <Select value={petFilter} onChange={(event) => setPetFilter(event.target.value)} aria-label="Filter by animal">
+                <option value="all">All animals</option>
+                <option value="reusable">Reusable / unassigned</option>
+                {pets.map((pet) => (
+                  <option key={pet.cloudId || pet.id} value={String(pet.cloudId || pet.id)}>{pet.name}</option>
+                ))}
+              </Select>
+              <button
+                type="button"
+                className={["documentFilterToggle", transferOnly ? "is-active" : ""].filter(Boolean).join(" ")}
+                aria-pressed={transferOnly}
+                onClick={() => setTransferOnly((current) => !current)}
+              >
+                <Icon name="share" size={16} />
+                Transfer-ready
+              </button>
             </div>
-            <div className="careInfraMiniGrid">
-              <div><span>Animal</span><strong>{petName(pets, file.pet_id)}</strong></div>
-              <div><span>Enclosure</span><strong>{enclosureName(infrastructure.enclosures, file.enclosure_id)}</strong></div>
-              <div><span>Size</span><strong>{file.size_bytes ? `${Math.round(file.size_bytes / 1024)} KB` : "Unknown"}</strong></div>
-              <div><span>Shared flag</span><strong>{file.is_public_passport ? "Can include later" : "Private"}</strong></div>
-            </div>
-            {file.notes && <p className="careInfraRecordNote">{file.notes}</p>}
           </Card>
-        ))}
+
+          {visibleFiles.length === 0 ? (
+            <Card>
+              <EmptyState
+                icon={<Icon name="file" size={28} />}
+                title={infrastructure.files.length === 0 ? "Your document library is empty" : "No documents match these filters"}
+                description={infrastructure.files.length === 0
+                  ? "Upload a care sheet, vet record, sales agreement, adoption agreement, or reusable form to begin."
+                  : "Try a broader search or clear one of the filters."}
+              />
+            </Card>
+          ) : (
+            <div className="documentCardGrid">
+              {visibleFiles.map((file) => (
+                <Card key={file.id} className="documentCard" padding="sm">
+                  <div className="documentCardTop">
+                    <span className="documentTypeIcon" aria-hidden="true">
+                      <Icon name={isAgreement(file) ? "clipboard" : "file"} size={20} />
+                    </span>
+                    <div className="documentCardTitle">
+                      <div className="documentBadgeRow">
+                        <Badge variant={isAgreement(file) ? "info" : "neutral"}>{file.file_type || "Other"}</Badge>
+                        {file.is_public_passport && <Badge variant="success" dot>Transfer-ready</Badge>}
+                      </div>
+                      <h3 title={file.file_name}>{file.file_name}</h3>
+                    </div>
+                  </div>
+
+                  <div className="documentMetaList">
+                    <div><span>Linked to</span><strong>{file.pet_id ? petName(pets, file.pet_id) : "Reusable library file"}</strong></div>
+                    <div><span>Size</span><strong>{formatSize(file.size_bytes)}</strong></div>
+                    <div><span>Added</span><strong>{formatInfrastructureDate(file.created_at, "Recently")}</strong></div>
+                  </div>
+
+                  {file.notes && <p className="documentCardNote">{file.notes}</p>}
+
+                  <div className="documentCardActions">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      leftIcon={<Icon name="file" size={15} />}
+                      onClick={() => run({
+                        action: () => infrastructure.openFile(file),
+                        successTitle: "Opening document",
+                        successMessage: "A temporary secure link was created.",
+                      })}
+                    >
+                      Open
+                    </Button>
+                    <Button
+                      variant={file.is_public_passport ? "secondary" : "ghost"}
+                      size="sm"
+                      leftIcon={<Icon name={file.is_public_passport ? "shield" : "share"} size={15} />}
+                      onClick={() => toggleTransferReady(file)}
+                    >
+                      {file.is_public_passport ? "Keep private" : "Allow transfer"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<Icon name="trash" size={15} />}
+                      onClick={() => run({
+                        action: () => infrastructure.deleteFile(file),
+                        successTitle: "Document deleted",
+                        successMessage: `${file.file_name} was removed.`,
+                      })}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

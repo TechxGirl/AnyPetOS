@@ -156,3 +156,31 @@
     padding-right: 2rem;
   }
 }
+
+/* =====================================================
+   Beta connection safety
+===================================================== */
+.pp-network-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pp-space-2);
+  padding: var(--pp-space-3) var(--pp-space-4);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.38);
+  background: var(--pp-color-warning-soft);
+  color: var(--pp-color-warning-text);
+  text-align: center;
+  font-size: var(--pp-font-size-sm);
+}
+
+.pp-network-banner span {
+  color: inherit;
+}
+
+@media (max-width: 700px) {
+  .pp-network-banner {
+    align-items: flex-start;
+    flex-direction: column;
+    text-align: left;
+  }
+}

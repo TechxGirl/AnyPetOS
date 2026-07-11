@@ -5,7 +5,7 @@ export const ROADMAP_PHASES = [
     title: "Foundation",
     status: "Complete",
     goal: "Build a scalable architecture that supports years of development.",
-    milestone: "PetPassport has a professional, maintainable codebase.",
+    milestone: "AnyPetOS has a professional, maintainable codebase.",
     items: [
       "Project architecture",
       "GitHub repository",
@@ -21,7 +21,7 @@ export const ROADMAP_PHASES = [
     phase: "Phase 1",
     title: "Cloud Platform",
     status: "Complete",
-    goal: "Move PetPassport from a local app into a secure cloud platform.",
+    goal: "Move AnyPetOS from a local app into a secure cloud platform.",
     milestone: "Every user has a secure cloud account and profile.",
     items: [
       "Supabase backend",
@@ -79,8 +79,8 @@ export const ROADMAP_PHASES = [
     phase: "Phase 4",
     title: "Workspaces & Professional Tools",
     status: "Foundation added",
-    goal: "Adapt PetPassport to different animal professionals.",
-    milestone: "Every user feels like PetPassport was designed for their workflow.",
+    goal: "Adapt AnyPetOS to different animal professionals.",
+    milestone: "Every user feels like AnyPetOS was designed for their workflow.",
     items: [
       "Owner Workspace",
       "Breeder Workspace",
@@ -98,7 +98,7 @@ export const ROADMAP_PHASES = [
     title: "Professional Modules",
     status: "Foundation added",
     goal: "Add specialized tools for each workspace.",
-    milestone: "Professionals can run their workflow inside PetPassport.",
+    milestone: "Professionals can run their workflow inside AnyPetOS.",
     items: [
       "Care Planner",
       "Pairings",
@@ -119,7 +119,7 @@ export const ROADMAP_PHASES = [
     title: "Community",
     status: "Foundation added",
     goal: "Connect animal keepers around the world.",
-    milestone: "PetPassport becomes the home of the animal community.",
+    milestone: "AnyPetOS becomes the home of the animal community.",
     items: [
       "Public profiles",
       "Following",
@@ -155,8 +155,8 @@ export const ROADMAP_PHASES = [
     phase: "Phase 8",
     title: "Launch",
     status: "Foundation added",
-    goal: "Prepare PetPassport for public release.",
-    milestone: "PetPassport launches publicly.",
+    goal: "Prepare AnyPetOS for public release.",
+    milestone: "AnyPetOS launches publicly.",
     items: [
       "Closed Alpha",
       "Private Beta",
@@ -177,7 +177,7 @@ export const ROADMAP_PHASES = [
     title: "Growth",
     status: "Planned",
     goal: "Become the world's leading animal platform.",
-    milestone: "PetPassport becomes the operating system for animal care.",
+    milestone: "AnyPetOS becomes the operating system for animal care.",
     items: [
       "Native mobile apps",
       "Premium",

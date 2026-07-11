@@ -21,7 +21,7 @@ export default function Settings({ user, profile, setUser }) {
       <PageHeader
         eyebrow="Workspace"
         title="Settings"
-        description="Manage your account, appearance, and active PetPassport interface."
+        description="Manage your account, appearance, and active AnyPetOS interface."
         icon={<Icon name="settings" size={22} />}
       />
 
@@ -73,7 +73,7 @@ export default function Settings({ user, profile, setUser }) {
         />
         <ThemeSelector />
         <p className="settingsHelperText">
-          Your selection is saved on this device and applied before PetPassport
+          Your selection is saved on this device and applied before AnyPetOS
           opens, preventing a bright or dark flash during startup.
         </p>
       </Card>

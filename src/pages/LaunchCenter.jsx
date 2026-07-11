@@ -2,16 +2,24 @@ import { useState } from "react";
 import { Badge, Button, Card, CardHeader, Icon, PageHeader, Textarea } from "../components/ui";
 
 const CHECKLIST = [
+  "Remember Me survives a full browser restart",
+  "Session-only sign in ends after the browser session",
+  "Forgot-password email and reset link work",
+  "Unfinished Passport draft restores after refresh",
   "Create pet autofill works",
+  "Passport saves once without duplicates",
+  "Offline warning appears when the connection drops",
   "Feeding dropdown works",
   "Feed log saves",
-  "Medications add and give correctly",
+  "Medication schedule and dose history are correct",
+  "Medication doses appear on the Calendar",
   "Weight log saves",
   "Shed log saves",
   "Share link opens read-only",
   "Revoke kills old link",
   "Regenerate creates a new link",
   "Transfer works with second account",
+  "JSON backup downloads and restore preview opens",
   "Light and dark themes work",
   "Mobile layout is usable",
   "Supabase auth redirects are set",
@@ -47,7 +55,7 @@ export default function LaunchCenter({ pets }) {
 
   const completed = CHECKLIST.filter((item) => checked[item]).length;
   const percent = Math.round((completed / CHECKLIST.length) * 100);
-  const betaInvite = `PetPassport private beta is open for testing. Please create a test account, add a test animal, try sharing a read-only Passport, and test ownership transfer. This is beta software, not veterinary advice or emergency record storage.`;
+  const betaInvite = `AnyPetOS private beta is open for testing. Please create a test account, add a test animal, try sharing a read-only Passport, and test ownership transfer. This is beta software, not veterinary advice or emergency record storage.`;
 
   return (
     <div className="page-shell roadmap-feature-page">

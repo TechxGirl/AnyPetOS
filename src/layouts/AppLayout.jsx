@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { Icon, IconButton } from "../components/ui";
+import BrandLockup from "../components/brand/BrandLockup";
+import NetworkStatusBanner from "../components/app/NetworkStatusBanner";
 import "../styles/app-layout.css";
 
 export default function AppLayout({ sidebar, children }) {
@@ -45,8 +47,7 @@ export default function AppLayout({ sidebar, children }) {
       <div className="pp-app-shell__content">
         <header className="pp-app-shell__mobile-header">
           <div className="pp-app-shell__mobile-brand">
-            <Icon name="scan" size={21} />
-            <span>PetPassport</span>
+            <BrandLockup compact />
           </div>
 
           <div className="pp-app-shell__mobile-actions">
@@ -67,6 +68,7 @@ export default function AppLayout({ sidebar, children }) {
           </div>
         </header>
 
+        <NetworkStatusBanner />
         <main className="pp-app-shell__main">{children}</main>
       </div>
     </div>

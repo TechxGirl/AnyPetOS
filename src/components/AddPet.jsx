@@ -1,57 +1,115 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { resolveCareProfile } from "../utils/careProfileResolver";
 import { ANIMAL_TAXONOMY } from "../data/animalTaxonomy";
 import { PET_STATUSES } from "../data/statuses";
-import { Button, Icon, useToast } from "./ui";
+import { Badge, Button, Icon, useToast } from "./ui";
 import PetPhotoUploader from "./PetPhotoUploader";
 import MorphSelector from "./MorphSelector";
 
-// =====================================================
-// 🟢 AddPet.jsx
-//
-// Create a new animal Passport.
-//
-// =====================================================
+const EMPTY_FORM = {
+  name: "",
+  category: "",
+  animalGroup: "",
+  species: "",
+  careProfile: "",
+  morph: "",
+  sex: "",
+  dob: "",
+  ageType: "unknown",
+  estimatedAge: "",
+  ageNote: "",
+  temperament: "",
+  status: "Healthy",
+  photo: null,
+  includePhotoInPassport: true,
+  diet: "",
+  foodList: [],
+  frequency: 0,
+  substrate: "",
+  notes: "",
+  foodOptions: [],
+  substrateOptions: [],
+  temperamentOptions: [],
+};
 
-export default function AddPet({ addPet }) {
-  // =====================================================
-  // 🟢 Empty Form
-  // =====================================================
+function readDraft(draftKey) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(draftKey) || "null");
+    if (!saved?.form) return null;
+    return { ...EMPTY_FORM, ...saved.form, photo: null };
+  } catch {
+    return null;
+  }
+}
 
-  const emptyForm = {
-    name: "",
-    category: "",
-    animalGroup: "",
-    species: "",
-    careProfile: "",
-    morph: "",
-    sex: "",
-    dob: "",
-    ageType: "unknown",
-    estimatedAge: "",
-    ageNote: "",
-    temperament: "",
-    status: "Healthy",
-    photo: null,
-    includePhotoInPassport: true,
-    diet: "",
-    foodList: [],
-    frequency: 0,
-    substrate: "",
-    notes: "",
-    foodOptions: [],
-    substrateOptions: [],
-    temperamentOptions: [],
-  };
+function hasDraftContent(form) {
+  return Boolean(
+    form.name ||
+      form.category ||
+      form.animalGroup ||
+      form.species ||
+      form.morph ||
+      form.notes ||
+      form.diet ||
+      form.dob
+  );
+}
 
-  // =====================================================
-  // 🟢 State
-  // =====================================================
-
-  const [form, setForm] = useState(emptyForm);
-  const [speciesSearch, setSpeciesSearch] = useState("");
+export default function AddPet({ addPet, draftKey = "anypetos-add-pet-draft-v1" }) {
+  const restoredDraft = useMemo(() => readDraft(draftKey), [draftKey]);
+  const [form, setForm] = useState(() => restoredDraft || EMPTY_FORM);
+  const [speciesSearch, setSpeciesSearch] = useState(() => restoredDraft?.species || "");
   const [saving, setSaving] = useState(false);
+  const [draftStatus, setDraftStatus] = useState(restoredDraft ? "recovered" : "empty");
+  const [showRecoveredNotice, setShowRecoveredNotice] = useState(Boolean(restoredDraft));
   const { showToast } = useToast();
+
+  const dirty = hasDraftContent(form);
+
+  useEffect(() => {
+    if (!dirty) {
+      localStorage.removeItem(draftKey);
+      setDraftStatus("empty");
+      return undefined;
+    }
+
+    setDraftStatus((current) => (current === "recovered" ? current : "saving"));
+    const timer = window.setTimeout(() => {
+      try {
+        const safeForm = { ...form, photo: null };
+        localStorage.setItem(
+          draftKey,
+          JSON.stringify({ version: 1, savedAt: Date.now(), form: safeForm })
+        );
+        setDraftStatus("saved");
+      } catch (error) {
+        console.warn("Unable to save Passport draft:", error);
+        setDraftStatus("error");
+      }
+    }, 450);
+
+    return () => window.clearTimeout(timer);
+  }, [dirty, draftKey, form]);
+
+  useEffect(() => {
+    const warnBeforeLeaving = (event) => {
+      if (!dirty || saving) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", warnBeforeLeaving);
+    return () => window.removeEventListener("beforeunload", warnBeforeLeaving);
+  }, [dirty, saving]);
+
+  const clearDraft = () => {
+    if (dirty && !window.confirm("Clear this unsaved Passport draft and start over?")) return;
+    localStorage.removeItem(draftKey);
+    setForm(EMPTY_FORM);
+    setSpeciesSearch("");
+    setDraftStatus("empty");
+    setShowRecoveredNotice(false);
+  };
 
   // =====================================================
   // 🟢 Animal Taxonomy Data
@@ -197,7 +255,10 @@ export default function AddPet({ addPet }) {
         message: `${savedPet?.name || form.name} was added to your collection.`,
         variant: "success",
       });
-      setForm(emptyForm);
+      localStorage.removeItem(draftKey);
+      setDraftStatus("empty");
+      setShowRecoveredNotice(false);
+      setForm(EMPTY_FORM);
       setSpeciesSearch("");
     } catch (error) {
       console.error("Unable to create passport:", error);
@@ -223,9 +284,37 @@ export default function AddPet({ addPet }) {
         <div className="addPetHeader">
           <div>
             <h1>Create passport</h1>
-            <p>Add a new animal to your PetPassport collection.</p>
+            <p>Add a new animal to your AnyPetOS collection.</p>
+          </div>
+          <div className="passportDraftActions">
+            <Badge variant={draftStatus === "error" ? "danger" : dirty ? "info" : "neutral"}>
+              {draftStatus === "saving"
+                ? "Saving draft…"
+                : draftStatus === "saved"
+                  ? "Draft saved"
+                  : draftStatus === "recovered"
+                    ? "Draft recovered"
+                    : draftStatus === "error"
+                      ? "Draft not saved"
+                      : "No draft"}
+            </Badge>
+            {dirty && (
+              <Button type="button" size="sm" variant="ghost" onClick={clearDraft} disabled={saving}>
+                Start over
+              </Button>
+            )}
           </div>
         </div>
+
+        {showRecoveredNotice && (
+          <div className="passportDraftNotice" role="status">
+            <Icon name="history" size={18} />
+            <div>
+              <strong>Your unfinished Passport was restored.</strong>
+              <span>Text fields are saved on this device. For privacy and storage safety, reselect the photo before saving.</span>
+            </div>
+          </div>
+        )}
 
         {/* 🟢 Real Pet Photo */}
         <PetPhotoUploader

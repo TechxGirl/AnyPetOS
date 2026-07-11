@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../services/supabaseClient";
+import BrandLockup from "./brand/BrandLockup";
 import { USER_ROLES } from "../constants/roles";
 import {
   Button,
@@ -64,7 +65,7 @@ export default function CreateProfile({ session }) {
         title: foundingNumber ? "Welcome, founding member" : "Workspace created",
         message: foundingNumber
           ? `Your profile is ready and Founding Beta Tester #${foundingNumber} is secured.`
-          : "Your PetPassport profile is ready.",
+          : "Your AnyPetOS profile is ready.",
         variant: "success",
         duration: 6500,
       });
@@ -84,15 +85,7 @@ export default function CreateProfile({ session }) {
   return (
     <div className="loginScreen onboardingScreen">
       <Card className="onboardingCard createProfileCard">
-        <div className="authBrand">
-          <span className="authBrandMark" aria-hidden="true">
-            <Icon name="scan" size={25} />
-          </span>
-          <div>
-            <p className="authBrandName">PetPassport</p>
-            <p className="authBrandTagline">Set up your care workspace</p>
-          </div>
-        </div>
+<div className="authBrand"><BrandLockup /></div>
 
         <div className="authIntro">
           <p className="section-eyebrow">Profile setup</p>

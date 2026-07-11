@@ -56,7 +56,7 @@ export default function PetPhotoUploader({
         <strong>Real pet photo</strong>
         <p>
           Upload a real photo for cards, profiles, Passports, and transfers.
-          If no photo is added, PetPassport uses a clean placeholder instead.
+          If no photo is added, AnyPetOS uses a clean placeholder instead.
         </p>
 
         {error && <p className="warningText">{error}</p>}

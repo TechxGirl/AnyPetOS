@@ -30,7 +30,7 @@ export default function Pets({ pets, feedPet, startEdit, openProfile, openQuickM
       </div>
 
       {pets.length === 0 ? (
-        <Card padding="none"><EmptyState icon={<Icon name="paw" size={24} />} title="No pets yet" description="Add your first animal to create a PetPassport." /></Card>
+        <Card padding="none"><EmptyState icon={<Icon name="paw" size={24} />} title="No pets yet" description="Add your first animal to create a AnyPetOS." /></Card>
       ) : filteredPets.length === 0 ? (
         <Card padding="none"><EmptyState icon={<Icon name="search" size={24} />} title="No matching pets" description="Try a different name, species, ID, morph, sex, or status." /></Card>
       ) : (

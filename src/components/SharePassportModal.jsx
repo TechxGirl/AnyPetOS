@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, Icon, IconButton, useToast } from "./ui";
+import { Badge, Button, Icon, IconButton, useToast } from "./ui";
 import {
   buildEmailHref,
   buildShareUrl,
@@ -8,6 +8,8 @@ import {
   copyTextToClipboard,
   nativeSharePassport,
 } from "../utils/passportTransport";
+import { supabase } from "../services/supabaseClient";
+import { useWorkspace } from "../context/WorkspaceContext";
 
 // =====================================================
 // 🟢 Share View Presets
@@ -45,6 +47,12 @@ const SHARE_VIEWS = {
   },
 };
 
+function documentUsuallyRequiresSignature(file) {
+  return /agreement|contract|bill of sale|adoption|transfer/i.test(
+    `${file?.file_type || ""} ${file?.file_name || ""}`
+  );
+}
+
 // =====================================================
 // 🟢 SharePassportModal
 // =====================================================
@@ -65,7 +73,72 @@ export default function SharePassportModal({
 
   const [view, setView] = useState(pet?.share?.view || "buyer");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [transferDocuments, setTransferDocuments] = useState([]);
+  const [selectedDocumentIds, setSelectedDocumentIds] = useState(
+    Array.isArray(pet?.transfer?.documentIds) ? pet.transfer.documentIds : []
+  );
+  const [signatureRequiredDocumentIds, setSignatureRequiredDocumentIds] = useState(
+    Array.isArray(pet?.transfer?.signatureRequiredDocumentIds)
+      ? pet.transfer.signatureRequiredDocumentIds
+      : []
+  );
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentsError, setDocumentsError] = useState("");
   const { showToast } = useToast();
+  const { workspace } = useWorkspace();
+
+  const supportsTransferDocuments = ["owner", "breeder", "rescue"].includes(workspace.id);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadTransferDocuments = async () => {
+      if (!pet || !supportsTransferDocuments) {
+        if (active) {
+          setTransferDocuments([]);
+          setDocumentsError("");
+        }
+        return;
+      }
+
+      setDocumentsLoading(true);
+      setDocumentsError("");
+
+      const { data, error } = await supabase
+        .from("pet_files")
+        .select("id, pet_id, file_name, file_type, size_bytes, notes, is_public_passport, created_at")
+        .eq("is_public_passport", true)
+        .order("created_at", { ascending: false });
+
+      if (!active) return;
+
+      if (error) {
+        console.error("Unable to load transfer documents:", error);
+        setTransferDocuments([]);
+        setDocumentsError("The document library could not be loaded.");
+      } else {
+        const petId = String(pet.cloudId || pet.id);
+        const available = (data || []).filter(
+          (file) => !file.pet_id || String(file.pet_id) === petId
+        );
+        setTransferDocuments(available);
+        setSelectedDocumentIds((current) =>
+          current.filter((id) => available.some((file) => String(file.id) === String(id)))
+        );
+        setSignatureRequiredDocumentIds((current) =>
+          current.filter((id) => available.some((file) => String(file.id) === String(id)))
+        );
+      }
+
+      setDocumentsLoading(false);
+    };
+
+    loadTransferDocuments();
+
+    return () => {
+      active = false;
+    };
+  }, [pet, supportsTransferDocuments]);
 
   if (!pet) return null;
 
@@ -181,8 +254,8 @@ export default function SharePassportModal({
 
   const handleNativeShare = async () => {
     const didShare = await nativeSharePassport({
-      title: `${pet.name}'s PetPassport`,
-      text: `Here is ${pet.name}'s PetPassport.`,
+      title: `${pet.name}'s AnyPetOS`,
+      text: `Here is ${pet.name}'s AnyPetOS.`,
       url: shareUrl,
     });
 
@@ -196,13 +269,22 @@ export default function SharePassportModal({
   // =====================================================
 
   const handleCreateTransferInvite = async () => {
+    const selectedSignatureIds = signatureRequiredDocumentIds.filter((id) =>
+      selectedDocumentIds.some((selectedId) => String(selectedId) === String(id))
+    );
+
     const confirmed = window.confirm(
-      "Create an ownership transfer invite? The recipient can preview the Passport, then accept ownership after signing in."
+      selectedSignatureIds.length > 0
+        ? `Create this ownership transfer invite with ${selectedSignatureIds.length} required agreement${selectedSignatureIds.length === 1 ? "" : "s"}? The recipient must open each agreement, confirm review, type their legal name, and consent to sign electronically before ownership can move.`
+        : "Create an ownership transfer invite? The recipient can preview the Passport, then accept ownership after signing in."
     );
 
     if (!confirmed) return;
 
-    const result = await createTransferInvite?.(pet.id);
+    const result = await createTransferInvite?.(pet.id, {
+      documentIds: selectedDocumentIds,
+      signatureDocumentIds: selectedSignatureIds,
+    });
 
     if (result?.ok) {
       showToast({
@@ -362,7 +444,7 @@ export default function SharePassportModal({
 
             {qrCodeUrl && (
               <div className="passportQrBox">
-                <img src={qrCodeUrl} alt={`QR code for ${pet.name}'s PetPassport`} />
+                <img src={qrCodeUrl} alt={`QR code for ${pet.name}'s AnyPetOS`} />
                 <p className="helperText">
                   Scan this QR code to open the read-only Passport.
                 </p>
@@ -379,6 +461,123 @@ export default function SharePassportModal({
             The recipient can preview the Passport without signing up, but must
             sign in to accept ownership.
           </p>
+
+          {supportsTransferDocuments && (
+            <section className="transferDocumentPicker" aria-labelledby="transfer-document-heading">
+              <div className="transferDocumentPicker__header">
+                <div>
+                  <h4 id="transfer-document-heading">Documents included with this transfer</h4>
+                  <p>Select reusable or animal-linked files from your Document Library.</p>
+                </div>
+                <Badge variant={selectedDocumentIds.length ? "success" : "neutral"}>
+                  {selectedDocumentIds.length} selected
+                </Badge>
+              </div>
+
+              {documentsLoading ? (
+                <p className="helperText">Loading transfer-ready documents...</p>
+              ) : documentsError ? (
+                <p className="helperText">{documentsError}</p>
+              ) : transferDocuments.length === 0 ? (
+                <div className="transferDocumentPicker__empty">
+                  <Icon name="file" size={18} />
+                  <div>
+                    <strong>No transfer-ready documents yet</strong>
+                    <small>Open Document Library and mark an agreement or record as available for transfers.</small>
+                  </div>
+                </div>
+              ) : (
+                <div className="transferDocumentPicker__list">
+                  {transferDocuments.map((file) => {
+                    const checked = selectedDocumentIds.some((id) => String(id) === String(file.id));
+                    const signatureRequired = signatureRequiredDocumentIds.some(
+                      (id) => String(id) === String(file.id)
+                    );
+
+                    return (
+                      <div
+                        key={file.id}
+                        className={[
+                          "transferDocumentPicker__item",
+                          checked ? "is-selected" : "",
+                          signatureRequired ? "requires-signature" : "",
+                        ].filter(Boolean).join(" ")}
+                      >
+                        <label className="transferDocumentPicker__select">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(event) => {
+                              const willSelect = event.target.checked;
+                              setSelectedDocumentIds((current) => {
+                                if (willSelect) {
+                                  return Array.from(new Set([...current, file.id]));
+                                }
+                                return current.filter((id) => String(id) !== String(file.id));
+                              });
+
+                              setSignatureRequiredDocumentIds((current) => {
+                                if (!willSelect) {
+                                  return current.filter((id) => String(id) !== String(file.id));
+                                }
+                                if (documentUsuallyRequiresSignature(file)) {
+                                  return Array.from(new Set([...current, file.id]));
+                                }
+                                return current;
+                              });
+                            }}
+                          />
+                          <span className="transferDocumentPicker__icon">
+                            <Icon name="clipboard" size={17} />
+                          </span>
+                          <span className="transferDocumentPicker__copy">
+                            <strong>{file.file_name}</strong>
+                            <small>{file.file_type || "Document"}{file.pet_id ? ` • Linked to ${pet.name}` : " • Reusable"}</small>
+                          </span>
+                        </label>
+
+                        {checked && (
+                          <label className="transferDocumentPicker__signatureToggle">
+                            <input
+                              type="checkbox"
+                              checked={signatureRequired}
+                              onChange={(event) => {
+                                setSignatureRequiredDocumentIds((current) =>
+                                  event.target.checked
+                                    ? Array.from(new Set([...current, file.id]))
+                                    : current.filter((id) => String(id) !== String(file.id))
+                                );
+                              }}
+                            />
+                            <span>Require electronic acceptance</span>
+                          </label>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )}
+
+          {supportsTransferDocuments && selectedDocumentIds.length > 0 && (
+            <div className="transferSignaturePolicySummary">
+              <span className="transferSignaturePolicySummary__icon">
+                <Icon name="edit" size={18} />
+              </span>
+              <div>
+                <strong>Recipient electronic acceptance</strong>
+                <small>
+                  {signatureRequiredDocumentIds.length > 0
+                    ? `${signatureRequiredDocumentIds.length} selected agreement${signatureRequiredDocumentIds.length === 1 ? "" : "s"} must be opened and electronically accepted before the transfer can complete. The recipient will type their legal name; a drawn signature is optional.`
+                    : "No electronic acceptance is required. The recipient can still review every attached document."}
+                </small>
+              </div>
+              <Badge variant={signatureRequiredDocumentIds.length ? "success" : "neutral"}>
+                {signatureRequiredDocumentIds.length ? "Required" : "Optional"}
+              </Badge>
+            </div>
+          )}
 
           <div className="buttonRow">
             <Button
