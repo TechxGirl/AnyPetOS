@@ -1,0 +1,15 @@
+export const ACTIONS = [
+  "Fed",
+  "Fresh Water",
+  "Shed",
+  "Medication Administered",
+  "Vitamin/Supplement",
+  "Substrate Change",
+  "Sick Behavior",
+  "Bath",
+  "Weight Check",
+  "Vet Visit",
+  "Temperature Check",
+  "Humidity Check",
+  "Enclosure Cleaning",
+];

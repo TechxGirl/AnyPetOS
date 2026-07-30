@@ -1,0 +1,86 @@
+export const USER_ROLES = [
+  {
+    id: "owner",
+    label: "Pet Owner",
+    icon: "home",
+    description: "Track daily care, reminders, records, and pet history.",
+    features: [
+      "Daily care reminders",
+      "Feeding, weight, shed, and medication logs",
+      "Share passports with pet sitters or family",
+      "Build a lifetime history for every pet",
+    ],
+  },
+  {
+    id: "breeder",
+    label: "Breeder",
+    icon: "dna",
+    description: "Manage animals, collections, breeding records, sales, and expo tools.",
+    features: [
+      "Collection and inventory management",
+      "Buyer-ready digital passports",
+      "Expo Mode and QR sharing",
+      "Future pairing, clutch, and hatchling tools",
+    ],
+  },
+  {
+    id: "rescue",
+    label: "Rescue",
+    icon: "shield",
+    description: "Track intakes, rehab, quarantine, medical history, and adoptions.",
+    features: [
+      "Intake and quarantine records",
+      "Recovery timelines",
+      "Medical and medication tracking",
+      "Adoption-ready passport sharing",
+    ],
+  },
+  {
+    id: "vet",
+    label: "Veterinary Professional",
+    icon: "stethoscope",
+    description: "Review medical history, medications, weights, and care timelines.",
+    features: [
+      "Quick access to animal history",
+      "Medication and weight records",
+      "Timeline-based care review",
+      "Future client passport sharing",
+    ],
+  },
+  {
+    id: "education",
+    label: "Education / Zoo",
+    icon: "graduationCap",
+    description: "Manage ambassador animals, care records, exhibits, and educational collections.",
+    features: [
+      "Ambassador animal records",
+      "Program and exhibit planning",
+      "Educational collection organization",
+      "Future public profile tools",
+    ],
+  },
+  {
+    id: "sitter",
+    label: "Pet Sitter",
+    icon: "users",
+    description: "View care instructions, feeding, medications, and emergency notes.",
+    features: [
+      "Simple daily care instructions",
+      "Feeding and medication schedules",
+      "Emergency notes",
+      "Proof-of-care logging later",
+    ],
+  },
+  {
+    id: "retail",
+    label: "Retail / Pet Shop",
+    icon: "store",
+    description: "Manage animal inventory, quarantine, sale-ready Passports, and customer transfers.",
+    features: [
+      "Store inventory and supplier notes",
+      "Quarantine and health checks",
+      "Customer-ready care cards",
+      "Transfer-ready QR Passports",
+    ],
+  },
+];
