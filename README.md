@@ -1,77 +1,215 @@
-# PetPassport complete source with light and dark themes
+# AnyPetOS
 
-This package contains the full `src` folder from the professional PetPassport build, now updated with a persistent light/dark appearance system.
+**Animal care, records, and operations in one shared platform.**
 
-## Theme features
+AnyPetOS is a multi-role animal care and management application designed for pet owners, breeders, rescues, veterinary professionals, pet sitters, and education or zoo organizations.
 
-- Professional light theme and dark theme
-- Theme selector on the Settings page
-- Quick theme switcher in the desktop sidebar
-- Quick theme switcher in the mobile header
-- The selected theme is stored in browser local storage
-- A first-time user starts with their operating-system preference
-- The theme is applied before React renders, preventing a bright/dark startup flash
-- No Supabase migration or new dependency is required
+Rather than treating every animal-care workflow as a separate application, AnyPetOS is built around one persistent animal Passport and a shared platform architecture. Care records, ownership history, medications, feeding, files, access, and professional workflows can all build on the same underlying animal record.
 
-## Installation
+> **Status:** Active beta development
 
-1. Stop the Vite development server.
-2. Back up the current project `src` folder.
-3. Extract this package.
-4. Replace the project's current `src` folder with the included `src` folder.
-5. Keep the existing `.env`, `package.json`, `vite.config.*`, and Supabase configuration.
-6. Restart the application:
+---
 
-```powershell
-npm install
-npm run dev
-```
+## Why I Built It
 
-7. Hard refresh the browser with `Ctrl + Shift + R`.
+Animal records are often scattered across notebooks, spreadsheets, breeder software, veterinary portals, text messages, and memory.
 
-## Where users change the theme
+That becomes especially difficult when an animal changes owners, receives ongoing medication, has multiple caregivers, or belongs to a breeder, rescue, or professional organization.
 
-- Desktop: the theme control is at the bottom of the sidebar.
-- Mobile: the sun/moon button is in the top header.
-- Settings: open **Settings → Appearance** and choose Light or Dark.
+AnyPetOS is being built around a different idea:
 
-## Main theme files
+**The animal's history should not have to start over every time the person or organization caring for it changes.**
+
+The core product is therefore the animal Passport: a persistent digital record that can support both everyday care and more specialized workflows.
+
+---
+
+## Current Capabilities
+
+### Animal Management
+
+- Create and manage animal profiles
+- Photos and profile information
+- Species and morph/breed selection
+- Favorites and collection organization
+- Persistent animal records
+- Dashboard and collection views
+
+### Care Tracking
+
+- Feeding logs
+- Weight tracking
+- Shed tracking
+- Medication schedules and dose logging
+- Care timelines
+- Calendar-based care visibility
+- Care guides
+
+### Care Infrastructure
+
+- Enclosure records
+- Equipment records
+- Smart reminders
+- Animal-related file storage
+- Access management
+
+### Passport Sharing and Transfer
+
+- Public Passport views
+- Shareable Passport links
+- Access invitation flows
+- Ownership-transfer workflows
+- Transfer signature capture
+- Transfer receipts
+
+### Expo Mode
+
+AnyPetOS includes an Expo Command Center designed for animal expos and in-person events.
+
+Current code includes support for:
+
+- Expo event management
+- Event animal lists
+- Public Expo views
+- Public listings
+- Kiosk-oriented Expo views
+- Passport transfer workflows from Expo Mode
+
+### Data and Organization
+
+- Data Center
+- Import/export utilities
+- Workspace switching
+- Light and dark appearance modes
+- Mobile and desktop navigation
+- Beta feedback tools
+
+### Additional Application Areas
+
+The application also currently includes routed interfaces for:
+
+- AI Assistant
+- Community
+- Professional tools
+- Roadmap and launch planning
+
+Some of these areas remain under active beta development.
+
+---
+
+## Workspace System
+
+AnyPetOS is designed as one platform with different workflows for different types of animal caregivers.
+
+### Owner
+
+Current focus includes:
+
+- Dashboard
+- Care timeline
+- Feeding, shed, weight, and medication logs
+- Passport sharing
+
+Planned expansion includes care planning, notifications, and pet-sitter care sheets.
+
+### Breeder
+
+Current focus includes:
+
+- Collection organization
+- Favorites
+- Sale and holdback status
+- Ownership transfer
+
+Planned expansion includes pairing records, clutch/hatchling management, and a sales pipeline.
+
+### Rescue
+
+Current focus includes:
+
+- Status indicators
+- Medication tracking
+- Medical history
+- Adoption transfer
+
+Planned expansion includes intake forms, rehabilitation plans, and adoption workflows.
+
+### Veterinary
+
+Current focus includes:
+
+- Medication history
+- Weight history
+- Care timeline
+- Shared Passport review
+
+Planned expansion includes patient views, treatment plans, and visit summaries.
+
+### Education / Zoo
+
+Current focus includes:
+
+- Collection organization
+- Public-safe Passport sharing
+- Care notes
+
+Planned expansion includes program scheduling, ambassador profiles, and staff access.
+
+### Pet Sitter
+
+Current focus includes:
+
+- Read-only Passport links
+- Care summaries
+- Medication schedules
+
+Planned expansion includes visit scheduling, care reports, and client management.
+
+---
+
+## Technology Stack
+
+### Frontend
+
+- React
+- React Router
+- Vite
+- JavaScript / JSX
+- CSS
+
+### Backend and Data
+
+- Supabase
+- PostgreSQL
+- Supabase Authentication
+- Row Level Security
+- Cloud-backed application data
+
+### Additional Libraries
+
+- QR code generation
+- ESLint
+- React Hooks
+
+### Deployment
+
+- Vercel
+
+---
+
+## Application Architecture
+
+AnyPetOS follows a layered React architecture.
 
 ```text
-src/context/ThemeContext.jsx
-src/utils/theme.js
-src/styles/tokens.css
-src/components/ui/ThemeSelector.jsx
-```
-
-The color palette is centralized in `src/styles/tokens.css`. Components should continue using `--pp-*` variables rather than hard-coded light or dark colors.
-
-## Preference storage
-
-The selected theme is stored under:
-
-```text
-petpassport-theme
-```
-
-This is currently a per-browser/device preference. A future account-synced preference can be stored in the user's Supabase profile without changing the component API.
-
-## Verification checklist
-
-- Sign in and confirm the dashboard loads normally.
-- Switch to Light in Settings and visit every page.
-- Refresh the browser and confirm Light remains active.
-- Switch to Dark from the sidebar.
-- Test the mobile header theme button.
-- Open feeding, weight, medication, shed, edit, profile, share, and confirmation modals in both themes.
-- Confirm inputs, dropdowns, badges, disabled buttons, and toast messages remain readable.
-- Confirm the navigation drawer still opens and closes on mobile.
-
-## Validation completed
-
-- JavaScript/JSX syntax parsing
-- Relative import-path validation
-- CSS variable definition validation
-- Archive integrity validation
-
-A full live Supabase test still requires the project's own environment variables and installed dependencies.
+src/
+├── components/   Reusable UI and application components
+├── constants/    Shared application constants
+├── context/      Global application state
+├── data/         Animal, care, workspace, and product data
+├── hooks/        Reusable business logic
+├── layouts/      Application layouts
+├── pages/        Top-level application screens
+├── services/     External service integrations
+├── styles/       Shared styling and design tokens
+└── utils/        Pure utility and transformation functions
