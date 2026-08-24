@@ -7,10 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Dependencies and builds
-node_modules
-dist
-dist-ssr
+# Dependencies and generated builds
+node_modules/
+dist/
+dist-ssr/
 
 # Environment files
 .env
@@ -18,25 +18,19 @@ dist-ssr
 *.local
 !.env.example
 
-# Editor directories and files
+# Local archives and backups
+*.zip
+
+# Editor and operating-system files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
+Thumbs.db
+
+# Visual Studio files
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-# PetPassport generated archives
-petpassport-current.zip
-petpassport-beta-*.zip
-
-# Local build/install archives
-*.zip
-archive/packs/
-
-.env
-.env.*
-!.env.example
