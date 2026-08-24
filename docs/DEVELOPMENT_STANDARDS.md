@@ -1,8 +1,8 @@
-# 🐍 PetPassport Development Standards
+# 🐍 AnyPetOS Development Standards
 
 Version: 1.0
 
-These standards exist to keep PetPassport clean, consistent, scalable, and easy to maintain as the project grows.
+These standards exist to keep AnyPetOS clean, consistent, scalable, and easy to maintain as the project grows.
 
 ---
 
@@ -251,7 +251,7 @@ Never skip straight to code.
 
 ---
 
-# 📈 PetPassport Roadmap
+# 📈 AnyPetOS Roadmap
 
 Every task belongs to a phase.
 
@@ -285,4 +285,4 @@ If it doesn't accomplish one of those two things, rethink it.
 
 ---
 
-Built with ❤️ by the PetPassport team.
+Built with ❤️ by the AnyPetOS team.

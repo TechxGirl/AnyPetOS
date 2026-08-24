@@ -1,4 +1,4 @@
-# 🐍 PetPassport Milestones
+# 🐍 AnyPetOS Milestones
 
 ## 🎉 Phase 0 Complete
 Foundation established.

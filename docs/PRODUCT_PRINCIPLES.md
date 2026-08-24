@@ -1,4 +1,4 @@
-# 🐍 PetPassport
+# 🐍 AnyPetOS
 
 **Document:** Product Principles  
 **Version:** 1.0  
@@ -19,7 +19,7 @@ We believe every animal deserves a complete story, and every caregiver deserves 
 
 Build the world's most trusted animal management platform.
 
-PetPassport should become the place where pet owners, breeders, rescues, veterinarians, educators, zoos, retailers, and future animal professionals manage every stage of an animal's life.
+AnyPetOS should become the place where pet owners, breeders, rescues, veterinarians, educators, zoos, retailers, and future animal professionals manage every stage of an animal's life.
 
 ---
 
@@ -35,7 +35,7 @@ If it doesn't benefit the animal or the people caring for it, reconsider it.
 
 ## 🌐 Build One Platform
 
-PetPassport is one ecosystem.
+AnyPetOS is one ecosystem.
 
 Different users receive different experiences while sharing the same foundation.
 
@@ -55,7 +55,7 @@ Every interaction should save time.
 
 Pet owners already have enough to remember.
 
-PetPassport should remember the details so people can focus on their animals.
+AnyPetOS should remember the details so people can focus on their animals.
 
 ---
 
@@ -139,11 +139,11 @@ If it does neither, it probably doesn't belong.
 
 Avoid shortcuts that create technical debt.
 
-Build systems that future versions of PetPassport can grow from.
+Build systems that future versions of AnyPetOS can grow from.
 
 ---
 
-# 🐍 PetPassport Philosophy
+# 🐍 AnyPetOS Philosophy
 
 We are not building another pet app.
 

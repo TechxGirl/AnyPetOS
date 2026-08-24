@@ -1,4 +1,4 @@
-# 📝 PetPassport Changelog
+# 📝 AnyPetOS Changelog
 
 ## v0.1.0 Alpha - Foundation
 
@@ -15,7 +15,7 @@
 - Timeline
 - Calendar
 - Care guides
-- Ask PetPassport demo page
+- Ask AnyPetOS demo page
 - Share Passport preview
 - Edit Pet modal
 - Docs folder

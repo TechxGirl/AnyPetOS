@@ -1,4 +1,4 @@
-# 🐍 PetPassport
+# 🐍 AnyPetOS
 
 **Document:** UI Guidelines  
 **Version:** 1.0  
@@ -9,7 +9,7 @@
 
 # 🎨 Design Philosophy
 
-PetPassport should feel:
+AnyPetOS should feel:
 
 - Modern
 - Clean
@@ -178,4 +178,4 @@ Every interaction should leave the user feeling:
 - Supported
 - Excited
 
-PetPassport should feel like a trusted companion, not just another app.
+AnyPetOS should feel like a trusted companion, not just another app.

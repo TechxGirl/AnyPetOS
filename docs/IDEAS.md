@@ -1,4 +1,4 @@
-# 💡 PetPassport Ideas Parking Lot
+# 💡 AnyPetOS Ideas Parking Lot
 
 This file exists so good ideas never get lost, but they also do not derail the current phase.
 
