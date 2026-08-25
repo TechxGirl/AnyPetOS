@@ -140,15 +140,14 @@ export default function SharePassportModal({
     };
   }, [pet, supportsTransferDocuments]);
 
-  if (!pet) return null;
-
-  // =====================================================
+    // =====================================================
   // 🟢 Derived Link State
   // =====================================================
 
-  const activeShareToken = pet.share?.enabled ? pet.share?.token : "";
+  const activeShareToken = pet?.share?.enabled ? pet.share?.token : "";
+
   const activeTransferToken =
-    pet.transfer?.enabled && pet.transfer?.status === "pending"
+    pet?.transfer?.enabled && pet?.transfer?.status === "pending"
       ? pet.transfer?.token
       : "";
 
@@ -162,8 +161,8 @@ export default function SharePassportModal({
     [activeTransferToken]
   );
 
-  const latestWeight = pet.weightLogs?.[0];
-  const foods = pet.foodList || [];
+  const latestWeight = pet?.weightLogs?.[0];
+  const foods = pet?.foodList || [];
   const selectedView = SHARE_VIEWS[view];
 
   const showIdentityDetails = ["buyer", "vet", "rescue"].includes(view);
@@ -207,6 +206,8 @@ export default function SharePassportModal({
       active = false;
     };
   }, [shareUrl]);
+
+  if (!pet) return null;
 
   // =====================================================
   // 🟢 Link Actions
