@@ -104,14 +104,18 @@ function EquipmentSelect({ equipment, value, onChange, includeNone = true }) {
   );
 }
 
-export default function CareInfrastructure({ pets = [], initialTab = "enclosures", setPage }) {
+export default function CareInfrastructure({ pets = [], initialTab = "enclosures" }) {
   const [activeTab, setActiveTab] = useState(initialTab);
   const { showToast } = useToast();
   const { workspace } = useWorkspace();
   const infrastructure = useCareInfrastructure(pets);
 
   useEffect(() => {
-    setActiveTab(initialTab);
+    const timer = window.setTimeout(() => {
+      setActiveTab(initialTab);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [initialTab]);
 
   const stats = useMemo(() => {
@@ -435,10 +439,14 @@ function FilesPanel({ infrastructure, pets, run }) {
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
   useEffect(() => {
-    setForm((current) => ({
-      ...current,
-      file_type: current.file_type || preferredType,
-    }));
+    const timer = window.setTimeout(() => {
+      setForm((current) => ({
+        ...current,
+        file_type: current.file_type || preferredType,
+      }));
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [preferredType]);
 
   const isAgreement = (file) => /agreement|contract|transfer/i.test(file.file_type || "");
@@ -754,12 +762,24 @@ function AccessPanel({ infrastructure, pets, run }) {
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
   useEffect(() => {
-    if (form.pet_id === "none" && pets.length > 0) {
-      setForm((current) => ({
-        ...current,
-        pet_id: String(pets[0].cloudId || pets[0].id),
-      }));
+    if (form.pet_id !== "none" || pets.length === 0) {
+      return undefined;
     }
+
+    const timer = window.setTimeout(() => {
+      setForm((current) => {
+        if (current.pet_id !== "none") {
+          return current;
+        }
+
+        return {
+          ...current,
+          pet_id: String(pets[0].cloudId || pets[0].id),
+        };
+      });
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [form.pet_id, pets]);
 
   const submit = async (event) => {
