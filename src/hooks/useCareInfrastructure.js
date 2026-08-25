@@ -114,9 +114,12 @@ export function useCareInfrastructure(pets = []) {
   }, []);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+  const timer = window.setTimeout(() => {
+    void refresh();
+  }, 0);
 
+  return () => window.clearTimeout(timer);
+}, [refresh]);
   const createEnclosure = useCallback(async (form) => {
     if (!user) throw new Error("You must be signed in to create an enclosure.");
 
