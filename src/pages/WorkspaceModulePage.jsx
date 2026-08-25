@@ -537,12 +537,20 @@ export default function WorkspaceModulePage({ page, pets = [], setPage }) {
   });
 
   useEffect(() => {
+  const timer = window.setTimeout(() => {
     setForm((current) => ({
       ...current,
-      type: definition.types.includes(current.type) ? current.type : definition.types[0],
-      status: definition.statuses.includes(current.status) ? current.status : definition.statuses[0],
+      type: definition.types.includes(current.type)
+        ? current.type
+        : definition.types[0],
+      status: definition.statuses.includes(current.status)
+        ? current.status
+        : definition.statuses[0],
     }));
-  }, [definition, page]);
+  }, 0);
+
+  return () => window.clearTimeout(timer);
+}, [definition, page]);
 
   const moduleRecords = useMemo(() => {
     return allRecords
