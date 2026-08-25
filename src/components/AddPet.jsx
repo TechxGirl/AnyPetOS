@@ -67,29 +67,47 @@ export default function AddPet({ addPet, draftKey = "anypetos-add-pet-draft-v1" 
   const dirty = hasDraftContent(form);
 
   useEffect(() => {
-    if (!dirty) {
-      localStorage.removeItem(draftKey);
+  if (!dirty) {
+    localStorage.removeItem(draftKey);
+
+    const emptyStatusTimer = window.setTimeout(() => {
       setDraftStatus("empty");
-      return undefined;
+    }, 0);
+
+    return () => window.clearTimeout(emptyStatusTimer);
+  }
+
+  const savingStatusTimer = window.setTimeout(() => {
+    setDraftStatus((current) =>
+      current === "recovered" ? current : "saving"
+    );
+  }, 0);
+
+  const saveTimer = window.setTimeout(() => {
+    try {
+      const safeForm = { ...form, photo: null };
+
+      localStorage.setItem(
+        draftKey,
+        JSON.stringify({
+          version: 1,
+          savedAt: Date.now(),
+          form: safeForm,
+        })
+      );
+
+      setDraftStatus("saved");
+    } catch (error) {
+      console.warn("Unable to save Passport draft:", error);
+      setDraftStatus("error");
     }
+  }, 450);
 
-    setDraftStatus((current) => (current === "recovered" ? current : "saving"));
-    const timer = window.setTimeout(() => {
-      try {
-        const safeForm = { ...form, photo: null };
-        localStorage.setItem(
-          draftKey,
-          JSON.stringify({ version: 1, savedAt: Date.now(), form: safeForm })
-        );
-        setDraftStatus("saved");
-      } catch (error) {
-        console.warn("Unable to save Passport draft:", error);
-        setDraftStatus("error");
-      }
-    }, 450);
-
-    return () => window.clearTimeout(timer);
-  }, [dirty, draftKey, form]);
+  return () => {
+    window.clearTimeout(savingStatusTimer);
+    window.clearTimeout(saveTimer);
+  };
+}, [dirty, draftKey, form]);
 
   useEffect(() => {
     const warnBeforeLeaving = (event) => {
