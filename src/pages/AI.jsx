@@ -15,10 +15,14 @@ import { isMedicationDue } from "../utils/medicationSchedule";
 export default function AI({ pets }) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
-  const now = Date.now();
+  const [now] = useState(Date.now);
 
-  const overdueFeedings = pets.filter((pet) => pet.nextFeed && now > pet.nextFeed);
+  const overdueFeedings = pets.filter(
+    (pet) => pet.nextFeed && now > pet.nextFeed
+  );
+
   const favoritePets = pets.filter((pet) => pet.favorite);
+
   const medsDue = pets.flatMap((pet) =>
     (pet.meds || [])
       .filter((med) => isMedicationDue(med, now))
@@ -29,12 +33,14 @@ export default function AI({ pets }) {
         dose: med.dose,
       }))
   );
+
   const sickOrMonitoring = pets.filter((pet) =>
     ["Sick", "Monitoring", "Quarantine"].includes(pet.status)
   );
 
   const askLocalAI = (event) => {
     event.preventDefault();
+
     if (!question.trim()) return;
 
     const lowerQuestion = question.toLowerCase();
@@ -50,6 +56,7 @@ export default function AI({ pets }) {
           "This preview uses the records already stored in AnyPetOS.",
         ].join("\n")
       );
+
       return;
     }
 
@@ -60,11 +67,14 @@ export default function AI({ pets }) {
               "Medications due",
               ...medsDue.map(
                 (med) =>
-                  `${med.petName}: ${med.medName}${med.dose ? ` (${med.dose})` : ""}`
+                  `${med.petName}: ${med.medName}${
+                    med.dose ? ` (${med.dose})` : ""
+                  }`
               ),
             ].join("\n")
           : "No medications are due right now."
       );
+
       return;
     }
 
@@ -74,6 +84,7 @@ export default function AI({ pets }) {
           ? ["Favorite pets", ...favoritePets.map((pet) => pet.name)].join("\n")
           : "You do not have any favorite pets yet."
       );
+
       return;
     }
 
@@ -100,6 +111,7 @@ export default function AI({ pets }) {
       description: "The scheduled feeding time has passed.",
       tone: "warning",
     })),
+
     ...medsDue.map((med) => ({
       key: `med-${med.petId}-${med.medName}`,
       icon: "pill",
@@ -107,6 +119,7 @@ export default function AI({ pets }) {
       description: med.dose ? `Dose: ${med.dose}` : "Dose is due now.",
       tone: "danger",
     })),
+
     ...sickOrMonitoring.map((pet) => ({
       key: `status-${pet.id}`,
       icon: "alert",
@@ -127,11 +140,40 @@ export default function AI({ pets }) {
       />
 
       <div className="statGrid assistant-stat-grid">
-        <StatCard icon={<Icon name="paw" size={21} />} value={pets.length} label="Pets" color="#2dd4bf" />
-        <StatCard icon={<Icon name="star" size={21} />} value={favoritePets.length} label="Favorites" color="#fbbf24" />
-        <StatCard icon={<Icon name="utensils" size={21} />} value={overdueFeedings.length} label="Feedings due" color="#60a5fa" />
-        <StatCard icon={<Icon name="pill" size={21} />} value={medsDue.length} label="Medications due" color="#a78bfa" />
-        <StatCard icon={<Icon name="alert" size={21} />} value={sickOrMonitoring.length} label="Need attention" color="#fb7185" />
+        <StatCard
+          icon={<Icon name="paw" size={21} />}
+          value={pets.length}
+          label="Pets"
+          color="#2dd4bf"
+        />
+
+        <StatCard
+          icon={<Icon name="star" size={21} />}
+          value={favoritePets.length}
+          label="Favorites"
+          color="#fbbf24"
+        />
+
+        <StatCard
+          icon={<Icon name="utensils" size={21} />}
+          value={overdueFeedings.length}
+          label="Feedings due"
+          color="#60a5fa"
+        />
+
+        <StatCard
+          icon={<Icon name="pill" size={21} />}
+          value={medsDue.length}
+          label="Medications due"
+          color="#a78bfa"
+        />
+
+        <StatCard
+          icon={<Icon name="alert" size={21} />}
+          value={sickOrMonitoring.length}
+          label="Need attention"
+          color="#fb7185"
+        />
       </div>
 
       <div className="assistant-layout-grid">
@@ -151,10 +193,16 @@ export default function AI({ pets }) {
           ) : (
             <div className="assistant-priority-list">
               {priorities.map((item) => (
-                <article key={item.key} className="assistant-priority-item">
-                  <span className={`assistant-priority-icon is-${item.tone}`}>
+                <article
+                  key={item.key}
+                  className="assistant-priority-item"
+                >
+                  <span
+                    className={`assistant-priority-icon is-${item.tone}`}
+                  >
                     <Icon name={item.icon} size={18} />
                   </span>
+
                   <div>
                     <strong>{item.title}</strong>
                     <p>{item.description}</p>
@@ -172,24 +220,35 @@ export default function AI({ pets }) {
             icon={<Icon name="sparkles" size={19} />}
           />
 
-          <form className="assistant-question-form" onSubmit={askLocalAI}>
+          <form
+            className="assistant-question-form"
+            onSubmit={askLocalAI}
+          >
             <Input
               aria-label="Ask AnyPetOS"
               placeholder="Try: Who is due today?"
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
             />
-            <Button type="submit" leftIcon={<Icon name="sparkles" size={17} />}>
+
+            <Button
+              type="submit"
+              leftIcon={<Icon name="sparkles" size={17} />}
+            >
               Ask assistant
             </Button>
           </form>
 
           {answer && (
-            <div className="assistant-answer" aria-live="polite">
+            <div
+              className="assistant-answer"
+              aria-live="polite"
+            >
               <div className="assistant-answer-heading">
                 <Icon name="bot" size={18} />
                 <strong>Response</strong>
               </div>
+
               <pre>{answer}</pre>
             </div>
           )}
@@ -202,9 +261,19 @@ export default function AI({ pets }) {
           description="Future features can build on the same records and design system."
           icon={<Icon name="activity" size={19} />}
         />
+
         <div className="assistant-feature-grid">
-          {["Voice care logging", "Photo-assisted identification", "Morph and breed support", "Feeding and weight insights", "Early warning alerts"].map((feature) => (
-            <div key={feature} className="assistant-feature-item">
+          {[
+            "Voice care logging",
+            "Photo-assisted identification",
+            "Morph and breed support",
+            "Feeding and weight insights",
+            "Early warning alerts",
+          ].map((feature) => (
+            <div
+              key={feature}
+              className="assistant-feature-item"
+            >
               <Icon name="check" size={16} />
               <span>{feature}</span>
             </div>
