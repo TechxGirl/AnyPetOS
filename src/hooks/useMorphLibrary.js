@@ -8,23 +8,37 @@ import {
 } from "../data/morphLibrary";
 
 // =====================================================
-// 🟢 useMorphLibrary
+// useMorphLibrary
 //
 // Loads starter morphs plus community-submitted morphs.
 // Community morphs are global after the Supabase SQL patch
 // is installed.
 // =====================================================
 
-export function useMorphLibrary({ species = "", category = "", animalGroup = "" } = {}) {
-  const speciesKey = useMemo(() => makeSpeciesKey(species), [species]);
+export function useMorphLibrary({
+  species = "",
+  category = "",
+  animalGroup = "",
+} = {}) {
+  const speciesKey = useMemo(
+    () => makeSpeciesKey(species),
+    [species]
+  );
+
   const [communityMorphs, setCommunityMorphs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [tableReady, setTableReady] = useState(true);
 
-  const starterMorphs = useMemo(() => getStarterMorphOptions(species), [species]);
+  const starterMorphs = useMemo(
+    () => getStarterMorphOptions(species),
+    [species]
+  );
 
   const loadCommunityMorphs = useCallback(async () => {
-    if (!speciesKey || speciesKey === "unknown-species") {
+    if (
+      !speciesKey ||
+      speciesKey === "unknown-species"
+    ) {
       setCommunityMorphs([]);
       return;
     }
@@ -36,15 +50,27 @@ export function useMorphLibrary({ species = "", category = "", animalGroup = "" 
       .select("morph_name")
       .eq("species_key", speciesKey)
       .eq("status", "active")
-      .order("morph_name", { ascending: true });
+      .order("morph_name", {
+        ascending: true,
+      });
 
     if (error) {
-      // The SQL patch may not be installed yet. Do not break the form.
-      console.warn("Morph library unavailable:", error.message || error);
+      // The SQL patch may not be installed yet.
+      // Do not break the form.
+      console.warn(
+        "Morph library unavailable:",
+        error.message || error
+      );
+
       setCommunityMorphs([]);
       setTableReady(false);
     } else {
-      setCommunityMorphs((data || []).map((row) => row.morph_name).filter(Boolean));
+      setCommunityMorphs(
+        (data || [])
+          .map((row) => row.morph_name)
+          .filter(Boolean)
+      );
+
       setTableReady(true);
     }
 
@@ -52,64 +78,110 @@ export function useMorphLibrary({ species = "", category = "", animalGroup = "" 
   }, [speciesKey]);
 
   useEffect(() => {
-    loadCommunityMorphs();
+    const timer = window.setTimeout(() => {
+      void loadCommunityMorphs();
+    }, 0);
+
+    return () =>
+      window.clearTimeout(timer);
   }, [loadCommunityMorphs]);
 
   const options = useMemo(
-    () => mergeMorphOptions(starterMorphs, communityMorphs),
+    () =>
+      mergeMorphOptions(
+        starterMorphs,
+        communityMorphs
+      ),
     [starterMorphs, communityMorphs]
   );
 
   const hasOption = useCallback(
     (value) => {
       const key = makeMorphKey(value);
-      return options.some((option) => makeMorphKey(option) === key);
+
+      return options.some(
+        (option) =>
+          makeMorphKey(option) === key
+      );
     },
     [options]
   );
 
   const addMorphOption = useCallback(
     async (morphName) => {
-      const cleanMorph = String(morphName || "").trim();
+      const cleanMorph = String(
+        morphName || ""
+      ).trim();
 
       if (!cleanMorph) {
-        throw new Error("Enter a morph, breed, variety, phase, or locality first.");
+        throw new Error(
+          "Enter a morph, breed, variety, phase, or locality first."
+        );
       }
 
-      if (!species || !speciesKey || speciesKey === "unknown-species") {
-        throw new Error("Choose a species before adding a shared morph option.");
+      if (
+        !species ||
+        !speciesKey ||
+        speciesKey === "unknown-species"
+      ) {
+        throw new Error(
+          "Choose a species before adding a shared morph option."
+        );
       }
 
-      const morphKey = makeMorphKey(cleanMorph);
+      const morphKey =
+        makeMorphKey(cleanMorph);
 
-      const { data: userData } = await supabase.auth.getUser();
-      const userId = userData?.user?.id;
+      const { data: userData } =
+        await supabase.auth.getUser();
+
+      const userId =
+        userData?.user?.id;
 
       if (!userId) {
-        throw new Error("You must be signed in to add a shared morph option.");
+        throw new Error(
+          "You must be signed in to add a shared morph option."
+        );
       }
 
-      const { error } = await supabase.from("morph_options").insert({
-        species_key: speciesKey,
-        species_name: species,
-        category: category || null,
-        animal_group: animalGroup || null,
-        morph_key: morphKey,
-        morph_name: cleanMorph,
-        source: "community",
-        status: "active",
-        created_by: userId,
-      });
+      const { error } = await supabase
+        .from("morph_options")
+        .insert({
+          species_key: speciesKey,
+          species_name: species,
+          category: category || null,
+          animal_group:
+            animalGroup || null,
+          morph_key: morphKey,
+          morph_name: cleanMorph,
+          source: "community",
+          status: "active",
+          created_by: userId,
+        });
 
-      if (error && error.code !== "23505") {
-        console.error("Unable to add morph option:", error);
+      if (
+        error &&
+        error.code !== "23505"
+      ) {
+        console.error(
+          "Unable to add morph option:",
+          error
+        );
+
         throw error;
       }
 
       await loadCommunityMorphs();
+
       return cleanMorph;
     },
-    [animalGroup, category, loadCommunityMorphs, species, speciesKey]
+    [
+      animalGroup,
+      category,
+      loadCommunityMorphs,
+      species,
+      speciesKey,
+    ]
   );
 
   return {
@@ -118,6 +190,7 @@ export function useMorphLibrary({ species = "", category = "", animalGroup = "" 
     tableReady,
     hasOption,
     addMorphOption,
-    refreshMorphOptions: loadCommunityMorphs,
+    refreshMorphOptions:
+      loadCommunityMorphs,
   };
 }
