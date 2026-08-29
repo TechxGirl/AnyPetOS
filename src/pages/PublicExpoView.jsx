@@ -13,7 +13,6 @@ import {
   useToast,
 } from "../components/ui";
 import {
-  buildExpoListingUrl,
   expoAvailabilityVariant,
   formatExpoDate,
   formatExpoMoney,
@@ -186,9 +185,18 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
   const idleTimer = useRef(null);
 
   const event = payload?.event || null;
-  const vendors = payload?.vendors || [];
-  const listings = payload?.listings || [];
-  const updates = payload?.updates || [];
+
+const vendors = useMemo(
+  () => payload?.vendors || [],
+  [payload?.vendors]
+);
+
+const listings = useMemo(
+  () => payload?.listings || [],
+  [payload?.listings]
+);
+
+const updates = payload?.updates || [];
 
   const loadExpo = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -229,8 +237,24 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
   };
 
   useEffect(() => {
-    loadExpo(Boolean(readCachedExpo(slug)));
-  }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
+  let cancelled = false;
+
+  const bootstrapExpo = async () => {
+    await Promise.resolve();
+
+    if (cancelled) {
+      return;
+    }
+
+    await loadExpo(Boolean(readCachedExpo(slug)));
+  };
+
+  bootstrapExpo();
+
+  return () => {
+    cancelled = true;
+  };
+}, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const refreshWhenVisible = () => {
@@ -259,30 +283,104 @@ export default function PublicExpoView({ slug, listingToken = "", kiosk = false,
     });
   }, [event?.id, kiosk, listingToken, slug]);
 
-  useEffect(() => {
-    if (!event?.id) return;
-    const requestedVendor = new URLSearchParams(window.location.search).get("vendor");
-    if (requestedVendor && vendors.some((vendor) => String(vendor.id) === String(requestedVendor))) {
-      setVendorFilter(String(requestedVendor));
-      setShowFilters(true);
-    }
-  }, [event?.id, vendors]);
+ useEffect(() => {
+  let cancelled = false;
 
-  useEffect(() => {
-    if (!event?.id || !session?.user) {
-      const storedFollows = new Set(readStoredIds(ANONYMOUS_FOLLOWS_KEY));
-      setFollowing(storedFollows.has(String(event?.id)));
+  const applyRequestedVendor = async () => {
+    await Promise.resolve();
+
+    if (cancelled || !event?.id) {
       return;
     }
 
-    Promise.all([
-      supabase.from("expo_event_follows").select("id,event_id").eq("user_id", session.user.id).eq("event_id", event.id).maybeSingle(),
-      supabase.from("expo_listing_favorites").select("listing_id").eq("user_id", session.user.id).eq("event_id", event.id),
-    ]).then(([followResult, favoriteResult]) => {
-      if (!followResult.error) setFollowing(Boolean(followResult.data));
-      if (!favoriteResult.error) setFavoriteIds(new Set((favoriteResult.data || []).map((item) => String(item.listing_id))));
-    });
-  }, [event?.id, session?.user]);
+    const requestedVendor = new URLSearchParams(
+      window.location.search
+    ).get("vendor");
+
+    const vendorExists =
+      requestedVendor &&
+      vendors.some(
+        (vendor) =>
+          String(vendor.id) ===
+          String(requestedVendor)
+      );
+
+    if (vendorExists) {
+      setVendorFilter(String(requestedVendor));
+      setShowFilters(true);
+    }
+  };
+
+  applyRequestedVendor();
+
+  return () => {
+    cancelled = true;
+  };
+}, [event?.id, vendors]);
+
+ useEffect(() => {
+  let cancelled = false;
+
+  const loadFollowingState = async () => {
+    if (!event?.id || !session?.user) {
+      await Promise.resolve();
+
+      if (cancelled) {
+        return;
+      }
+
+      const storedFollows = new Set(
+        readStoredIds(ANONYMOUS_FOLLOWS_KEY)
+      );
+
+      setFollowing(
+        storedFollows.has(String(event?.id))
+      );
+
+      return;
+    }
+
+    const [followResult, favoriteResult] =
+      await Promise.all([
+        supabase
+          .from("expo_event_follows")
+          .select("id,event_id")
+          .eq("user_id", session.user.id)
+          .eq("event_id", event.id)
+          .maybeSingle(),
+
+        supabase
+          .from("expo_listing_favorites")
+          .select("listing_id")
+          .eq("user_id", session.user.id)
+          .eq("event_id", event.id),
+      ]);
+
+    if (cancelled) {
+      return;
+    }
+
+    if (!followResult.error) {
+      setFollowing(Boolean(followResult.data));
+    }
+
+    if (!favoriteResult.error) {
+      setFavoriteIds(
+        new Set(
+          (favoriteResult.data || []).map(
+            (item) => String(item.listing_id)
+          )
+        )
+      );
+    }
+  };
+
+  loadFollowingState();
+
+  return () => {
+    cancelled = true;
+  };
+}, [event?.id, session?.user]);
 
   useEffect(() => {
     if (!kiosk) return undefined;
