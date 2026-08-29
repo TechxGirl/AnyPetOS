@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Feed from "../components/Feed";
 import { useWorkspace } from "../context/WorkspaceContextCore";
-import { useFoundingBadges } from "../context/FoundingBadgeContext";
+import { useFoundingBadges } from "../context/FoundingBadgeContextCore";
 import { Button, Card, CardHeader, EmptyState, Icon } from "../components/ui";
 import { FoundingBadge } from "../components/founding";
 import { getPetInitials, getPetPhotoUrl } from "../utils/images";
@@ -208,7 +208,7 @@ export default function Dashboard({
       id: `med-${med.petName}-${med.medName}`,
       icon: "pill",
       title: med.petName,
-      subtitle: `${med.medName}${med.dose ? ` • ${med.dose}` : ""}`,
+      subtitle: `${med.medName}${med.dose ? ` â€¢ ${med.dose}` : ""}`,
       status: "Due now",
     })),
 
@@ -248,7 +248,7 @@ export default function Dashboard({
             <p className="section-eyebrow">{workspace.label}</p>
 
             <h1>
-              {greeting}, {displayName} 👋
+              {greeting}, {displayName} ðŸ‘‹
             </h1>
 
             <p className="anypetosHeroSlogan">
@@ -322,7 +322,7 @@ export default function Dashboard({
           <p className="section-eyebrow">{workspace.label}</p>
 
           <h1>
-            {greeting}, {displayName} 👋
+            {greeting}, {displayName} ðŸ‘‹
           </h1>
 
           <p className="anypetosHeroSlogan">

@@ -1,11 +1,11 @@
 import FoundingBadge from "./FoundingBadge";
-import { useFoundingBadges } from "../../context/FoundingBadgeContext";
+import { useFoundingBadges } from "../../context/FoundingBadgeContextCore";
 
 export default function FoundingBadgeGallery({ compact = false, empty = null }) {
   const { badges, loading } = useFoundingBadges();
 
   if (loading) {
-    return <div className="founding-badge-gallery is-loading">Loading founding status…</div>;
+    return <div className="founding-badge-gallery is-loading">Loading founding statusâ€¦</div>;
   }
 
   if (!badges.length) {

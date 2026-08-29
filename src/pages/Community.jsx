@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Badge, Button, Card, CardHeader, Icon, Input, PageHeader, Select, Textarea, useToast } from "../components/ui";
 import { FoundingBadgeGallery } from "../components/founding";
-import { useFoundingBadges } from "../context/FoundingBadgeContext";
+import { useFoundingBadges } from "../context/FoundingBadgeContextCore";
 import { useExpoDiscovery } from "../hooks/useExpoMode";
 import { buildExpoListingUrl, formatExpoDate, formatExpoMoney } from "../data/expoMode";
 import { supabase } from "../services/supabaseClient";
@@ -187,9 +187,9 @@ export default function Community({ pets, profile }) {
                   <button type="button" className={followed ? "is-followed" : ""} onClick={() => toggleFollow(event.id)}><Icon name="star" size={17} />{followed ? "Following" : "Follow"}</button>
                 </div>
                 <div className="community-expo-copy">
-                  <p>{formatExpoDate(event.starts_at)} {event.public_hours ? `• ${event.public_hours}` : ""}</p>
+                  <p>{formatExpoDate(event.starts_at)} {event.public_hours ? `â€¢ ${event.public_hours}` : ""}</p>
                   <h2>{event.name}</h2>
-                  <span><Icon name="map" size={15} />{[event.venue, event.city, event.region].filter(Boolean).join(" • ") || "Location coming soon"}</span>
+                  <span><Icon name="map" size={15} />{[event.venue, event.city, event.region].filter(Boolean).join(" â€¢ ") || "Location coming soon"}</span>
                   <p>{event.description || "Browse the public pre-show inventory from AnyPetOS exhibitors."}</p>
                 </div>
                 <div className="community-featured-animals">
@@ -209,9 +209,9 @@ export default function Community({ pets, profile }) {
                       <ExpoPreviewPhoto animal={animal} />
                       <section>
                         <strong>{animal.display_name}</strong>
-                        <span>{animal.species}{animal.morph ? ` • ${animal.morph}` : ""}</span>
+                        <span>{animal.species}{animal.morph ? ` â€¢ ${animal.morph}` : ""}</span>
                         <b>{event.show_prices === false ? "Ask at booth" : formatExpoMoney(animal.price, animal.currency, animal.price_label || "Ask")}</b>
-                        <small>{animal.vendor_name || "Exhibitor"}{(animal.booth_location || animal.vendor_booth) ? ` • Booth ${animal.booth_location || animal.vendor_booth}` : " • Booth TBD"}</small>
+                        <small>{animal.vendor_name || "Exhibitor"}{(animal.booth_location || animal.vendor_booth) ? ` â€¢ Booth ${animal.booth_location || animal.vendor_booth}` : " â€¢ Booth TBD"}</small>
                         {animal.listing_code && <em>Code {animal.listing_code}</em>}
                       </section>
                     </button>

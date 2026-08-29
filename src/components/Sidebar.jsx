@@ -1,6 +1,6 @@
 import { useTheme } from "../context/ThemeContextCore";
 import { useWorkspace } from "../context/WorkspaceContextCore";
-import { useFoundingBadges } from "../context/FoundingBadgeContext";
+import { useFoundingBadges } from "../context/FoundingBadgeContextCore";
 import { Icon } from "./ui";
 import BrandLockup from "./brand/BrandLockup";
 import "../styles/sidebar.css";

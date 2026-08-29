@@ -1,15 +1,26 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
 import { supabase } from "../services/supabaseClient";
 import { normalizeWorkspaceId } from "../data/workspaces";
+import { FoundingBadgeContext } from "./FoundingBadgeContextCore";
 
-const FoundingBadgeContext = createContext(null);
+// =====================================================
+// 🟢 FoundingBadgeContext.jsx
+//
+// Global AnyPetOS Founding 150 badge state provider.
+//
+// Context creation and the useFoundingBadges hook live in
+// FoundingBadgeContextCore.js so this file only exports
+// React components.
+// =====================================================
+
+// =====================================================
+// 🟢 Badge Data Helpers
+// =====================================================
 
 function normalizeRows(rows) {
   return (rows || []).map((row) => ({
@@ -18,21 +29,36 @@ function normalizeRows(rows) {
     claimedCount: Number(row.claimed_count) || 0,
     remainingCount: Number(row.remaining_count) || 0,
     badgeNumber:
-      row.my_badge_number === null || row.my_badge_number === undefined
+      row.my_badge_number === null ||
+      row.my_badge_number === undefined
         ? null
         : Number(row.my_badge_number),
     awardedAt: row.awarded_at || null,
   }));
 }
 
-export function FoundingBadgeProvider({ profile, children }) {
+// =====================================================
+// 🟢 Founding Badge Provider
+// =====================================================
+
+export function FoundingBadgeProvider({
+  profile,
+  children,
+}) {
   const [availability, setAvailability] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [claimingRole, setClaimingRole] = useState("");
 
+  // =====================================================
+  // 🟢 Badge Availability
+  // =====================================================
+
   const loadAvailability = useCallback(async () => {
-    const { data, error: availabilityError } = await supabase.rpc(
+    const {
+      data,
+      error: availabilityError,
+    } = await supabase.rpc(
       "get_founding_badge_availability"
     );
 
@@ -41,31 +67,48 @@ export function FoundingBadgeProvider({ profile, children }) {
     }
 
     const normalized = normalizeRows(data);
+
     setAvailability(normalized);
     setError(null);
+
     return normalized;
   }, []);
 
   const refresh = useCallback(async () => {
     try {
       setLoading(true);
+
       return await loadAvailability();
     } catch (refreshError) {
-      console.error("Unable to load Founding 150 status:", refreshError);
+      console.error(
+        "Unable to load Founding 150 status:",
+        refreshError
+      );
+
       setError(refreshError);
+
       return [];
     } finally {
       setLoading(false);
     }
   }, [loadAvailability]);
 
+  // =====================================================
+  // 🟢 Badge Claiming
+  // =====================================================
+
   const claimBadge = useCallback(
     async (role, source = "workspace_claim") => {
-      const normalizedRole = normalizeWorkspaceId(role);
+      const normalizedRole =
+        normalizeWorkspaceId(role);
 
       try {
         setClaimingRole(normalizedRole);
-        const { data, error: claimError } = await supabase.rpc(
+
+        const {
+          data,
+          error: claimError,
+        } = await supabase.rpc(
           "claim_founding_beta_badge",
           {
             requested_role: normalizedRole,
@@ -78,15 +121,24 @@ export function FoundingBadgeProvider({ profile, children }) {
         }
 
         await loadAvailability();
+
         setError(null);
+
         return data || { ok: false };
       } catch (claimError) {
-        console.error("Unable to claim Founding 150 badge:", claimError);
+        console.error(
+          "Unable to claim Founding 150 badge:",
+          claimError
+        );
+
         setError(claimError);
+
         return {
           ok: false,
           error: claimError,
-          message: claimError?.message || "The founding badge could not be claimed.",
+          message:
+            claimError?.message ||
+            "The founding badge could not be claimed.",
         };
       } finally {
         setClaimingRole("");
@@ -94,6 +146,10 @@ export function FoundingBadgeProvider({ profile, children }) {
     },
     [loadAvailability]
   );
+
+  // =====================================================
+  // 🟢 Initial Badge Bootstrap
+  // =====================================================
 
   useEffect(() => {
     let active = true;
@@ -103,10 +159,17 @@ export function FoundingBadgeProvider({ profile, children }) {
 
       try {
         let rows = await loadAvailability();
-        if (!active) return;
 
-        const primaryRole = normalizeWorkspaceId(profile?.role);
-        const primaryStatus = rows.find((row) => row.role === primaryRole);
+        if (!active) {
+          return;
+        }
+
+        const primaryRole =
+          normalizeWorkspaceId(profile?.role);
+
+        const primaryStatus = rows.find(
+          (row) => row.role === primaryRole
+        );
 
         if (
           profile?.id &&
@@ -114,11 +177,14 @@ export function FoundingBadgeProvider({ profile, children }) {
           !primaryStatus.badgeNumber &&
           primaryStatus.remainingCount > 0
         ) {
-          const { error: claimError } = await supabase.rpc(
+          const {
+            error: claimError,
+          } = await supabase.rpc(
             "claim_founding_beta_badge",
             {
               requested_role: primaryRole,
-              claim_source: "existing_profile_bootstrap",
+              claim_source:
+                "existing_profile_bootstrap",
             }
           );
 
@@ -127,15 +193,28 @@ export function FoundingBadgeProvider({ profile, children }) {
           }
 
           rows = await loadAvailability();
-          if (!active) return;
+
+          if (!active) {
+            return;
+          }
+
           setAvailability(rows);
         }
       } catch (bootstrapError) {
-        if (!active) return;
-        console.error("Unable to initialize Founding 150 status:", bootstrapError);
+        if (!active) {
+          return;
+        }
+
+        console.error(
+          "Unable to initialize Founding 150 status:",
+          bootstrapError
+        );
+
         setError(bootstrapError);
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
@@ -144,17 +223,30 @@ export function FoundingBadgeProvider({ profile, children }) {
     return () => {
       active = false;
     };
-  }, [loadAvailability, profile?.id, profile?.role]);
+  }, [
+    loadAvailability,
+    profile?.id,
+    profile?.role,
+  ]);
+
+  // =====================================================
+  // 🟢 Derived Badge State
+  // =====================================================
 
   const badges = useMemo(
-    () => availability.filter((row) => Number.isFinite(row.badgeNumber)),
+    () =>
+      availability.filter((row) =>
+        Number.isFinite(row.badgeNumber)
+      ),
     [availability]
   );
 
   const getRoleStatus = useCallback(
     (role) =>
       availability.find(
-        (row) => row.role === normalizeWorkspaceId(role)
+        (row) =>
+          row.role ===
+          normalizeWorkspaceId(role)
       ) || null,
     [availability]
   );
@@ -162,10 +254,17 @@ export function FoundingBadgeProvider({ profile, children }) {
   const getBadgeForRole = useCallback(
     (role) => {
       const status = getRoleStatus(role);
-      return status?.badgeNumber ? status : null;
+
+      return status?.badgeNumber
+        ? status
+        : null;
     },
     [getRoleStatus]
   );
+
+  // =====================================================
+  // 🟢 Context Value
+  // =====================================================
 
   const value = useMemo(
     () => ({
@@ -197,16 +296,4 @@ export function FoundingBadgeProvider({ profile, children }) {
       {children}
     </FoundingBadgeContext.Provider>
   );
-}
-
-export function useFoundingBadges() {
-  const context = useContext(FoundingBadgeContext);
-
-  if (!context) {
-    throw new Error(
-      "useFoundingBadges must be used inside FoundingBadgeProvider."
-    );
-  }
-
-  return context;
 }
