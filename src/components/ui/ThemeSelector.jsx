@@ -1,4 +1,4 @@
-import { useTheme } from "../../context/ThemeContext";
+import { useTheme } from "../../context/ThemeContextCore";
 import { THEMES } from "../../utils/theme";
 import Icon from "./Icon";
 

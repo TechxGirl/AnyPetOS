@@ -1,4 +1,4 @@
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../context/ThemeContextCore";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { useFoundingBadges } from "../context/FoundingBadgeContext";
 import { Icon } from "./ui";

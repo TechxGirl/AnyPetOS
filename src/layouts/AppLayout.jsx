@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../context/ThemeContextCore";
 import { Icon, IconButton } from "../components/ui";
 import BrandLockup from "../components/brand/BrandLockup";
 import NetworkStatusBanner from "../components/app/NetworkStatusBanner";

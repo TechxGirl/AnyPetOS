@@ -1,7 +1,5 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -16,8 +14,20 @@ import {
   THEME_STORAGE_KEY,
   THEMES,
 } from "../utils/theme";
+import { ThemeContext } from "./ThemeContextCore";
 
-const ThemeContext = createContext(null);
+// =====================================================
+// 🟢 ThemeContext.jsx
+//
+// Global AnyPetOS theme provider.
+//
+// Context creation and the useTheme hook live in
+// ThemeContextCore.js so this file only exports components.
+// =====================================================
+
+// =====================================================
+// 🟢 Theme Provider
+// =====================================================
 
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(getInitialTheme);
@@ -28,39 +38,73 @@ export function ThemeProvider({ children }) {
   }, [theme]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return undefined;
+    if (typeof window === "undefined") {
+      return undefined;
+    }
 
     const handleStorage = (event) => {
-      if (event.key !== THEME_STORAGE_KEY || !isTheme(event.newValue)) return;
+      if (
+        event.key !== THEME_STORAGE_KEY ||
+        !isTheme(event.newValue)
+      ) {
+        return;
+      }
+
       setThemeState(event.newValue);
     };
 
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+
+    return () =>
+      window.removeEventListener(
+        "storage",
+        handleStorage
+      );
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return undefined;
+    if (
+      typeof window === "undefined" ||
+      !window.matchMedia
+    ) {
+      return undefined;
+    }
 
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const mediaQuery = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    );
+
     const handleSystemChange = () => {
       if (!getStoredTheme()) {
         setThemeState(getSystemTheme());
       }
     };
 
-    mediaQuery.addEventListener?.("change", handleSystemChange);
-    return () => mediaQuery.removeEventListener?.("change", handleSystemChange);
+    mediaQuery.addEventListener?.(
+      "change",
+      handleSystemChange
+    );
+
+    return () =>
+      mediaQuery.removeEventListener?.(
+        "change",
+        handleSystemChange
+      );
   }, []);
 
   const setTheme = useCallback((nextTheme) => {
-    if (!isTheme(nextTheme)) return;
+    if (!isTheme(nextTheme)) {
+      return;
+    }
+
     setThemeState(nextTheme);
   }, []);
 
   const toggleTheme = useCallback(() => {
     setThemeState((currentTheme) =>
-      currentTheme === THEMES.DARK ? THEMES.LIGHT : THEMES.DARK
+      currentTheme === THEMES.DARK
+        ? THEMES.LIGHT
+        : THEMES.DARK
     );
   }, []);
 
@@ -72,18 +116,16 @@ export function ThemeProvider({ children }) {
       setTheme,
       toggleTheme,
     }),
-    [setTheme, theme, toggleTheme]
+    [
+      setTheme,
+      theme,
+      toggleTheme,
+    ]
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
-}
-
-export function useTheme() {
-  const context = useContext(ThemeContext);
-
-  if (!context) {
-    throw new Error("useTheme must be used inside ThemeProvider.");
-  }
-
-  return context;
+  return (
+    <ThemeContext.Provider value={value}>
+      {children}
+    </ThemeContext.Provider>
+  );
 }
