@@ -23,7 +23,8 @@ import useAsyncAction from "./hooks/useAsyncAction";
 // =====================================================
 
 import { PetProvider, usePetContext } from "./context/PetContext";
-import { ModalProvider, useModal } from "./context/ModalContext";
+import { ModalProvider } from "./context/ModalContext";
+import { useModal } from "./context/ModalContextCore";
 import { ThemeProvider } from "./context/ThemeContext";
 import { WorkspaceProvider, useWorkspace } from "./context/WorkspaceContext";
 import { FoundingBadgeProvider } from "./context/FoundingBadgeContext";
