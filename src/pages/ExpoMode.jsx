@@ -266,26 +266,22 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
   const [transferModal, setTransferModal] = useState(null);
   const [printMode, setPrintMode] = useState("cage-cards");
   const [printListingIds, setPrintListingIds] = useState([]);
-  const [settingsForm, setSettingsForm] = useState(null);
+  const [settingsDrafts, setSettingsDrafts] = useState({});
 
-  const resolvedEventId = activeEventId ?? expo.events[0]?.id ?? null;
   const sameExpoId = (left, right) =>
-    left != null && right != null && String(left) === String(right);
+  left != null &&
+  right != null &&
+  String(left) === String(right);
 
-  useEffect(() => {
-    if (!expo.events.length) {
-      if (activeEventId !== null) setActiveEventId(null);
-      return;
-    }
+const activeEventStillExists =
+  activeEventId != null &&
+  expo.events.some((event) =>
+    sameExpoId(event.id, activeEventId)
+  );
 
-    const activeEventStillExists = expo.events.some((event) =>
-      sameExpoId(event.id, activeEventId)
-    );
-
-    if (!activeEventId || !activeEventStillExists) {
-      setActiveEventId(expo.events[0].id);
-    }
-  }, [activeEventId, expo.events]);
+const resolvedEventId = activeEventStillExists
+  ? activeEventId
+  : expo.events[0]?.id ?? null;
 
   const activeEvent = useMemo(
     () =>
@@ -333,62 +329,98 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
     completed: activeListings.filter((item) => ["Sold", "Adopted"].includes(item.status)).length,
   }), [activeListings, activeScans, activeLeads, activeHolds]);
 
+  const defaultSettingsForm = useMemo(() => {
+  if (!activeEvent) {
+    return null;
+  }
+
+  return {
+    name: activeEvent.name || "",
+    mode: activeEvent.mode || "mixed",
+    status: activeEvent.status || "Draft",
+    venue: activeEvent.venue || "",
+    city: activeEvent.city || "",
+    region: activeEvent.region || "",
+    booth_number: activeEvent.booth_number || "",
+    starts_at: formDateTimeValue(activeEvent.starts_at),
+    ends_at: formDateTimeValue(activeEvent.ends_at),
+    public_hours: activeEvent.public_hours || "",
+    description: activeEvent.description || "",
+    contact_email: activeEvent.contact_email || "",
+    contact_phone: activeEvent.contact_phone || "",
+    website_url: activeEvent.website_url || "",
+    social_handle: activeEvent.social_handle || "",
+    logo_url: activeEvent.logo_url || "",
+    banner_url: activeEvent.banner_url || "",
+    public_expires_at: formDateTimeValue(
+      activeEvent.public_expires_at
+    ),
+    is_public: Boolean(activeEvent.is_public),
+    publish_inventory_at: formDateTimeValue(
+      activeEvent.publish_inventory_at
+    ),
+    show_prices: activeEvent.show_prices !== false,
+    allow_interest: activeEvent.allow_interest !== false,
+    allow_hold_requests:
+      activeEvent.allow_hold_requests !== false,
+    kiosk_enabled: activeEvent.kiosk_enabled !== false,
+    kiosk_pin: "",
+    featured_message:
+      activeEvent.public_settings?.featuredMessage || "",
+    show_vendor_contacts: Boolean(
+      activeEvent.public_settings?.showVendorContacts
+    ),
+  };
+}, [activeEvent]);
+
+const settingsForm = activeEvent
+  ? settingsDrafts[String(activeEvent.id)] ??
+    defaultSettingsForm
+  : null;
+
+const setSettingsForm = (nextForm) => {
+  if (!activeEvent) {
+    return;
+  }
+
+  const eventId = String(activeEvent.id);
+
+  setSettingsDrafts((current) => {
+    const currentForm =
+      current[eventId] ?? defaultSettingsForm;
+
+    const resolvedForm =
+      typeof nextForm === "function"
+        ? nextForm(currentForm)
+        : nextForm;
+
+    return {
+      ...current,
+      [eventId]: resolvedForm,
+    };
+  });
+};
+
   useEffect(() => {
-    if (!activeEvent) {
-      setSettingsForm(null);
-      return;
-    }
-
-    setSettingsForm({
-      name: activeEvent.name || "",
-      mode: activeEvent.mode || "mixed",
-      status: activeEvent.status || "Draft",
-      venue: activeEvent.venue || "",
-      city: activeEvent.city || "",
-      region: activeEvent.region || "",
-      booth_number: activeEvent.booth_number || "",
-      starts_at: formDateTimeValue(activeEvent.starts_at),
-      ends_at: formDateTimeValue(activeEvent.ends_at),
-      public_hours: activeEvent.public_hours || "",
-      description: activeEvent.description || "",
-      contact_email: activeEvent.contact_email || "",
-      contact_phone: activeEvent.contact_phone || "",
-      website_url: activeEvent.website_url || "",
-      social_handle: activeEvent.social_handle || "",
-      logo_url: activeEvent.logo_url || "",
-      banner_url: activeEvent.banner_url || "",
-      public_expires_at: formDateTimeValue(activeEvent.public_expires_at),
-      is_public: Boolean(activeEvent.is_public),
-      publish_inventory_at: formDateTimeValue(activeEvent.publish_inventory_at),
-      show_prices: activeEvent.show_prices !== false,
-      allow_interest: activeEvent.allow_interest !== false,
-      allow_hold_requests: activeEvent.allow_hold_requests !== false,
-      kiosk_enabled: activeEvent.kiosk_enabled !== false,
-      kiosk_pin: "",
-      featured_message: activeEvent.public_settings?.featuredMessage || "",
-      show_vendor_contacts: Boolean(activeEvent.public_settings?.showVendorContacts),
-    });
-  }, [activeEvent]);
-
-  useEffect(() => {
-    if (!activeEvent) {
-      setEventQr("");
-      setListingQrs({});
-      setVendorQrs({});
-      setQrLoading(false);
-      return undefined;
-    }
-
-    // QR generation is deliberately deferred until the Print Center is opened.
-    // This keeps normal Expo dashboard loads light and avoids generating dozens
-    // of large data URLs when the user only needs leads, inventory, or settings.
-    if (activeTab !== "print") return undefined;
+  // QR generation is deliberately deferred until the Print Center is opened.
+  // This keeps normal Expo dashboard loads light and avoids generating dozens
+  // of large data URLs when the user only needs leads, inventory, or settings.
+  if (!activeEvent || activeTab !== "print") {
+    return undefined;
+  }
 
     let cancelled = false;
-    setQrLoading(true);
 
-    const createQrs = async () => {
-      const eventUrl = buildExpoEventUrl(activeEvent.slug);
+const createQrs = async () => {
+  await Promise.resolve();
+
+  if (cancelled) {
+    return;
+  }
+
+  setQrLoading(true);
+
+  const eventUrl = buildExpoEventUrl(activeEvent.slug);
       const eventDataUrl = await createExpoQr(eventUrl, {
         width: 480,
         margin: 2,
@@ -435,10 +467,9 @@ export default function ExpoMode({ pets, profile, createPassportTransfer }) {
   }, [activeTab, activeEvent, activeListings, activeVendors]);
 
   useEffect(() => {
-    if (!resolvedEventId) {
-      setAnalytics({ views: 0, followers: 0, favorites: 0, leads: 0, holds: 0, completed: 0, listing_views: [], listing_favorites: [] });
-      return;
-    }
+  if (!resolvedEventId) {
+    return;
+  }
 
     supabase.rpc("get_expo_event_analytics", { p_event_id: resolvedEventId }).then(({ data, error }) => {
       if (error) {
