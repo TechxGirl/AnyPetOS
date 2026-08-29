@@ -1,4 +1,4 @@
-import { useWorkspace } from "../../context/WorkspaceContext";
+import { useWorkspace } from "../../context/WorkspaceContextCore";
 import { Badge, Button, Card, Icon } from "../ui";
 
 export default function WorkspaceSwitcher({ compact = false, onSelect }) {

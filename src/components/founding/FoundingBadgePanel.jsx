@@ -1,6 +1,6 @@
 import { USER_ROLES } from "../../constants/roles";
 import { useFoundingBadges } from "../../context/FoundingBadgeContext";
-import { useWorkspace } from "../../context/WorkspaceContext";
+import { useWorkspace } from "../../context/WorkspaceContextCore";
 import { getWorkspaceConfig, normalizeWorkspaceId } from "../../data/workspaces";
 import {
   Badge,
@@ -135,7 +135,7 @@ export default function FoundingBadgePanel({ primaryRole }) {
                   <strong>{role.label}</strong>
                   <small>
                     {loading
-                      ? "Checking spaces…"
+                      ? "Checking spacesâ€¦"
                       : `${status?.claimedCount || 0} of ${status?.capacity || 150} claimed`}
                   </small>
                 </div>

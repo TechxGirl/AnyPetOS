@@ -27,7 +27,8 @@ import { usePetContext } from "./context/PetContextCore";
 import { ModalProvider } from "./context/ModalContext";
 import { useModal } from "./context/ModalContextCore";
 import { ThemeProvider } from "./context/ThemeContext";
-import { WorkspaceProvider, useWorkspace } from "./context/WorkspaceContext";
+import { WorkspaceProvider } from "./context/WorkspaceContext";
+import { useWorkspace } from "./context/WorkspaceContextCore";
 import { FoundingBadgeProvider } from "./context/FoundingBadgeContext";
 
 // =====================================================

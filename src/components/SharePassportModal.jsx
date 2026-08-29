@@ -9,10 +9,10 @@ import {
   nativeSharePassport,
 } from "../utils/passportTransport";
 import { supabase } from "../services/supabaseClient";
-import { useWorkspace } from "../context/WorkspaceContext";
+import { useWorkspace } from "../context/WorkspaceContextCore";
 
 // =====================================================
-// 🟢 Share View Presets
+// ðŸŸ¢ Share View Presets
 // =====================================================
 
 let shareQrModulePromise = null;
@@ -54,7 +54,7 @@ function documentUsuallyRequiresSignature(file) {
 }
 
 // =====================================================
-// 🟢 SharePassportModal
+// ðŸŸ¢ SharePassportModal
 // =====================================================
 
 export default function SharePassportModal({
@@ -68,7 +68,7 @@ export default function SharePassportModal({
   savingTransfer = false,
 }) {
   // =====================================================
-  // 🟢 State
+  // ðŸŸ¢ State
   // =====================================================
 
   const [view, setView] = useState(pet?.share?.view || "buyer");
@@ -141,7 +141,7 @@ export default function SharePassportModal({
   }, [pet, supportsTransferDocuments]);
 
     // =====================================================
-  // 🟢 Derived Link State
+  // ðŸŸ¢ Derived Link State
   // =====================================================
 
   const activeShareToken = pet?.share?.enabled ? pet.share?.token : "";
@@ -170,7 +170,7 @@ export default function SharePassportModal({
   const showMedicalDetails = ["vet", "buyer", "rescue"].includes(view);
 
   // =====================================================
-  // 🟢 QR Code
+  // ðŸŸ¢ QR Code
   // =====================================================
 
   useEffect(() => {
@@ -210,7 +210,7 @@ export default function SharePassportModal({
   if (!pet) return null;
 
   // =====================================================
-  // 🟢 Link Actions
+  // ðŸŸ¢ Link Actions
   // =====================================================
 
   const handleCreateShareLink = async () => {
@@ -266,7 +266,7 @@ export default function SharePassportModal({
   };
 
   // =====================================================
-  // 🟢 Transfer Actions
+  // ðŸŸ¢ Transfer Actions
   // =====================================================
 
   const handleCreateTransferInvite = async () => {
@@ -325,7 +325,7 @@ export default function SharePassportModal({
   };
 
   // =====================================================
-  // 🟢 Render
+  // ðŸŸ¢ Render
   // =====================================================
 
   return (
@@ -362,7 +362,7 @@ export default function SharePassportModal({
           />
         </div>
 
-        {/* 🟢 Share View */}
+        {/* ðŸŸ¢ Share View */}
         <div className="card innerCard">
           <h3>Read-only share view</h3>
 
@@ -403,7 +403,7 @@ export default function SharePassportModal({
           </div>
         </div>
 
-        {/* 🟢 Active Share Link */}
+        {/* ðŸŸ¢ Active Share Link */}
         {shareUrl && (
           <div className="card innerCard">
             <h3>Send Passport</h3>
@@ -454,7 +454,7 @@ export default function SharePassportModal({
           </div>
         )}
 
-        {/* 🟢 Transfer Ownership */}
+        {/* ðŸŸ¢ Transfer Ownership */}
         <div className="card innerCard">
           <h3>Transfer ownership</h3>
           <p>
@@ -533,7 +533,7 @@ export default function SharePassportModal({
                           </span>
                           <span className="transferDocumentPicker__copy">
                             <strong>{file.file_name}</strong>
-                            <small>{file.file_type || "Document"}{file.pet_id ? ` • Linked to ${pet.name}` : " • Reusable"}</small>
+                            <small>{file.file_type || "Document"}{file.pet_id ? ` â€¢ Linked to ${pet.name}` : " â€¢ Reusable"}</small>
                           </span>
                         </label>
 
@@ -633,7 +633,7 @@ export default function SharePassportModal({
           )}
         </div>
 
-        {/* 🟢 Passport Preview */}
+        {/* ðŸŸ¢ Passport Preview */}
         <div className="card innerCard passportPreview">
           <h3>Preview</h3>
 

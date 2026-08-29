@@ -1,4 +1,4 @@
-import { useWorkspace } from "../context/WorkspaceContext";
+import { useWorkspace } from "../context/WorkspaceContextCore";
 import { WorkspaceSwitcher } from "../components/workspace";
 import { FoundingBadgePanel } from "../components/founding";
 import {

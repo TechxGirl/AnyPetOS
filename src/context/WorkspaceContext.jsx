@@ -1,37 +1,71 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   DEFAULT_WORKSPACE_ID,
   WORKSPACE_OPTIONS,
   getWorkspaceConfig,
   normalizeWorkspaceId,
 } from "../data/workspaces";
+import { WorkspaceContext } from "./WorkspaceContextCore";
 
-// Legacy key retained so existing users keep their selected workspace after the rebrand.
+// =====================================================
+// 🟢 WorkspaceContext.jsx
+//
+// Global AnyPetOS workspace state provider.
+//
+// Context creation and the useWorkspace hook live in
+// WorkspaceContextCore.js so this file only exports
+// React components.
+// =====================================================
+
+// Legacy keys retained so existing users keep their
+// workspace settings after the AnyPetOS rebrand.
 const STORAGE_KEY = "petpassport-active-workspace";
 const ENABLED_STORAGE_KEY = "petpassport-enabled-workspaces";
 
-const WorkspaceContext = createContext(null);
+// =====================================================
+// 🟢 Storage Helpers
+// =====================================================
 
 function readStoredWorkspace(profileRole) {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored) return normalizeWorkspaceId(stored);
+
+    if (stored) {
+      return normalizeWorkspaceId(stored);
+    }
   } catch {
-    // Local storage may be unavailable in private or restricted contexts.
+    // Local storage may be unavailable in private
+    // or restricted contexts.
   }
 
-  return normalizeWorkspaceId(profileRole || DEFAULT_WORKSPACE_ID);
+  return normalizeWorkspaceId(
+    profileRole || DEFAULT_WORKSPACE_ID
+  );
 }
 
 function readEnabledWorkspaces(primaryWorkspaceId) {
   try {
-    const raw = window.localStorage.getItem(ENABLED_STORAGE_KEY);
+    const raw = window.localStorage.getItem(
+      ENABLED_STORAGE_KEY
+    );
+
     const parsed = raw ? JSON.parse(raw) : null;
+
     if (Array.isArray(parsed) && parsed.length > 0) {
-      return Array.from(new Set([primaryWorkspaceId, ...parsed.map(normalizeWorkspaceId)]));
+      return Array.from(
+        new Set([
+          primaryWorkspaceId,
+          ...parsed.map(normalizeWorkspaceId),
+        ])
+      );
     }
   } catch {
-    // Fall through to default enabled workspace.
+    // Fall through to the default enabled workspace.
   }
 
   return [primaryWorkspaceId];
@@ -41,14 +75,31 @@ function writeStorage(key, value) {
   try {
     window.localStorage.setItem(key, value);
   } catch {
-    // Ignore local storage failures. The active workspace still updates in memory.
+    // Ignore local storage failures.
+    // Workspace state still updates in memory.
   }
 }
 
-export function WorkspaceProvider({ profileRole, children }) {
-  const initialWorkspace = readStoredWorkspace(profileRole);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState(initialWorkspace);
-  const [enabledWorkspaceIds, setEnabledWorkspaceIds] = useState(() =>
+// =====================================================
+// 🟢 Workspace Provider
+// =====================================================
+
+export function WorkspaceProvider({
+  profileRole,
+  children,
+}) {
+  const initialWorkspace =
+    readStoredWorkspace(profileRole);
+
+  const [
+    activeWorkspaceId,
+    setActiveWorkspaceId,
+  ] = useState(initialWorkspace);
+
+  const [
+    enabledWorkspaceIds,
+    setEnabledWorkspaceIds,
+  ] = useState(() =>
     readEnabledWorkspaces(initialWorkspace)
   );
 
@@ -57,41 +108,90 @@ export function WorkspaceProvider({ profileRole, children }) {
     [activeWorkspaceId]
   );
 
+  // =====================================================
+  // 🟢 Workspace Theme Sync
+  // =====================================================
+
   useEffect(() => {
-    document.documentElement.dataset.workspace = workspace.id;
-    document.documentElement.style.setProperty("--pp-workspace-accent", workspace.accent);
+    document.documentElement.dataset.workspace =
+      workspace.id;
+
+    document.documentElement.style.setProperty(
+      "--pp-workspace-accent",
+      workspace.accent
+    );
   }, [workspace]);
 
-  const setActiveWorkspace = (workspaceId) => {
-    const normalized = normalizeWorkspaceId(workspaceId);
-    setActiveWorkspaceId(normalized);
-    setEnabledWorkspaceIds((current) =>
-      Array.from(new Set([normalized, ...current.map(normalizeWorkspaceId)]))
-    );
-    writeStorage(STORAGE_KEY, normalized);
-  };
+  // =====================================================
+  // 🟢 Workspace Actions
+  // =====================================================
 
-  const toggleEnabledWorkspace = (workspaceId) => {
-    const normalized = normalizeWorkspaceId(workspaceId);
+  const setActiveWorkspace = useCallback(
+    (workspaceId) => {
+      const normalized =
+        normalizeWorkspaceId(workspaceId);
 
-    setEnabledWorkspaceIds((current) => {
-      const exists = current.includes(normalized);
-      const next = exists
-        ? current.filter((item) => item !== normalized)
-        : [...current, normalized];
+      setActiveWorkspaceId(normalized);
 
-      const safeNext = next.length > 0 ? next : [DEFAULT_WORKSPACE_ID];
+      setEnabledWorkspaceIds((current) =>
+        Array.from(
+          new Set([
+            normalized,
+            ...current.map(normalizeWorkspaceId),
+          ])
+        )
+      );
 
-      if (!safeNext.includes(activeWorkspaceId)) {
-        const replacement = safeNext[0];
-        setActiveWorkspaceId(replacement);
-        writeStorage(STORAGE_KEY, replacement);
-      }
+      writeStorage(STORAGE_KEY, normalized);
+    },
+    []
+  );
 
-      writeStorage(ENABLED_STORAGE_KEY, JSON.stringify(safeNext));
-      return safeNext;
-    });
-  };
+  const toggleEnabledWorkspace = useCallback(
+    (workspaceId) => {
+      const normalized =
+        normalizeWorkspaceId(workspaceId);
+
+      setEnabledWorkspaceIds((current) => {
+        const exists =
+          current.includes(normalized);
+
+        const next = exists
+          ? current.filter(
+              (item) => item !== normalized
+            )
+          : [...current, normalized];
+
+        const safeNext =
+          next.length > 0
+            ? next
+            : [DEFAULT_WORKSPACE_ID];
+
+        if (!safeNext.includes(activeWorkspaceId)) {
+          const replacement = safeNext[0];
+
+          setActiveWorkspaceId(replacement);
+
+          writeStorage(
+            STORAGE_KEY,
+            replacement
+          );
+        }
+
+        writeStorage(
+          ENABLED_STORAGE_KEY,
+          JSON.stringify(safeNext)
+        );
+
+        return safeNext;
+      });
+    },
+    [activeWorkspaceId]
+  );
+
+  // =====================================================
+  // 🟢 Context Value
+  // =====================================================
 
   const value = useMemo(
     () => ({
@@ -102,7 +202,13 @@ export function WorkspaceProvider({ profileRole, children }) {
       workspace,
       workspaces: WORKSPACE_OPTIONS,
     }),
-    [activeWorkspaceId, enabledWorkspaceIds, workspace]
+    [
+      activeWorkspaceId,
+      enabledWorkspaceIds,
+      setActiveWorkspace,
+      toggleEnabledWorkspace,
+      workspace,
+    ]
   );
 
   return (
@@ -110,14 +216,4 @@ export function WorkspaceProvider({ profileRole, children }) {
       {children}
     </WorkspaceContext.Provider>
   );
-}
-
-export function useWorkspace() {
-  const context = useContext(WorkspaceContext);
-
-  if (!context) {
-    throw new Error("useWorkspace must be used inside WorkspaceProvider.");
-  }
-
-  return context;
 }

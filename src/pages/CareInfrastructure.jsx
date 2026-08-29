@@ -26,7 +26,7 @@ import {
 } from "../components/ui";
 import { copyTextToClipboard } from "../utils/passportTransport";
 import { downloadTransferReceipt, normalizeReceipt } from "../utils/transferReceipt";
-import { useWorkspace } from "../context/WorkspaceContext";
+import { useWorkspace } from "../context/WorkspaceContextCore";
 
 const TAB_OPTIONS = [
   { id: "enclosures", label: "Enclosures", icon: "package" },
@@ -75,7 +75,7 @@ function PetSelect({ pets, value, onChange, includeNone = true }) {
       )}
       {pets.map((pet) => (
         <option key={pet.cloudId || pet.id} value={String(pet.cloudId || pet.id)}>
-          {pet.name} {pet.species ? `• ${pet.species}` : ""}
+          {pet.name} {pet.species ? `â€¢ ${pet.species}` : ""}
         </option>
       ))}
     </Select>
@@ -250,9 +250,9 @@ function EnclosuresPanel({ infrastructure, pets, run, setActiveTab }) {
           <Field label="Assigned animal"><PetSelect pets={pets} value={form.pet_id} onChange={(value) => update("pet_id", value)} /></Field>
           <Field label="Size"><Input value={form.size} onChange={(event) => update("size", event.target.value)} placeholder="36x18x18, 4x2x2, 25 gal..." /></Field>
           <Field label="Location"><Input value={form.location} onChange={(event) => update("location", event.target.value)} placeholder="Reptile room, rack row A..." /></Field>
-          <Field label="Warm side"><Input value={form.warm_temp} onChange={(event) => update("warm_temp", event.target.value)} placeholder="88–90°F" /></Field>
-          <Field label="Cool side"><Input value={form.cool_temp} onChange={(event) => update("cool_temp", event.target.value)} placeholder="75–78°F" /></Field>
-          <Field label="Humidity"><Input value={form.humidity} onChange={(event) => update("humidity", event.target.value)} placeholder="55–70%" /></Field>
+          <Field label="Warm side"><Input value={form.warm_temp} onChange={(event) => update("warm_temp", event.target.value)} placeholder="88â€“90Â°F" /></Field>
+          <Field label="Cool side"><Input value={form.cool_temp} onChange={(event) => update("cool_temp", event.target.value)} placeholder="75â€“78Â°F" /></Field>
+          <Field label="Humidity"><Input value={form.humidity} onChange={(event) => update("humidity", event.target.value)} placeholder="55â€“70%" /></Field>
           <Field label="Substrate"><Input value={form.substrate} onChange={(event) => update("substrate", event.target.value)} placeholder="Coco husk, paper towels..." /></Field>
           <Field label="Clean every X days"><Input type="number" min="0" value={form.cleaning_interval_days} onChange={(event) => update("cleaning_interval_days", event.target.value)} /></Field>
           <Field label="Last cleaned"><Input type="date" value={form.last_cleaned_at} onChange={(event) => update("last_cleaned_at", event.target.value)} /></Field>
@@ -391,7 +391,7 @@ function RemindersPanel({ infrastructure, pets, run }) {
           return (
             <Card key={reminder.id} className={`careInfraRecordCard due-${dueStatus}`}>
               <div className="careInfraRecordHeader">
-                <div><span>{reminder.type} • {statusLabel(dueStatus)}</span><h3>{reminder.title}</h3></div>
+                <div><span>{reminder.type} â€¢ {statusLabel(dueStatus)}</span><h3>{reminder.title}</h3></div>
                 <div className="careInfraButtonCluster">
                   <Button variant="outline" size="sm" onClick={() => run({ action: () => infrastructure.completeReminder(reminder), successTitle: "Reminder completed", successMessage: `${reminder.title} was updated.` })}>Complete</Button>
                   <Button variant="ghost" size="sm" onClick={() => run({ action: () => infrastructure.updateReminder(reminder.id, { status: "skipped" }), successTitle: "Reminder skipped", successMessage: `${reminder.title} was skipped.` })}>Skip</Button>
@@ -891,7 +891,7 @@ function AccessPanel({ infrastructure, pets, run }) {
         {infrastructure.permissions.length === 0 ? <Card><p>No access invites yet. Create temporary sitter, foster, vet, or view-only links here.</p></Card> : infrastructure.permissions.map((invite) => (
           <Card key={invite.id} className="careInfraRecordCard">
             <div className="careInfraRecordHeader">
-              <div><span>{getAccessLevelLabel(invite.access_level)} • {invite.status}</span><h3>{petName(pets, invite.pet_id)}</h3></div>
+              <div><span>{getAccessLevelLabel(invite.access_level)} â€¢ {invite.status}</span><h3>{petName(pets, invite.pet_id)}</h3></div>
               {invite.status !== "revoked" && <Button variant="ghost" size="sm" onClick={() => run({ action: () => infrastructure.revokeAccessInvite(invite.id), successTitle: "Access revoked", successMessage: "This invite no longer works." })}>Revoke</Button>}
             </div>
             <div className="careInfraMiniGrid">

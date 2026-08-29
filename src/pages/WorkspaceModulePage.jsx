@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useWorkspace } from "../context/WorkspaceContext";
+import { useWorkspace } from "../context/WorkspaceContextCore";
 import { getModuleForPage } from "../data/workspaces";
 import { Button, Badge, Card, CardHeader, EmptyState, FormField, Icon, Input, PageHeader, Select, Textarea, useToast } from "../components/ui";
 import { createId } from "../utils/id";
@@ -42,7 +42,7 @@ function addDays(days) {
 
 function petLabel(pet) {
   if (!pet) return "Unassigned";
-  return [pet.name, pet.species].filter(Boolean).join(" • ") || pet.name || "Unnamed animal";
+  return [pet.name, pet.species].filter(Boolean).join(" â€¢ ") || pet.name || "Unnamed animal";
 }
 
 const GENERIC_DEFINITIONS = {
@@ -695,7 +695,7 @@ export default function WorkspaceModulePage({ page, pets = [], setPage }) {
             <button key={`${template.title}-${template.type}`} className="moduleQuickAction" onClick={() => createQuickRecord(template)}>
               <Icon name="plus" size={16} />
               <span>{template.title}</span>
-              <small>{template.type} • {template.status}</small>
+              <small>{template.type} â€¢ {template.status}</small>
             </button>
           ))}
         </div>
@@ -838,7 +838,7 @@ export default function WorkspaceModulePage({ page, pets = [], setPage }) {
               <div className="moduleCompletedItem" key={record.id}>
                 <div>
                   <strong>{record.title}</strong>
-                  <span>{record.type} • {record.petName || "Unassigned"}</span>
+                  <span>{record.type} â€¢ {record.petName || "Unassigned"}</span>
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => updateRecord(record.id, { completed: false, status: definition.statuses[0] })}>Reopen</Button>
               </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Feed from "../components/Feed";
-import { useWorkspace } from "../context/WorkspaceContext";
+import { useWorkspace } from "../context/WorkspaceContextCore";
 import { useFoundingBadges } from "../context/FoundingBadgeContext";
 import { Button, Card, CardHeader, EmptyState, Icon } from "../components/ui";
 import { FoundingBadge } from "../components/founding";

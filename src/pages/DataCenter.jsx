@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { Button, Card, CardHeader, EmptyState, Icon, PageHeader, Select, useToast } from "../components/ui";
-import { useWorkspace } from "../context/WorkspaceContext";
+import { useWorkspace } from "../context/WorkspaceContextCore";
 import {
   IMPORT_FIELDS,
   IMPORT_TEMPLATES,
@@ -336,11 +336,11 @@ export default function DataCenter({ pets = [], addPet, setPage }) {
                 {previewRows.slice(0, 50).map((row) => (
                   <tr key={row.id} className={!row.valid ? "is-error" : row.duplicate ? "is-warning" : "is-ready"}>
                     <td>{row.sourceRow}</td>
-                    <td>{row.pet.name || "—"}</td>
-                    <td>{row.pet.species || "—"}</td>
-                    <td>{row.pet.morph || "—"}</td>
-                    <td>{row.pet.sex || "—"}</td>
-                    <td>{row.pet.status || "—"}</td>
+                    <td>{row.pet.name || "â€”"}</td>
+                    <td>{row.pet.species || "â€”"}</td>
+                    <td>{row.pet.morph || "â€”"}</td>
+                    <td>{row.pet.sex || "â€”"}</td>
+                    <td>{row.pet.status || "â€”"}</td>
                     <td>{!row.valid ? row.errors.join(", ") : row.duplicate ? row.warnings.join(", ") : "Ready"}</td>
                   </tr>
                 ))}
