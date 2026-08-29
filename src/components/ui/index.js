@@ -11,6 +11,6 @@ export { default as PageHeader } from "./PageHeader";
 export { default as Select } from "./Select";
 export { default as Skeleton } from "./Skeleton";
 export { default as Textarea } from "./Textarea";
-export { ToastProvider, useToast } from "./Toast";
-
+export { ToastProvider } from "./Toast";
+export { useToast } from "./toastContext";
 export { default as ThemeSelector } from "./ThemeSelector";
