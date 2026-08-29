@@ -22,7 +22,8 @@ import useAsyncAction from "./hooks/useAsyncAction";
 // 🟢 Context Providers
 // =====================================================
 
-import { PetProvider, usePetContext } from "./context/PetContext";
+import { PetProvider } from "./context/PetContext";
+import { usePetContext } from "./context/PetContextCore";
 import { ModalProvider } from "./context/ModalContext";
 import { useModal } from "./context/ModalContextCore";
 import { ThemeProvider } from "./context/ThemeContext";

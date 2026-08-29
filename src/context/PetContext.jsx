@@ -1,14 +1,14 @@
-import { createContext, useContext } from "react";
 import { usePets } from "../hooks/usePets";
+import { PetContext } from "./PetContextCore";
 
 // =====================================================
 // 🟢 PetContext.jsx
 //
-// Global AnyPetOS animal state.
+// Global AnyPetOS animal state provider.
 //
+// Context creation and the usePetContext hook live in
+// PetContextCore.js so this file only exports components.
 // =====================================================
-
-const PetContext = createContext(null);
 
 // =====================================================
 // 🟢 Pet Provider
@@ -22,18 +22,4 @@ export function PetProvider({ session, children }) {
       {children}
     </PetContext.Provider>
   );
-}
-
-// =====================================================
-// 🟢 usePetContext
-// =====================================================
-
-export function usePetContext() {
-  const context = useContext(PetContext);
-
-  if (!context) {
-    throw new Error("usePetContext must be used inside PetProvider");
-  }
-
-  return context;
 }
