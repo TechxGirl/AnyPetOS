@@ -213,3 +213,108 @@ src/
 ├── services/     External service integrations
 ├── styles/       Shared styling and design tokens
 └── utils/        Pure utility and transformation functions
+
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js
+- npm
+- A Supabase project
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/TechxGirl/AnyPetOS.git
+cd AnyPetOS
+```
+
+### Install Dependencies
+
+```bash
+npm ci
+```
+
+### Configure Environment Variables
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then provide the required Supabase values:
+
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+```
+
+Local `.env` files are excluded from version control.
+
+### Start the Development Server
+
+```bash
+npm run dev
+```
+
+### Production Build
+
+```bash
+npm run build
+```
+
+### Lint
+
+```bash
+npm run lint
+```
+
+---
+
+## Database
+
+AnyPetOS uses Supabase and PostgreSQL for application data, authentication, database functions, and access control.
+
+Database-related SQL is organized under:
+
+```text
+supabase/
+├── migrations/   Current feature and database migrations
+└── legacy/       Historical SQL retained for migration context
+```
+
+See [`supabase/README.md`](supabase/README.md) for additional details.
+
+The repository does not currently provide a single migration that recreates the complete production database from an empty Supabase project.
+
+---
+
+## Development Quality
+
+The current repository is maintained with:
+
+- ESLint validation
+- Production build verification
+- Dependency vulnerability auditing
+- Route-level lazy loading
+- Vendor code splitting for React and Supabase
+- Environment files excluded from version control
+
+---
+
+## Project Status
+
+AnyPetOS is under active beta development.
+
+The repository represents an evolving production-oriented application, so some interfaces and workflows are still being expanded or refined.
