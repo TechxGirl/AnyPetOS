@@ -56,9 +56,6 @@ import AppLayout from "./layouts/AppLayout";
 import AppLoadingScreen from "./components/app/AppLoadingScreen";
 import AppErrorState from "./components/app/AppErrorState";
 import AppModalRenderer from "./components/app/AppModalRenderer";
-import PublicPassportView from "./pages/PublicPassportView";
-import TransferPassportView from "./pages/TransferPassportView";
-import AccessInviteView from "./pages/AccessInviteView";
 import { getPassportTransportRoute } from "./utils/passportTransport";
 import {
   DEFAULT_APP_PAGE,
@@ -69,6 +66,18 @@ import {
 } from "./utils/navigationState";
 
 const PublicExpoView = lazy(() => import("./pages/PublicExpoView"));
+
+const PublicPassportView = lazy(() =>
+  import("./pages/PublicPassportView")
+);
+
+const TransferPassportView = lazy(() =>
+  import("./pages/TransferPassportView")
+);
+
+const AccessInviteView = lazy(() =>
+  import("./pages/AccessInviteView")
+);
 
 // =====================================================
 // 🟢 Default Edit Form
@@ -216,21 +225,35 @@ function AppContent() {
   // =====================================================
 
   if (transportRoute?.type === "share") {
-    return <PublicPassportView token={transportRoute.token} />;
-  }
+  return (
+    <Suspense
+      fallback={
+        <AppLoadingScreen message="Opening shared Passport..." />
+      }
+    >
+      <PublicPassportView token={transportRoute.token} />
+    </Suspense>
+  );
+}
 
   // =====================================================
   // 🟢 Access Invite Route
   // =====================================================
 
   if (transportRoute?.type === "access") {
-    return (
+  return (
+    <Suspense
+      fallback={
+        <AppLoadingScreen message="Opening access invite..." />
+      }
+    >
       <AccessInviteView
         token={transportRoute.token}
         session={session}
       />
-    );
-  }
+    </Suspense>
+  );
+}
 
   // =====================================================
   // 🟢 Public Expo Routes
@@ -270,13 +293,19 @@ function AppContent() {
   // =====================================================
 
   if (transportRoute?.type === "transfer") {
-    return (
+  return (
+    <Suspense
+      fallback={
+        <AppLoadingScreen message="Opening Passport transfer..." />
+      }
+    >
       <TransferPassportView
         token={transportRoute.token}
         session={session}
       />
-    );
-  }
+    </Suspense>
+  );
+}
 
   // =====================================================
   // 🟢 Signed-Out State
