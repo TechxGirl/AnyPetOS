@@ -42,9 +42,6 @@ import { ToastProvider, useToast } from "./components/ui";
 // =====================================================
 
 import Sidebar from "./components/Sidebar";
-import CreateProfile from "./components/CreateProfile";
-import Auth from "./components/Auth";
-import PasswordRecovery from "./components/PasswordRecovery";
 import PageRenderer from "./components/PageRenderer";
 import BetaBanner from "./components/BetaBanner";
 import AppLayout from "./layouts/AppLayout";
@@ -79,6 +76,17 @@ const AccessInviteView = lazy(() =>
   import("./pages/AccessInviteView")
 );
 
+const Auth = lazy(() =>
+  import("./components/Auth")
+);
+
+const CreateProfile = lazy(() =>
+  import("./components/CreateProfile")
+);
+
+const PasswordRecovery = lazy(() =>
+  import("./components/PasswordRecovery")
+);
 // =====================================================
 // 🟢 Default Edit Form
 // =====================================================
@@ -285,8 +293,18 @@ function AppContent() {
   // =====================================================
 
   if (passwordRecovery && session) {
-    return <PasswordRecovery onComplete={() => setPasswordRecovery(false)} />;
-  }
+  return (
+    <Suspense
+      fallback={
+        <AppLoadingScreen message="Opening password recovery..." />
+      }
+    >
+      <PasswordRecovery
+        onComplete={() => setPasswordRecovery(false)}
+      />
+    </Suspense>
+  );
+}
 
   // =====================================================
   // 🟢 Transfer Route
@@ -312,8 +330,16 @@ function AppContent() {
   // =====================================================
 
   if (!session) {
-    return <Auth />;
-  }
+  return (
+    <Suspense
+      fallback={
+        <AppLoadingScreen message="Opening AnyPetOS..." />
+      }
+    >
+      <Auth />
+    </Suspense>
+  );
+}
 
   // =====================================================
   // 🟢 Profile Loading State
@@ -341,7 +367,15 @@ function AppContent() {
   // =====================================================
 
   if (!profile) {
-    return <CreateProfile session={session} />;
+    return (
+  <Suspense
+    fallback={
+      <AppLoadingScreen message="Preparing your AnyPetOS profile..." />
+    }
+  >
+    <CreateProfile session={session} />
+  </Suspense>
+);
   }
 
   // =====================================================
