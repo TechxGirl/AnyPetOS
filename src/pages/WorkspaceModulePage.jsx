@@ -634,7 +634,7 @@ export default function WorkspaceModulePage({ page, pets = [], setPage }) {
       return;
     }
     const slug = `${workspace.id}-${page.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`.replace(/-$/g, "");
-    downloadTextFile(`petpassport-${slug}-records.csv`, recordsToCsv(moduleRecords), "text/csv");
+    downloadTextFile(`anypetos-${slug}-records.csv`, recordsToCsv(moduleRecords), "text/csv");
     showToast({ variant: "success", title: "Module exported", message: `${moduleRecords.length} records exported as CSV.` });
   }
 
