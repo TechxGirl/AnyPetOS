@@ -13,12 +13,12 @@ function getInitialProfile(profile) {
   try {
     return JSON.parse(localStorage.getItem("petpassport-public-profile") || "null") || {
       displayName: profile?.display_name || "AnyPetOS Keeper",
-      handle: profile?.username || "petpassport",
+      handle: profile?.username || "anypetos",
       bio: "Building a better way to preserve every animal's story.",
       pageType: "Keeper / Rescue / Breeder",
     };
   } catch {
-    return { displayName: "AnyPetOS Keeper", handle: "petpassport", bio: "", pageType: "Keeper" };
+    return { displayName: "AnyPetOS Keeper", handle: "anypetos", bio: "", pageType: "Keeper" };
   }
 }
 
