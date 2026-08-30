@@ -318,3 +318,14 @@ The current repository is maintained with:
 AnyPetOS is under active beta development.
 
 The repository represents an evolving production-oriented application, so some interfaces and workflows are still being expanded or refined.
+
+## Copyright & Usage
+
+Copyright © 2026 Morgan Mendoza. All Rights Reserved.
+
+This project is publicly visible for portfolio, demonstration, and evaluation
+purposes. No permission is granted to copy, redistribute, modify, republish,
+commercialize, or incorporate this source code into another project without
+prior written permission.
+
+Third-party dependencies remain subject to their respective licenses.
