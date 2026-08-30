@@ -152,7 +152,7 @@ export default function CareInfrastructure({ pets = [], initialTab = "enclosures
         <PageHeader
           eyebrow="Care Infrastructure"
           title="Care tables need to be installed"
-          description="Run PETPASSPORT_CARE_INFRASTRUCTURE_V1.sql in Supabase, then return here. Your existing pets were not changed."
+          description="Run ANYPETOS_CARE_INFRASTRUCTURE_V1.sql in Supabase, then return here. Your existing pets were not changed."
           icon={<Icon name="database" size={22} />}
         />
         <Card>

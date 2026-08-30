@@ -888,7 +888,7 @@ const createQrs = async () => {
   }
 
   if (expo.error) {
-    return <div className="page-shell expo-command-page"><EmptyState icon={<Icon name="alert" size={30} />} title="Expo Mode needs its database foundation" description={`${expo.error.message} Run PETPASSPORT_EXPO_COMMAND_CENTER_V1.sql in Supabase, then refresh.`} action={<Button onClick={expo.refresh}>Try again</Button>} /></div>;
+    return <div className="page-shell expo-command-page"><EmptyState icon={<Icon name="alert" size={30} />} title="Expo Mode needs its database foundation" description={`${expo.error.message} Run ANYPETOS_EXPO_COMMAND_CENTER_V1.sql in Supabase, then refresh.`} action={<Button onClick={expo.refresh}>Try again</Button>} /></div>;
   }
 
   if (expo.events.length > 0 && !activeEvent) {
